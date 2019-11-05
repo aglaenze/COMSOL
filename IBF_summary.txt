@@ -1,0 +1,126 @@
+Vmesh = 340V 
+Total number of ions : 260213
+Ions that escaped : 7472
+IBF = 2.87149 %
+
+
+Vmesh = 340V 
+Total number of ions : 231875
+Ions that escaped : 6641
+IBF = 2.86404 %
+
+
+Vmesh = 360V 
+Total number of ions : 452145
+Ions that escaped : 12255
+IBF = 2.71041 %
+
+
+Vmesh = 380V 
+Total number of ions : 791035
+Ions that escaped : 19929
+IBF = 2.51936 %
+
+
+Vmesh = 400V 
+Total number of ions : 1.85202e+06
+Ions that escaped : 44377
+IBF = 2.39613 %
+
+
+Vmesh = 420V 
+Total number of ions : 3.89594e+06
+Ions that escaped : 88869
+IBF = 2.28107 %
+
+
+Vmesh = 320V 
+Total number of ions : 127996
+Ions that escaped : 3919
+IBF = 3.06181 %
+
+
+Vmesh = 340V 
+Total number of ions : 217905
+Ions that escaped : 6309
+IBF = 2.8953 %
+
+
+Vmesh = 320V 
+Total number of ions : 130901
+Ions that escaped : 4098
+IBF = 3.13061 %
+
+
+Vmesh = 360V 
+Total number of ions : 426577
+Ions that escaped : 11245
+IBF = 2.6361 %
+
+
+Vmesh = 380V 
+Total number of ions : 1.05451e+06
+Ions that escaped : 26610
+IBF = 2.52344 %
+
+
+Vmesh = 400V 
+Total number of ions : 1.83307e+06
+Ions that escaped : 43990
+IBF = 2.3998 %
+
+
+Vmesh = 340V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+Vmesh = 340V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+Vmesh = 340V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+Vmesh = 340V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+Vmesh = 340V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+Vmesh = 340V 
+Total number of ions : 1495
+Ions that escaped : 50
+IBF = 3.34448 %
+
+
+Vmesh = 340V 
+Total number of ions : 8557
+Ions that escaped : 229
+IBF = 2.67617 %
+
+
+Vmesh = 340V 
+Total number of ions : 6056
+Ions that escaped : 176
+IBF = 2.90621 %
+
+
+Vmesh = 340V 
+Total number of ions : 6244
+Ions that escaped : 155
+IBF = 2.48238 %
+
+
