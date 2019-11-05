@@ -107,7 +107,7 @@ int main(int argc, char * argv[]) {
     const double timespace = 10;    // 1 event every 10 ns
     const double ionDelay = 1.e6;    // time to collect all ions at the drift ˜1ms
     double tEnd = nEvents * timespace + ionDelay;
-    int nsBins = int(tEnd/3);
+    int nsBins = int(tEnd);
     sensor->SetTimeWindow(0., tEnd / nsBins, nsBins);
     
     // To look at the avalanche
