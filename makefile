@@ -1,5 +1,5 @@
 INCDIR = $(GARFIELD_HOME)/Include
-LIBDIR = $(GARFIELD_HOME)/install/lib
+LIBDIR = $(GARFIELD_HOME)/Library
 
 # Compiler flags
 CFLAGS = -Wall -Wextra -Wno-long-long \
