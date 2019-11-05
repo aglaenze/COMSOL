@@ -103,7 +103,7 @@ int main(int argc, char * argv[]) {
     sensor->AddElectrode(fm, "V3");
     
     // Set the signal binning.
-    const int nEvents = 10;
+    const int nEvents = 300;
     const double timespace = 10;    // 1 event every 10 ns
     const double ionDelay = 1.e6;    // time to collect all ions at the drift ˜1ms
     double tEnd = nEvents * timespace + ionDelay;
