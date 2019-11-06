@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <dirent.h>
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -24,18 +23,6 @@ Double_t FitFunctionExp( Double_t* x, Double_t* par ) {
     return TMath::Exp( par[0] + par[1]*x[0] ); }
 
 
-int GetNumberOfFiles(TString path, TString name) {
-    Int_t num = 0;
-    struct dirent **namelist;
-    Int_t n = scandir(path, &namelist, 0, alphasort);
-    if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
-    else {
-        while (n--) { if (strstr(namelist[n]->d_name, name) != NULL) num++;}
-        return num;
-    }
-}
-
-
 int Analyse() {
     
     //______________________
@@ -53,7 +40,7 @@ int Analyse() {
     if (gainCurve) {
         // Get number of files to look at
         //Int_t num = 3;
-        Int_t num = GetNumberOfFiles(path, "convolution");
+        Int_t num = GetNumberOfFiles(path, "convoluted");
         Int_t num2 = int(num/2.);
         if (num/2.> num2) num2+=1;
         TCanvas* c2 = new TCanvas("c2");
@@ -63,7 +50,7 @@ int Analyse() {
         Double_t gainErrorList[num];
         for (unsigned int k = 0; k < num; ++k) {
             Int_t Vmesh = 320 + k*20;
-            TString fileName = Form("rootFiles/%s/model%d/gain_%dV_convolution.root", gasName.c_str(), modelNum, Vmesh);
+            TString fileName = Form("rootFiles/%s/model%d/Fe_spectrum_convoluted_%dV.root", gasName.c_str(), modelNum, Vmesh);
             TFile* fGain = TFile::Open(fileName, "READ");
             TH1F* hGain = (TH1F*)fGain->Get("hFeElectrons");
             hGain->SetTitle(Form("Number of secondary electrons for V_{mesh} = %d V with a simulated Fe source", Vmesh));

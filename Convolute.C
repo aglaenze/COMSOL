@@ -33,17 +33,8 @@ int Convolute() {
     TFile fFe(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()));
     TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
      
-    // Get number of files to look at
-    //Int_t num = 3;
-    Int_t num = 0;
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-    
-    struct dirent **namelist;
-    Int_t n = scandir(path, &namelist, 0, alphasort);
-    if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
-    else {
-        while (n--) { if (strstr(namelist[n]->d_name, "gain") != NULL) num++;}
-    }
+    Int_t num = GetNumberOfFiles(path, "gain");
     
     for (unsigned int k = 0; k < num; ++k) {
         Int_t Vmesh = 320 + k*20;
@@ -90,7 +81,7 @@ int Convolute() {
         //c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
         
         // Write convolution histograms in root files
-        TFile* f = new TFile(fGainName + "_convolution.root", "RECREATE");
+        TFile* f = new TFile(path+Form("Fe_spectrum_convoluted_%dV.root", Vmesh), "RECREATE");
         hFeElectrons->Write();
         f->Close();
     }

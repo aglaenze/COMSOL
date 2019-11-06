@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <dirent.h>
 
 #include <string.h>
 #include <TLatex.h>
@@ -34,4 +35,14 @@ TLatex* PutText( Double_t x_ndc, Double_t y_ndc, TString value, Double_t fontSiz
     return text;
 }
 
+int GetNumberOfFiles(TString path, TString name) {
+    Int_t num = 0;
+    struct dirent **namelist;
+    Int_t n = scandir(path, &namelist, 0, alphasort);
+    if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
+    else {
+        while (n--) { if (strstr(namelist[n]->d_name, name) != NULL) num++;}
+        return num;
+    }
+}
 
