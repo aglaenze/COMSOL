@@ -24,6 +24,16 @@ Double_t FitFunctionExp( Double_t* x, Double_t* par ) {
     return TMath::Exp( par[0] + par[1]*x[0] ); }
 
 
+int GetNumberOfFiles(TString path, TString name) {
+    Int_t num = 0;
+    struct dirent **namelist;
+    Int_t n = scandir(path, &namelist, 0, alphasort);
+    if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
+    else {
+        while (n--) { if (strstr(namelist[n]->d_name, name) != NULL) num++;}
+        return num;
+    }
+}
 
 
 int Analyse() {
@@ -38,19 +48,13 @@ int Analyse() {
 
     time_t t0 = time(NULL);
     gStyle->SetOptStat(0);
+    const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
  
     
     if (gainCurve) {
         // Get number of files to look at
         //Int_t num = 3;
-        Int_t num = 0;
-        const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-        struct dirent **namelist;
-        Int_t n = scandir(path, &namelist, 0, alphasort);
-        if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
-        else {
-            while (n--) { if (strstr(namelist[n]->d_name, "convolution") != NULL) num++;}
-        }
+        Int_t num = GetNumberOfFiles(path, "convolution");
         Int_t num2 = int(num/2.);
         if (num/2.> num2) num2+=1;
         TCanvas* c2 = new TCanvas("c2");
@@ -174,19 +178,11 @@ int Analyse() {
         
         // Get number of files to look at
         //Int_t num = 3;
-        Int_t num = 0;
-        const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-        struct dirent **namelist;
-        Int_t n = scandir(path, &namelist, 0, alphasort);
-        if (n < 1) {std::cout << "empty folder" << std::endl; return 0;}
-        else {
-            while (n--) { if (strstr(namelist[n]->d_name, "ibf") != NULL) num++;}
-        }
-        
+        Int_t num = GetNumberOfFiles(path, "ibf");
         Int_t num2 = int(num/2.);
         if (num/2.> num2) num2+=1;
         TCanvas* c4 = new TCanvas("c4");
-        c4->Divide(2,num2);
+        c4->Divide(2, num2);
         Double_t hvMeshList[num];
         Double_t ibfList[num];
         Double_t ibfErrorList[num];
@@ -214,6 +210,23 @@ int Analyse() {
         }
         c4->SaveAs(Form("Figures/ibfResults_%s_model%d.pdf", gasName.c_str(), modelNum));
         
+        Int_t numS = GetNumberOfFiles(path, "signal");
+        Double_t hvMeshListS[numS];
+        Double_t ibfSignalList[numS];
+
+        for (unsigned int k = 0; k < numS; ++k) {
+        //Int_t k = 3;
+            Int_t Vmesh = 320 + k*20;
+            TString fileName = path + Form("signal_%dV.root", Vmesh);
+            TFile* fSignal = TFile::Open(fileName, "READ");
+            TH1F* hInt = (TH1F*)fSignal->Get("hIntMesh");
+            TH1F* hIntd = (TH1F*)fSignal->Get("hIntDrift");
+            hvMeshListS[k] = Vmesh;
+            Int_t last = hInt->GetNbinsX();
+            ibfSignalList[k] =  100.*hIntd->GetBinContent(last)/hInt->GetBinContent(last);
+        }
+        
+
         TCanvas* c5 = new TCanvas("c5");
         c5->cd();
         c5->SetGrid();
@@ -227,6 +240,11 @@ int Analyse() {
         gr->SetMarkerStyle(20);
         gr->GetXaxis()->SetLimits(315, 445);
         gr->Draw("ACP");
+        
+        TGraph* tgIBFsignal = new TGraph(numS, hvMeshListS, ibfSignalList );
+        tgIBFsignal->SetMarkerStyle(20);
+        tgIBFsignal->SetMarkerColor(3);
+        tgIBFsignal->Draw("CP same");
         
         /*
         // Ne
@@ -244,10 +262,11 @@ int Analyse() {
         tgIBF->SetMarkerColor(2);
         tgIBF->Draw("CP same");
         
-        TLegend* legend = new TLegend(0.6,0.6,0.9,0.9);
+        TLegend* legend = new TLegend(0.5,0.65,0.9,0.9);
         //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
         legend->AddEntry(tgIBF,"Data","lp");
-        legend->AddEntry(gr,"Simulation","lp");
+        legend->AddEntry(gr,"Simulation (counting IBF)","lp");
+        legend->AddEntry(tgIBFsignal, "Simulation (current signals)", "lp");
         legend->Draw();
 
         c5->SaveAs(Form("Figures/IBFCurve_%s_model%d.pdf", gasName.c_str(), modelNum));
