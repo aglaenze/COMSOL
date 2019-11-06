@@ -109,9 +109,8 @@ int Analyse() {
             gr->GetYaxis()->SetTitle( "Gain" );
             gr->GetHistogram()->GetXaxis()->SetLimits(310, 450);
             gr->GetHistogram()->SetMinimum(2.e2);   // along Y axis
-            gr->GetHistogram()->SetMaximum(3.e4);   // along Y axis
+            gr->GetHistogram()->SetMaximum(8.e4);   // along Y axis
             gr->SetMarkerStyle(20);
-        gr->GetXaxis()->SetLimits(315, 445);
             gr->Draw("ACP");
 
             // Fit the gain curve with an exponential function
