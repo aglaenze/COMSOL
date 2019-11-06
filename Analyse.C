@@ -49,8 +49,7 @@ int Analyse() {
     time_t t0 = time(NULL);
     gStyle->SetOptStat(0);
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
- 
-    
+     
     if (gainCurve) {
         // Get number of files to look at
         //Int_t num = 3;
