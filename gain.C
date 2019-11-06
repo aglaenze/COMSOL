@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
 
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
-    int nBins = int(0.4*TMath::Exp(0.0352*hvMesh));
+    int nBins = int(0.05*TMath::Exp(0.0352*hvMesh));
     TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", int(nBins/4.), 0, nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
