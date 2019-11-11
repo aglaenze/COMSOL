@@ -7,6 +7,8 @@
 #include <TH1F.h>
 #include <TFile.h>
 
+#include "parameters.C"
+
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/ComponentBase.hh"
 #include "Garfield/ViewField.hh"
@@ -24,43 +26,25 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
-    //______________________
     // variables
+    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     //____________________
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
-    // Set up detector geometry
-    //GeometrySimple* geo = new GeometrySimple();
-    const double pitch = 0.0025;    // cm
-    const double damp = 0.0128;
-    //const double ddrift = 0.5;      // cm
-    //const double radius = 0.0004;   // cm
-    const int periodicityNum = 5000;
-    double width = periodicityNum * pitch;
-    //double depth = periodicityNum * pitch;
-    
     if (argc < 2) {
         std::cout << "Please enter a HVmesh like this: ./plotField $hvMesh " << std::endl;
         return 0;
     }
     const int hvMesh = atoi(argv[1]);
-    
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield_%dV.txt", hvMesh);
-    // Load the field map.
-    ComponentComsol* fm = new ComponentComsol();
-    time_t t00 = time(NULL);
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    fm->PrintMaterials();
-    time_t t1 = time(NULL);
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    std::cout << "Time for initialisation = " << t1-t00 << "s." << std::endl << std::endl << std::endl << std::endl;
-    fm->PrintRange();
-    
+
+      // Make a gas medium.
+      MediumMagboltz* gas = InitiateGas(gasName);
+      // Load field map
+      ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+
     
     const bool plotField = true;
     if (plotField) {

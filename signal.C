@@ -9,6 +9,7 @@
 #include <TFile.h>
 
 #include "_Utils.C"
+#include "parameters.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
@@ -28,7 +29,7 @@ int main(int argc, char * argv[]) {
     
     //______________________
     // variables
-    std::string gasName = "Ar"; // Ar or Ne
+    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     //____________________
     
@@ -43,56 +44,11 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
-    // Set up detector geometry
-    const double pitch = 0.0025;    // cm
-    const double damp = 0.0128;
-    const double ddrift = 0.5;      // cm
-    const double radius = 0.0004;   // cm
-    const int periodicityNum = 5000;
-    double width = periodicityNum * pitch;
-    double depth = periodicityNum * pitch;
-        
     // Make a gas medium.
-    MediumMagboltz* gas = new MediumMagboltz();
-    double rPenning;
-    const double lambdaPenning = 0.;    // parameter for sampling the distance of the Penning electron with respect to the excitation
-    const std::string path = getenv("GARFIELD_HOME");
-    if (gasName=="Ar") {
-        gas->SetComposition("Ar", 95., "iC4H10", 5.);
-        rPenning = 0.45;
-        gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
-        gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
-    }
-    else if (gasName=="Ne") {
-        gas->SetComposition("Ne", 90., "CF4", 10.);
-        rPenning = 0.6;
-        gas->EnablePenningTransfer(rPenning, lambdaPenning, "ne");
-        gas->LoadIonMobility(path + "/Data/IonMobility_Ne+_Ne.txt");
-    }
-    else {std::cout << "What gas??" << std::endl; return 0;}
-    //return 0;
-    gas->SetTemperature(293.15);
-    gas->SetPressure(AtmosphericPressure);
-    gas->EnableDrift();
-
-    //gas->EnablePenningTransfer(rPenning, lambdaPenning);
-    
-    // Load the field map.
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield_%dV.txt", hvMesh);
-    ComponentComsol* fm = new ComponentComsol();
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    //fm->SetWeightingField("COMSOL_data/base/wfieldmesh.txt", "V2");
-    std::cout << "\n\nWP = " << fm->WeightingPotential(pitch/2, pitch/2., damp+pitch, "V2") << std::endl;
-    
-    fm->PrintMaterials();
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    fm->PrintRange();
-    
-    fm->SetMedium(0, gas);
-    
-    fm->PrintMaterials();
+    MediumMagboltz* gas = InitiateGas(gasName);
+    // Load field map
+    ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+        
     
     // Make a sensor.
     Sensor* sensor = new Sensor();

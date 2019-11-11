@@ -13,6 +13,7 @@ Note that the spectrum shape only depends on the detector geometry
 #include <TH1F.h>
 
 #include "_Utils.C"
+#include "parameters.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
@@ -32,6 +33,11 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
+    //______________________
+    // variables
+    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    //____________________
+    
     time_t t0 = time(NULL);
     
     TApplication app("app", &argc, argv);
@@ -39,6 +45,7 @@ int main(int argc, char * argv[]) {
     
     // Set up detector geometry
     GeometrySimple* geo = new GeometrySimple();
+    /*
     const double pitch = 0.0025;    // cm
     //const double damp = 0.0128;
     const double ddrift = 0.5;      // cm
@@ -47,16 +54,11 @@ int main(int argc, char * argv[]) {
     const int periodicityNum = 5000;
     double width = periodicityNum * pitch;
     double depth = periodicityNum * pitch;
+     */
     
     
-    // Make a gas medium.
-    std::string gasName = "Ne"; //Ar or Ne
-    MediumMagboltz* gas = new MediumMagboltz();
-    if (gasName=="Ne") gas->SetComposition("Ne", 90., "CF4", 10.);
-    else if (gasName=="Ar") gas->SetComposition("Ar", 95., "iC4H10", 5.);
-    else {std::cout << "What gas??" << std::endl; return 0;}
-    gas->SetTemperature(293.15);
-    gas->SetPressure(AtmosphericPressure);
+
+    MediumMagboltz* gas = InitiateGas(gasName);
     
     /*
     // Create a cylinder in which the x-rays can convert.
@@ -134,7 +136,8 @@ int main(int argc, char * argv[]) {
         std::cout << "\nnPrimary = " << nPrimary << " in " << gasName << std::endl;
         
         std::cout << "\nCalculations yield:" << std::endl;
-        std::cout << "nPrimary = 228 in Ar" << std::endl;
+        std::cout << "nPrimary = 228 in Ar-iC4H10 (90/10)" << std::endl;
+        std::cout << "nPrimary = 222 in Ar-CO2 (93/7)" << std::endl;
         std::cout << "nPrimary = 157 in Ne" << std::endl;
     }
     

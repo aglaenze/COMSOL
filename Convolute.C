@@ -10,6 +10,7 @@
 #include <TMath.h>
 
 #include "_Utils.C"
+#include "parameters.C"
 
 #include <cmath>
 
@@ -21,7 +22,7 @@ int Convolute() {
     
     //______________________
     // variables
-    std::string gasName = "Ar"; // Ar or Ne
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     //____________________
     
@@ -49,11 +50,8 @@ int Convolute() {
         std::cout << "Number of entries in hGain = " << nGain << std::endl;
         std::cout << "Number of entries in hFe = " << nFe << std::endl;
         
-        Int_t nPrimaryTh;
-        if (gasName=="Ar") nPrimaryTh = 225;
-        else if (gasName=="Ne") nPrimaryTh = 169; //157 d'apres les calculs...
-        else {std::cout << "What gas??" << std::endl; return 0;}
-        
+        Int_t nPrimaryTh = GetPrimary(gasName);
+
         const Int_t nBins = int(nGain/6);
         TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, hGain->GetMaximumBin()*40);
         

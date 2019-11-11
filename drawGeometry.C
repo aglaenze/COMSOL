@@ -5,6 +5,7 @@
 #include <TApplication.h>
 #include <TCanvas.h>
 
+#include "parameters.C"
 
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/Plotting.hh"
@@ -28,15 +29,6 @@ int main(int argc, char * argv[]) {
     
     // Set up detector geometry
     GeometrySimple* geo = new GeometrySimple();
-    const double pitch = 0.0025;    // cm
-    const double damp = 0.0128;
-    const double ddrift = 0.5;      // cm
-    //const double dmylar = 3.;       // cm
-    const double radius = 0.0004;   // cm
-    const int periodicityNum = 500;
-    double width = periodicityNum * pitch;
-    double depth = periodicityNum * pitch;
-    //double height = 3*damp;
     
     //double meshHV = -550.;
     
