@@ -44,6 +44,11 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
+    //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
     // Load field map

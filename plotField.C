@@ -6,6 +6,7 @@
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TFile.h>
+#include <TMath.h>
 
 #include "parameters.C"
 
@@ -28,7 +29,7 @@ int main(int argc, char * argv[]) {
     
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 4;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -40,6 +41,11 @@ int main(int argc, char * argv[]) {
     }
     const int hvMesh = atoi(argv[1]);
 
+    //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    
       // Make a gas medium.
       MediumMagboltz* gas = InitiateGas(gasName);
       // Load field map
@@ -66,17 +72,21 @@ int main(int argc, char * argv[]) {
         ViewField* vf = new ViewField();
         vf->SetComponent(fm);
         //vf->SetPlane(0, -1, 0, 0, 0.5*pitch, 0);
-        vf->SetPlane(0, -1, 0, 0, 0, 0);
-        vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
+        //vf->SetPlane(0, -1, 0, 0, 0, 0);
+        vf->SetPlane(1, -1, 0, 0, 0, 0);
+        vf->Rotate(TMath::Pi()*1.5);
+        //vf->SetPlane(-1, -1, 0, 0.5*pitch, 0.5*pitch, 0);
+        //vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
+        vf->SetArea(pitch, 0, 3*pitch, damp+pitch);
         vf->SetNumberOfContours(70);
         vf->SetNumberOfSamples2d(40, 40);
-        TCanvas* c2 = new TCanvas();
-        c2->SetLeftMargin(0.2);
+        TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
+        c2->SetLeftMargin(0.1);
         vf->SetCanvas(c2);
-        vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
+        //vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
+        vf->PlotContour("e");
         //vf->PlotContour("v");
-        vf->PlotContour("v");
-        //c2->SaveAs("Figures/potentialZoom.pdf");
+        //c2->SaveAs(Form("Figures/potentialZoom_model%d.pdf", modelNum));
         c2->SaveAs(Form("Figures/fieldZoom_model%d.pdf", modelNum));
     }
     

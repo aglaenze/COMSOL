@@ -31,7 +31,8 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 4;
     //____________________
     
     time_t t0 = time(NULL);
@@ -45,6 +46,11 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
+    //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+
     
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
@@ -64,7 +70,7 @@ int main(int argc, char * argv[]) {
     sensor.AddComponent(fm);
     sensor.SetArea(0, 0, 0, width, depth, ddrift);
     //sensor.SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
-    
+
     /*
     // To look at the avalanche
     ViewDrift* driftView = new ViewDrift();
@@ -84,10 +90,13 @@ int main(int argc, char * argv[]) {
     double totalIonBackNum = 0;
     
     // Create ROOT histograms of the signal and a file in which to store them.
-    TH1F* hIbf = new TH1F("hIbf", "hIbf", 100, 0, 10);
+    TH1F* hIbf = new TH1F("hIbf", "hIbf", 10000, 0, 100);
     //TH1::StatOverflows(true);
     hIbf->SetXTitle("IBF (%)");
-        hIbf->SetYTitle("# counts");
+    hIbf->SetYTitle("# counts");
+    TH1F* hTransparency = new TH1F("hTransparency", "hTransparency", 1000, 0., 1.);
+    hTransparency->SetYTitle("# counts");
+    hTransparency->SetXTitle("fraction of e- that passed");
     
     //TH1F* hze1 = new TH1F("hze1", "hze1", 10000, 0, damp);
 
@@ -96,11 +105,15 @@ int main(int argc, char * argv[]) {
     //const char* name = Form("rootFiles/%s/model%d/test.root", gasName.c_str(), modelNum);
     TFile* f = new TFile(name, "RECREATE");
     
-    const int nEvents = 20;
+    const int nEvents = 1000;
     int division = int(nEvents/20);
     
     for (unsigned int i = 0; i < nEvents; ++i) {
-        if (i % 100 == 0) std::cout << "\n\n\n\n" << i << "/" << nEvents << "\n";
+        if (i % 100 == 0) {
+            std::cout << "\n\n\n\n" << i << "/" << nEvents << "\n";
+            time_t t = time(NULL);
+            PrintTime(t0, t);
+        }
         // Initial coordinates of the photon.
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;
@@ -115,27 +128,34 @@ int main(int argc, char * argv[]) {
         if (ne2 < 2) continue;
         //hElectrons->Fill(ne2);
         // to look at avalanche
-            const int np = aval->GetNumberOfElectronEndpoints();
-            double xe1, ye1, ze1, te1, e1;
-            double xe2, ye2, ze2, te2, e2;
-            double xi1, yi1, zi1, ti1;
-            double xi2, yi2, zi2, ti2;
-            int status;
-            double ionBackNum = 0;
-            for (int j = np; j--;) {
-                aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-                //std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
-                //std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
-                drift->DriftIon(xe1, ye1, ze1, te1);
-                //hze1->Fill(ze1);
-                drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-                //std::cout << "arrival of the ion in z : " << zi2 << std::endl;
-                if (zi2 > 3*damp) ionBackNum+=1;
+        const int np = aval->GetNumberOfElectronEndpoints();
+        double xe1, ye1, ze1, te1, e1;
+        double xe2, ye2, ze2, te2, e2;
+        double xi1, yi1, zi1, ti1;
+        double xi2, yi2, zi2, ti2;
+        int status;
+        int ionBackNum = 0;
+        int electronsAboveSA = 0;
+        int electronsBelowSA = 0;
+        for (int j = np; j--;) {
+            aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+            if (ze1 > 0.0147) {
+                electronsAboveSA++;
+                if (ze2 < 0.008) electronsBelowSA++;
             }
-            hIbf->Fill( ionBackNum*100./ni);
-        if (i % division == 0) hIbf->Write("", TObject::kOverwrite);
-            totalIonBackNum += ionBackNum;
-            totalIonNum += ni;
+            //std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
+            //std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
+            drift->DriftIon(xe1, ye1, ze1, te1);
+            //hze1->Fill(ze1);
+            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            //std::cout << "arrival of the ion in z : " << zi2 << std::endl;
+            if (zi2 > 3*damp) ionBackNum+=1;
+        }
+        hIbf->Fill( ionBackNum*100./ni);
+        hTransparency->Fill(electronsBelowSA*1./electronsAboveSA);
+        if (i % division == 0) {hIbf->Write("", TObject::kOverwrite); hTransparency->Write("", TObject::kOverwrite);}
+        totalIonBackNum += ionBackNum;
+        totalIonNum += ni;
     }
     //hze1->Write();
 

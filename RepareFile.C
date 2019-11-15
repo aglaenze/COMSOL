@@ -10,13 +10,15 @@
 
 int RepareFile() {
     
-    TString path = "rootFiles/Ar/model1/";
-    TString fileName = path + "ibf_420V.root";
+    TString path = "rootFiles/Ar-CO2/model4/";
+    //TString fileName = path + "ibf_420V.root";
+    TString fileName = path + "gain_350V.root";
 
 // Open broken file to get the histogram
     TFile* f = TFile::Open(fileName, "READ");
     //TH1F* h = (TH1F*)f->Get("hFeElectrons");
-    TH1F* h = (TH1F*)f->Get("hIbf");
+    //TH1F* h = (TH1F*)f->Get("hIbf");
+    TH1F* h = (TH1F*)f->Get("hElectrons");
 
 // Open a new file to copy the histogram there and close it
     TFile* ff = new TFile(fileName, "RECREATE");

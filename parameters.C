@@ -15,25 +15,29 @@
 #include "Garfield/Random.hh"
 #include "Garfield/ComponentComsol.hh"
 
+const int modelNum = 2;
 
 // Set up detector geometry
-const double pitch = 0.0025;    // cm
-const double damp = 0.0128;
-const double ddrift = 0.5;      // cm
-const double dmylar = 3.;       // cm
-const double radius = 0.0004;   // cm
-const int periodicityNum = 5000;
-double width = periodicityNum * pitch;
-double depth = periodicityNum * pitch;
 
-
-Int_t GetPrimary(std::string gasName) {
-    Int_t nPrimaryTh;
-    if (gasName=="Ar-iC4H10") nPrimaryTh = 225;
-    else if (gasName=="Ne") nPrimaryTh = 169;       //157 d'apres les calculs...
-    else if (gasName=="Ar-CO2") nPrimaryTh = 218;   //222 d'apres les calculs...
-    else {std::cout << "What gas??" << std::endl; return 0;}
-    return nPrimaryTh;
+void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddrift, double& dmylar, double& radius, double& pitch, double& width, double& depth) {
+    const double dPA = 0.024 + 0.0027;
+    const double dSA = 0.012;
+    periodicityNum = 5000;
+    if (modelNum < 4) {
+        damp = 0.0128;
+        ddrift = 0.5;      // cm
+        radius = 0.0004;   // cm
+        pitch = 0.0025;    // cm
+    }
+    else {
+        damp = dSA + dPA;
+        radius = 0.0027;   // cm
+        ddrift = 0.3 + damp + radius;  //cm
+        pitch = 0.025;    // cm
+    }
+    dmylar = 3.;       // cm
+    width = periodicityNum * pitch;
+    depth = periodicityNum * pitch;
 }
 
  // Make a gas medium.
@@ -57,9 +61,9 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
     }
     else if (gasName=="Ar-CO2") {
         gas->SetComposition("Ar", 93., "CO2", 7.);
-        rPenning = 0.4;
-        gas->EnablePenningTransfer(rPenning, lambdaPenning, "ne");
-        gas->LoadIonMobility(path + "/Data/IonMobility_Ne+_Ne.txt");
+        rPenning = 0.6;
+        gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
+        gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
     }
     else {std::cout << "What gas??" << std::endl; return 0;}
     gas->SetTemperature(293.15);

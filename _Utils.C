@@ -46,3 +46,12 @@ int GetNumberOfFiles(TString path, TString name) {
     }
 }
 
+Int_t GetPrimary(std::string gasName) {
+    Int_t nPrimaryTh;
+    if (gasName=="Ar-iC4H10") nPrimaryTh = 225;
+    else if (gasName=="Ne") nPrimaryTh = 169;       //157 d'apres les calculs...
+    else if (gasName=="Ar-CO2") nPrimaryTh = 218;   //222 d'apres les calculs...
+    else {std::cout << "What gas??" << std::endl; return 0;}
+    return nPrimaryTh;
+}
+

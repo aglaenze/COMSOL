@@ -45,18 +45,11 @@ int main(int argc, char * argv[]) {
     
     // Set up detector geometry
     GeometrySimple* geo = new GeometrySimple();
-    /*
-    const double pitch = 0.0025;    // cm
-    //const double damp = 0.0128;
-    const double ddrift = 0.5;      // cm
-    //const double dmylar = 1.;       // cm
-    //const double radius = 0.0004;   // cm
-    const int periodicityNum = 5000;
-    double width = periodicityNum * pitch;
-    double depth = periodicityNum * pitch;
-     */
     
-    
+    //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
 
     MediumMagboltz* gas = InitiateGas(gasName);
     

@@ -10,7 +10,6 @@
 #include <TMath.h>
 
 #include "_Utils.C"
-#include "parameters.C"
 
 #include <cmath>
 
@@ -22,8 +21,9 @@ int Convolute() {
     
     //______________________
     // variables
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    std::string gasName = "Ar-CO2";
+    const int modelNum = 4;
     //____________________
     
     
@@ -39,6 +39,7 @@ int Convolute() {
     
     for (unsigned int k = 0; k < num; ++k) {
         Int_t Vmesh = 320 + k*20;
+        if (modelNum == 4) Vmesh = 350 + k*10;
 
         TString fGainName = path+Form("gain_%dV", Vmesh);
         TFile fGain(fGainName+".root");
@@ -54,6 +55,8 @@ int Convolute() {
 
         const Int_t nBins = int(nGain/6);
         TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, hGain->GetMaximumBin()*40);
+        
+        std::cout << "maximum bin = " << hGain->GetMaximumBin()*40 << std::endl;
         
         for (unsigned int i = 0; i < 100000; ++i) {
             Int_t nPrim = hFe->GetRandom();

@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 4;
     //____________________
     
     time_t t0 = time(NULL);
@@ -43,15 +43,26 @@ int main(int argc, char * argv[]) {
         return 0;
     }
      */
-    if (argc < 2) {
+    if (argc < 2 && modelNum < 4 ) {
         std::cout << "Please enter HVmesh like this: ./gain $hvMesh " << std::endl;
         return 0;
     }
+    /*
+    else if (argc < 3 && modelNum == 4 ) {
+        std::cout << "Please enter HVmesh like this: ./gain $hvMesh_down $hvMesh_up " << std::endl;
+        return 0;
+    }
+     */
     
     const int hvMesh = atoi(argv[1]);
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
+    
+        //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
 
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
@@ -70,7 +81,8 @@ int main(int argc, char * argv[]) {
 
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
-    int nBins = int(0.05*TMath::Exp(0.0352*hvMesh));
+    //int nBins = int(0.05*TMath::Exp(0.0352*hvMesh));
+    int nBins = int(0.5*TMath::Exp(0.0352*hvMesh));
     TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", int(nBins/4.), 0, nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
@@ -81,11 +93,16 @@ int main(int argc, char * argv[]) {
     const char* name = Form("rootFiles/%s/model%d/gain_%dV.root", gasName.c_str(), modelNum, hvMesh);
     TFile* f = new TFile(name, "RECREATE");
     
-    const int nEvents = 12000;
+    //const int nEvents = 12000;
+    const int nEvents = 5000;
     int division = int(nEvents/20);
     
     for (unsigned int i = 0; i < nEvents; ++i) {
-        if (i % 100 == 0) std::cout << "\n\n\n\n" << i << "/" << nEvents << "\n";
+        if (i % 100 == 0) {
+            std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
+            time_t t = time(NULL);
+            PrintTime(t0, t);            
+        }
         // Initial coordinates of the photon.
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;

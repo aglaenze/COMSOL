@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 4;
     //____________________
     
     time_t t0 = time(NULL);
@@ -43,6 +43,11 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
+    //Load geometry parameters
+        //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
     
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
@@ -86,10 +91,8 @@ int main(int argc, char * argv[]) {
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
         int ne2 = 0, ni = 0;
         aval->GetAvalancheSize(ne2, ni);
-        if (ne2==1) i--;
         std::cout << "\nAvalanche size = " << ne2 << std::endl;
         if (ne2==1) {i--; continue;}
-        //std::cout << "where is the problem??" << std::endl;
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
         double xe2, ye2, ze2, te2, e2;
@@ -98,9 +101,13 @@ int main(int argc, char * argv[]) {
         int status;
         for (int j = np; j--;) {
             aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1,
-                                      xe2, ye2, ze2, te2, e2, status);
-            drift->DriftIon(xe1, ye1, ze1, te1);
-            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            xe2, ye2, ze2, te2, e2, status);
+            if (ze2 < 0.012){
+            std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
+            std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
+            }
+            //drift->DriftIon(xe1, ye1, ze1, te1);
+            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }
     
@@ -134,7 +141,7 @@ int main(int argc, char * argv[]) {
         vFE->SetYaxisTitle("z (cm)");
         std::cout << "Plotting..." << std::endl;
         vFE->Plot();
-        c2->SaveAs(Form("Figures/avalanche2d_%s.pdf", gasName.c_str()));
+        c2->SaveAs(Form("Figures/avalanche2d_%s_model%d.pdf", gasName.c_str(), modelNum));
     }
     
     time_t t1 = time(NULL);
@@ -142,7 +149,7 @@ int main(int argc, char * argv[]) {
     //std::cout << "\n" << nEvents << " events simulated" << std::endl;
     PrintTime(t0, t1);
     
-    app.Run(true);
+    //app.Run(true);
     
     //return 0;
 }

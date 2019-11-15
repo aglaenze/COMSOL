@@ -32,10 +32,14 @@ int main(int argc, char * argv[]) {
     
     //double meshHV = -550.;
     
+        //Load geometry parameters
+    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int periodicityNum = 0;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    
     // Setup a vacuum medium
     MediumMagboltz* m = new MediumMagboltz();
 
-    
     // Set up the bulk
     SolidBox bulk = SolidBox(width/2., depth/2., ddrift/2., width/2., depth/2., ddrift/2.);
     geo->AddSolid(&bulk, m);
