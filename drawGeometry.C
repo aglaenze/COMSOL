@@ -24,6 +24,11 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
+    //______________________
+    // variables
+    const int modelNum = 4;
+    //____________________
+    
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
