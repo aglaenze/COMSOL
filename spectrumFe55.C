@@ -36,6 +36,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 4;
     //____________________
     
     time_t t0 = time(NULL);
@@ -52,6 +53,7 @@ int main(int argc, char * argv[]) {
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
 
     MediumMagboltz* gas = InitiateGas(gasName);
+    //std::cout << "width = " << width << std::endl;
     
     /*
     // Create a cylinder in which the x-rays can convert.
@@ -85,8 +87,8 @@ int main(int argc, char * argv[]) {
     // Histogram
     const int nBins = 500;
     TH1::StatOverflows(true);
-    TH1F hElectrons("hElectrons", "Number of electrons", nBins, -0.5, nBins);
-    const int nEvents = 5000000;
+    TH1F hElectrons("hElectrons", "Number of electrons", nBins, 0., nBins);
+    const int nEvents = 1000000;
     int division = int(nEvents/10);
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) std::cout << i << "/" << nEvents << "\n";

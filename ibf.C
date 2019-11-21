@@ -94,9 +94,9 @@ int main(int argc, char * argv[]) {
     //TH1::StatOverflows(true);
     hIbf->SetXTitle("IBF (%)");
     hIbf->SetYTitle("# counts");
-    TH1F* hTransparency = new TH1F("hTransparency", "hTransparency", 1000, 0., 1.);
-    hTransparency->SetYTitle("# counts");
-    hTransparency->SetXTitle("fraction of e- that passed");
+    TH1F* hTransparencySA = new TH1F("hTransparencySA", "hTransparencySA", 1000, 0., 1.);
+    hTransparencySA->SetYTitle("# counts");
+    hTransparencySA->SetXTitle("fraction of e- that passed");
     
     //TH1F* hze1 = new TH1F("hze1", "hze1", 10000, 0, damp);
 
@@ -126,7 +126,7 @@ int main(int argc, char * argv[]) {
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "Avalanche size = " << ne2 << std::endl;
         if (ne2 < 2) continue;
-        //hElectrons->Fill(ne2);
+        // hElectrons->Fill(ne2);
         // to look at avalanche
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
@@ -152,8 +152,8 @@ int main(int argc, char * argv[]) {
             if (zi2 > 3*damp) ionBackNum+=1;
         }
         hIbf->Fill( ionBackNum*100./ni);
-        hTransparency->Fill(electronsBelowSA*1./electronsAboveSA);
-        if (i % division == 0) {hIbf->Write("", TObject::kOverwrite); hTransparency->Write("", TObject::kOverwrite);}
+        hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
+        if (i % division == 0) {hIbf->Write("", TObject::kOverwrite); hTransparencySA->Write("", TObject::kOverwrite);}
         totalIonBackNum += ionBackNum;
         totalIonNum += ni;
     }

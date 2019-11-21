@@ -37,16 +37,16 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
-    /*
     if (argc < 3) {
         std::cout << "Please enter HVmesh like this: ./gain $hvMesh $gain$i " << std::endl;
         return 0;
     }
-     */
+     /*
     if (argc < 2 && modelNum < 4 ) {
         std::cout << "Please enter HVmesh like this: ./gain $hvMesh " << std::endl;
         return 0;
     }
+    */
     /*
     else if (argc < 3 && modelNum == 4 ) {
         std::cout << "Please enter HVmesh like this: ./gain $hvMesh_down $hvMesh_up " << std::endl;
@@ -55,6 +55,7 @@ int main(int argc, char * argv[]) {
      */
     
     const int hvMesh = atoi(argv[1]);
+    const int saveNum = atoi(argv[2]);
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -82,19 +83,19 @@ int main(int argc, char * argv[]) {
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
     //int nBins = int(0.05*TMath::Exp(0.0352*hvMesh));
-    int nBins = int(0.5*TMath::Exp(0.0352*hvMesh));
-    TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", int(nBins/4.), 0, nBins);
+    int nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
+    TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", nBins, 0, 4*nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
     hElectrons->SetYTitle("# counts");
     
     // Write the histograms to the TFile.
     //const char* name = Form("rootFiles/%s/model%d/gain_%dV_%s.root", gasName.c_str(), modelNum, hvMesh, argv[2]);
-    const char* name = Form("rootFiles/%s/model%d/gain_%dV.root", gasName.c_str(), modelNum, hvMesh);
+    const char* name = Form("rootFiles/%s/model%d/gain_%dV_%d.root", gasName.c_str(), modelNum, hvMesh, saveNum);
     TFile* f = new TFile(name, "RECREATE");
     
-    //const int nEvents = 12000;
-    const int nEvents = 5000;
+    const int nEvents = 12000;
+    //const int nEvents = 5000;
     int division = int(nEvents/20);
     
     for (unsigned int i = 0; i < nEvents; ++i) {
@@ -116,7 +117,21 @@ int main(int argc, char * argv[]) {
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "Avalanche size = " << ne2 << std::endl;
         if (ne2 < 2) continue;
-        hElectrons->Fill(ne2);
+        //hElectrons->Fill(ne2);    // ok for modelNum < 4
+        // need to look at the avalanche for modelNum >= 4
+        const int np = aval->GetNumberOfElectronEndpoints();
+        double xe1, ye1, ze1, te1, e1;
+        double xe2, ye2, ze2, te2, e2;
+        int status;
+        int nWinners = 0;
+        for (int j = np; j--;) {
+            aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+            //std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
+            //std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
+            if (ze2 < 0.01) nWinners++;
+        }
+        std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
+        if (nWinners > 0) hElectrons->Fill(nWinners);
         if (i % division == 0) hElectrons->Write("", TObject::kOverwrite);
     }
     f->Close();
@@ -128,7 +143,7 @@ int main(int argc, char * argv[]) {
         hElectrons->SetFillColor(kBlue + 2);
         hElectrons->SetLineColor(kBlue + 2);
         hElectrons->Draw();
-        c->SaveAs(Form("Gain_%dV_model%d.pdf", hvMesh, modelNum));
+        c->SaveAs(Form("Gain_%dV_model%d_%d.pdf", hvMesh, modelNum, saveNum));
     }
     
     

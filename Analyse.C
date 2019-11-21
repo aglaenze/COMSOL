@@ -9,6 +9,7 @@
 #include <TMath.h>
 
 #include "_Utils.C"
+#include "_Data.C"
 
 
 
@@ -27,9 +28,9 @@ int Analyse() {
     
     //______________________
     // variables
-    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 4;
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 1;
     const bool gainCurve = true;
     const bool drawIbf = false;
     //____________________
@@ -116,7 +117,7 @@ int Analyse() {
             gr->Draw("ACP");
 
             // Fit the gain curve with an exponential function
-            TF1* fExp = new TF1( "FitFunctionExp", FitFunctionExp, 320-5, 320+(num-1)*20+5, 2 );
+            TF1* fExp = new TF1( "FitFunctionExp", FitFunctionExp, hvMeshList[0]-5, hvMeshList[num-1]+5, 2 );
             fExp->SetParName( 0, "const" );
             fExp->SetParName( 1, "slope" );
         
@@ -125,35 +126,16 @@ int Analyse() {
             fExp->Draw("same");
             PutText( 0.2, 0.7, Form( "y_{simulation} = exp( %.3g + %.3g x)", fExp->GetParameter(0), fExp->GetParameter(1) ) );
         
-            // Same with data
-
-            /*
-            // Ne
-             Int_t dataNum = 11;
-             Double_t hvMeshListData[dataNum] = {340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440};
-             Double_t gainListData[dataNum] = {596.076, 751.592, 945.953, 1196.154, 1531.500, 1933.089, 2437.905, 3142.112, 4002.650, 5086.517, 6345.390};
-             Double_t gainErrorListData[dataNum] = {0.281, 0.180, 0.297, 0.302, 0.358, 0.398, 0.495, 0.606, 0.748, 0.916, 1.118};
-             */
-        /*
-            // Ar-iC4H10
-        const Int_t dataNum = 11;
-            Double_t hvMeshListData[dataNum] = {340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440};
-            Double_t gainListData[dataNum] = {1098.851, 1510.038, 2128.435, 3014.917, 4277.629, 6067.106, 8638.780, 12246.708, 17504.688, 25397.665, 36880.590};
-            Double_t gainErrorListData[dataNum] = {0.308, 0.301, 0.501, 0.575, 0.782, 0.824, 1.175, 2.074, 2.602, 5.148, 7.196};
-        */
-        
-        // Ar-CO2
-        const Int_t dataNum = 4;
-        Double_t hvMeshListData[dataNum] = {350, 360, 370, 380};
-        Double_t gainListData[dataNum] = {1074.38, 1346.71, 1656.42, 2174.37};
-        Double_t gainErrorListData[dataNum] = {0., 0., 0., 0.};
-
+        // Same with data
+        const Int_t dataNum = dataQuantity(gasName);
+        Double_t gainListData[dataNum], gainErrorListData[dataNum], hvMeshListData[dataNum];
+        LoadGainData(gasName, dataNum, hvMeshListData, gainListData, gainErrorListData);
         
             TGraphErrors* grd = new TGraphErrors(dataNum, hvMeshListData, gainListData, 0, gainErrorListData);
             grd->SetMarkerStyle(20);
             grd->Draw("CP same");
         
-            TF1* fExp2 = new TF1( "FitFunctionExp2", FitFunctionExp, 335, 445, 2 );
+            TF1* fExp2 = new TF1( "FitFunctionExp2", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
             fExp2->SetParName( 0, "const" );
             fExp2->SetParName( 1, "slope" );
             fExp2->SetLineColor(3);
@@ -243,18 +225,10 @@ int Analyse() {
         tgIBFsignal->SetMarkerColor(3);
         tgIBFsignal->Draw("CP same");
         
-        /*
-        // Ne
-         Int_t dataNum = 11;
-         Double_t hvMeshListIBF1[dataNum]  = {340.000, 350.000, 360.000, 370.000, 380.000, 390.000, 400.000, 410.000, 420.000, 430.000, 440.000};
-         Double_t ionBackFlowCorrectedVect1[dataNum]  = {0.885, 0.858, 0.886, 0.900, 0.914, 0.898, 0.887, 0.866, 0.843, 0.812, 0.773};
-         Double_t ionBackFlowCorrectedErrorVect1[dataNum]  = {0.048, 0.034, 0.025, 0.017, 0.012, 0.009, 0.006, 0.004, 0.003, 0.002, 0.002};
-        */
-        // Ar-iC4H10
-        const Int_t dataNum = 11;
-        Double_t hvMeshListIBF1[dataNum] = {340.000, 350.000, 360.000, 370.000, 380.000, 390.000, 400.000, 410.000, 420.000, 430.000, 440.000};
-        Double_t ionBackFlowCorrectedVect1[dataNum] = {0.881, 0.936, 0.888, 0.886, 0.876, 0.905, 0.876, 0.860, 0.832, 0.794, 0.749};
-        Double_t ionBackFlowCorrectedErrorVect1[dataNum] = {0.076, 0.054, 0.038, 0.027, 0.019, 0.014, 0.009, 0.007, 0.005, 0.003, 0.003};
+     // Same with data
+     const Int_t dataNum = dataQuantity(gasName);
+     Double_t hvMeshListIBF1[dataNum], ionBackFlowCorrectedVect1[dataNum], ionBackFlowCorrectedErrorVect1[dataNum];
+     LoadGainData(gasName, dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1, ionBackFlowCorrectedErrorVect1);
         
         TGraphErrors* tgIBF = new TGraphErrors(dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1, 0, ionBackFlowCorrectedErrorVect1 );
         tgIBF->SetMarkerStyle(20);

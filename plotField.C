@@ -50,7 +50,7 @@ int main(int argc, char * argv[]) {
       MediumMagboltz* gas = InitiateGas(gasName);
       // Load field map
       ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
-
+    //return 0;
     
     const bool plotField = true;
     if (plotField) {
@@ -77,10 +77,11 @@ int main(int argc, char * argv[]) {
         vf->Rotate(TMath::Pi()*1.5);
         //vf->SetPlane(-1, -1, 0, 0.5*pitch, 0.5*pitch, 0);
         //vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
-        vf->SetArea(pitch, 0, 3*pitch, damp+pitch);
+        vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
         vf->SetNumberOfContours(70);
         vf->SetNumberOfSamples2d(40, 40);
         TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
+        //TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
         c2->SetLeftMargin(0.1);
         vf->SetCanvas(c2);
         //vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
@@ -91,7 +92,7 @@ int main(int argc, char * argv[]) {
     }
     
 
-    const bool plotMesh = true;
+    const bool plotMesh = false;
     if (plotMesh) {
         TCanvas* c3 = new TCanvas();
         ViewFEMesh* meshView = new ViewFEMesh();

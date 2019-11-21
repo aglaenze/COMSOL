@@ -54,4 +54,3 @@ Int_t GetPrimary(std::string gasName) {
     else {std::cout << "What gas??" << std::endl; return 0;}
     return nPrimaryTh;
 }
-

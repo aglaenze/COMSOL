@@ -12,7 +12,7 @@ int RepareFile() {
     
     TString path = "rootFiles/Ar-CO2/model4/";
     //TString fileName = path + "ibf_420V.root";
-    TString fileName = path + "gain_350V.root";
+    TString fileName = path + "gain_380V.root";
 
 // Open broken file to get the histogram
     TFile* f = TFile::Open(fileName, "READ");

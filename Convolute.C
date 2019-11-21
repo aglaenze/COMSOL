@@ -34,8 +34,11 @@ int Convolute() {
     TFile fFe(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()));
     TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
      
-    const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
+    const TString path = Form("rootFiles/%s/model%d/r50-fine/", gasName.c_str(), modelNum);
     Int_t num = GetNumberOfFiles(path, "gain");
+    
+    Int_t nPrimaryTh = GetPrimary(gasName);
+    //Int_t nPrimaryTh = 600;
     
     for (unsigned int k = 0; k < num; ++k) {
         Int_t Vmesh = 320 + k*20;
@@ -44,28 +47,30 @@ int Convolute() {
         TString fGainName = path+Form("gain_%dV", Vmesh);
         TFile fGain(fGainName+".root");
         TH1F* hGain = (TH1F*)fGain.Get("hElectrons");
+        //hGain->Rebin(15);
         
         Int_t nGain = hGain->GetEntries();
         Int_t nFe = hFe->GetEntries();
-        //Int_t nFe = 228; // nPrimary for Ar-iC_{4}H_{10} 95/5
         std::cout << "Number of entries in hGain = " << nGain << std::endl;
         std::cout << "Number of entries in hFe = " << nFe << std::endl;
-        
-        Int_t nPrimaryTh = GetPrimary(gasName);
 
-        const Int_t nBins = int(nGain/6);
-        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, hGain->GetMaximumBin()*40);
+        const Int_t nBins = int(nGain/4);
+        Int_t iBinMax = hGain->GetMaximumBin(); // Return location of bin with maximum value in the range
+        Double_t xMax = hGain->GetXaxis()->GetBinCenter(iBinMax);
+        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, xMax*3);
         
-        std::cout << "maximum bin = " << hGain->GetMaximumBin()*40 << std::endl;
+        std::cout << "maximum bin = " << hGain->GetMaximumBin() << std::endl;
         
         for (unsigned int i = 0; i < 100000; ++i) {
-            Int_t nPrim = hFe->GetRandom();
-            //std::cout << "Nprim = " << nPrim << std::endl;
-            Int_t gtot = 0;
+            Int_t nPrimBin = hFe->GetRandom();
+            Int_t nPrim = hFe->GetXaxis()->GetBinCenter(nPrimBin);
+            //std::cout << "\nNprim = " << nPrim << std::endl;
+            Double_t gtot = 0;
             for (unsigned int j = 0; j < nPrim; ++j) {
-                Int_t gain = hGain->GetRandom();
+                Double_t gain = hGain->GetRandom();
+                //Double_t gain = hGain->GetXaxis()->GetBinCenter(gainBin);
+                //std::cout << "gainBin = " << gainBin << std::endl;
                 //std::cout << "gain = " << gain << std::endl;
-                //std::cout << "gtot = " << gtot << std::endl;
                 gtot += gain;
                 //hFeElectrons->Fill(gain);
             }
