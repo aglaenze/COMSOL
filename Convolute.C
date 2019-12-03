@@ -34,19 +34,19 @@ int Convolute() {
     TFile fFe(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()));
     TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
      
-    const TString path = Form("rootFiles/%s/model%d/r50-fine/", gasName.c_str(), modelNum);
+    const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     Int_t num = GetNumberOfFiles(path, "gain");
     
     Int_t nPrimaryTh = GetPrimary(gasName);
     //Int_t nPrimaryTh = 600;
     
     for (unsigned int k = 0; k < num; ++k) {
-        Int_t Vmesh = 320 + k*20;
-        if (modelNum == 4) Vmesh = 350 + k*10;
+        Int_t hvMesh = 320 + k*20;
+        if (modelNum == 4) hvMesh = 350 + k*10;
 
-        TString fGainName = path+Form("gain_%dV", Vmesh);
-        TFile fGain(fGainName+".root");
-        TH1F* hGain = (TH1F*)fGain.Get("hElectrons");
+        TString fGainName = path+Form("gain_%dV", hvMesh);
+        TFile fGain(fGainName + ".root");
+        TH1F* hGain = (TH1F*) fGain.Get("hElectrons");
         //hGain->Rebin(15);
         
         Int_t nGain = hGain->GetEntries();
@@ -57,18 +57,16 @@ int Convolute() {
         const Int_t nBins = int(nGain/4);
         Int_t iBinMax = hGain->GetMaximumBin(); // Return location of bin with maximum value in the range
         Double_t xMax = hGain->GetXaxis()->GetBinCenter(iBinMax);
-        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, xMax*3);
+        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, 0.02*TMath::Exp(0.0352*hvMesh) );
         
         std::cout << "maximum bin = " << hGain->GetMaximumBin() << std::endl;
         
         for (unsigned int i = 0; i < 100000; ++i) {
-            Int_t nPrimBin = hFe->GetRandom();
-            Int_t nPrim = hFe->GetXaxis()->GetBinCenter(nPrimBin);
+            Int_t nPrim = hFe->GetRandom();
             //std::cout << "\nNprim = " << nPrim << std::endl;
             Double_t gtot = 0;
             for (unsigned int j = 0; j < nPrim; ++j) {
                 Double_t gain = hGain->GetRandom();
-                //Double_t gain = hGain->GetXaxis()->GetBinCenter(gainBin);
                 //std::cout << "gainBin = " << gainBin << std::endl;
                 //std::cout << "gain = " << gain << std::endl;
                 gtot += gain;
@@ -87,7 +85,7 @@ int Convolute() {
         //c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
         
         // Write convolution histograms in root files
-        TFile* f = new TFile(path+Form("Fe_spectrum_convoluted_%dV.root", Vmesh), "RECREATE");
+        TFile* f = new TFile(path+Form("Fe_spectrum_convoluted_%dV.root", hvMesh), "RECREATE");
         hFeElectrons->Write();
         f->Close();
     }

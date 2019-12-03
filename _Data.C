@@ -87,8 +87,8 @@ Double_t ionBackFlowCorrectedErrorVect1AriC4H10[11] = {0.076, 0.054, 0.038, 0.02
 
 // Ar-CO2
 Double_t hvMeshListIBF1ArCO2[2] = {0., 0.};
-Double_t ionBackFlowCorrectedVect1CO2[2] = {0., 0.};
-Double_t ionBackFlowCorrectedErrorVect1CO2[2] = {0., 0.};
+Double_t ionBackFlowCorrectedVect1ArCO2[2] = {0., 0.};
+Double_t ionBackFlowCorrectedErrorVect1ArCO2[2] = {0., 0.};
 
 void LoadIbfData(std::string gasName, const Int_t dataNum, Double_t hvMeshListIBF1[], Double_t ionBackFlowCorrectedVect1[], Double_t ionBackFlowCorrectedErrorVect1[]) {
 

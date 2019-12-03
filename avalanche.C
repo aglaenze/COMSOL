@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 4;
+    const int modelNum = 5;
     //____________________
     
     time_t t0 = time(NULL);
@@ -63,8 +63,8 @@ int main(int argc, char * argv[]) {
     // To look at the avalanche
     ViewDrift* driftView = new ViewDrift();
     ViewDrift* driftView2 = new ViewDrift();
-    driftView->SetArea(depth/2. - 10*pitch, depth/2. - 10*pitch, 0, depth/2. + 10*pitch, depth/2. + 10*pitch, damp*3);
-    driftView2->SetArea(depth/2. - 5*pitch, depth/2. - 5*pitch, 0, depth/2. + 5*pitch, depth/2. + 5*pitch, damp*2);
+    driftView->SetArea(-10*pitch, -10*pitch, 0, 10*pitch, 10*pitch, damp*3);
+    driftView2->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
     
     // Create an avalanche object
     AvalancheMicroscopic* aval = new AvalancheMicroscopic();
@@ -79,20 +79,23 @@ int main(int argc, char * argv[]) {
     
     const int nEvents = 1;
     
+    int j = 0;
     for (unsigned int i = 0; i < nEvents; ++i) {
+        j++;
+        if (j==10) break;
+        //std::cout << "hello " << i << "\n\n" << std::endl;
         // Initial coordinates of the electron.
-        double x0 = width/2. + RndmUniform() * pitch;
-        //double y0 = RndmUniform() * depth;
-        double y0 = depth/2. + RndmUniform() * pitch;
+        double x0 = RndmUniform() * pitch;
+        double y0 = RndmUniform() * depth;
         //double z0 = 2*damp + (ddrift-2*damp)*RndmUniform();
-        double z0 = 2*damp;
+        double z0 = 0.4;
         double t0 = 0;
         double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
         int ne2 = 0, ni = 0;
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "\nAvalanche size = " << ne2 << std::endl;
-        if (ne2==1) {i--; continue;}
+        if (ne2 < 100) {i--; continue;}
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
         double xe2, ye2, ze2, te2, e2;
@@ -111,7 +114,7 @@ int main(int argc, char * argv[]) {
         }
     }
     
-    const bool plotDrift = true;
+    const bool plotDrift = false;
     if (plotDrift) {
         TCanvas* c1 = new TCanvas();
         driftView->SetCanvas(c1);
@@ -122,10 +125,11 @@ int main(int argc, char * argv[]) {
         
     // Set up the object for FE mesh visualization.
     ViewFEMesh* vFE = new ViewFEMesh();
-    vFE->SetArea(depth/2. - 5*pitch, depth/2. - 5*pitch, 0, depth/2. + 5*pitch, depth/2. + 5*pitch, damp*2);
+    //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
+    vFE->SetArea(-0.2, -0.2, 0,  0.2, 0.2, 0.4);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
-    vFE->SetPlane(0, -1, 0, width/2., depth/2., damp);
+    vFE->SetPlane(0, -1, 0, 0, 0, damp);
     vFE->SetFillMesh(true);
     const bool plotDrift2 = true;
     if (plotDrift2) {

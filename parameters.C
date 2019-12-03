@@ -28,12 +28,19 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
         radius = 0.0004;   // cm
         pitch = 0.0025;    // cm
     }
-    else {
+    else if (modelNum == 4) {
         damp = dSA + dPA;
         radius = 0.0027;   // cm
         ddrift = 0.3 + damp + radius;  //cm
         pitch = 0.025;    // cm
     }
+    else if (modelNum == 5) {
+        damp = 0.0120;
+        radius = 0.0009;   // cm
+        ddrift = 0.5182;  //cm
+        pitch = 0.0063;    // cm
+    }
+    else {std::cout << "Model num?" << std::endl; return;}
     dmylar = 3.;       // cm
     width = periodicityNum * pitch;
     depth = periodicityNum * pitch;
@@ -59,10 +66,13 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
         gas->LoadIonMobility(path + "/Data/IonMobility_Ne+_Ne.txt");
     }
     else if (gasName=="Ar-CO2") {
-        gas->SetComposition("Ar", 93., "CO2", 7.);
+        //gas->SetComposition("Ar", 93., "CO2", 7.);
+        gas->SetComposition("Ar", 90., "CO2", 10.);
+        //rPenning = 0.5;
         rPenning = 0.4;
         gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
         gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
+        //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
     }
     else {std::cout << "What gas??" << std::endl; return 0;}
     gas->SetTemperature(293.15);

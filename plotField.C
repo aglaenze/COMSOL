@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
     
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 4;
+    const int modelNum = 5;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -52,30 +52,26 @@ int main(int argc, char * argv[]) {
       ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
     //return 0;
     
+    ViewField* vf = new ViewField();
+    vf->SetComponent(fm);
+    if (modelNum == 4) {vf->SetPlane(1, -1, 0, 0, 0, 0); vf->Rotate(TMath::Pi()*1.5);}
+    else if (modelNum == 5) vf->SetPlane(0, -1, 0, 0, 0.5*pitch, 0);
+    else vf->SetPlane(0, -1, 0, 0, 0, 0);
+    vf->SetVoltageRange(-hvMesh*1., 0);
+    
     const bool plotField = true;
     if (plotField) {
-        ViewField* fieldView = new ViewField();
-        fieldView->SetComponent(fm);
-        //fieldView->SetVoltageRange(-600., 0.);
-        fieldView->SetPlane(0., -1., 0., 0., 0., 0.);
-        fieldView->SetArea(0, 0, width, 3*damp);
-        //fieldView->SetVoltageRange(-hvMesh*1.2, 0);
+        //vf->SetVoltageRange(-600., 0.);
+        vf->SetArea(0, 0, width, 3*damp);
         TCanvas* c1 = new TCanvas("cf", "Potential view", 1200, 600);
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
-        fieldView->SetCanvas(c1);
-        fieldView->PlotContour();
+        vf->SetCanvas(c1);
+        vf->PlotContour();
         c1->SaveAs(Form("Figures/potential_model%d.pdf", modelNum));
     }
     
     const bool zoom = true;
     if (zoom) {
-        ViewField* vf = new ViewField();
-        vf->SetComponent(fm);
-        //vf->SetPlane(0, -1, 0, 0, 0.5*pitch, 0);
-        //vf->SetPlane(0, -1, 0, 0, 0, 0);
-        vf->SetPlane(1, -1, 0, 0, 0, 0);
-        vf->Rotate(TMath::Pi()*1.5);
-        //vf->SetPlane(-1, -1, 0, 0.5*pitch, 0.5*pitch, 0);
         //vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
         vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
         vf->SetNumberOfContours(70);
@@ -86,9 +82,9 @@ int main(int argc, char * argv[]) {
         vf->SetCanvas(c2);
         //vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
         vf->PlotContour("e");
-        //vf->PlotContour("v");
-        //c2->SaveAs(Form("Figures/potentialZoom_model%d.pdf", modelNum));
         c2->SaveAs(Form("Figures/fieldZoom_model%d.pdf", modelNum));
+        vf->PlotContour("v");
+        c2->SaveAs(Form("Figures/potentialZoom_model%d.pdf", modelNum));
     }
     
 
