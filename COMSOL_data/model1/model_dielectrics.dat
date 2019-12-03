@@ -1,6 +1,0 @@
-m_nMaterials    //nombre de materiaux utilises
-for (unsigned int i = 0; i < m_nMaterials; ++i) { fmplist >> newMaterial.eps; } //toutes les permittivites dielectriques
-d2msize // nombre de domaines dans COMSOL
-for (int i = 0; i < d2msize; ++i) {
-    domain;     //numero de domaine
-    domain2material[domain];}   //numero de materiel qui correspond (le i-eme)
