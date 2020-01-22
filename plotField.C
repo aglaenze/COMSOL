@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
     
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 5;
+    const int modelNum = 6;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -57,23 +57,28 @@ int main(int argc, char * argv[]) {
     if (modelNum == 4) {vf->SetPlane(1, -1, 0, 0, 0, 0); vf->Rotate(TMath::Pi()*1.5);}
     else if (modelNum == 5) vf->SetPlane(0, -1, 0, 0, 0.5*pitch, 0);
     else vf->SetPlane(0, -1, 0, 0, 0, 0);
-    vf->SetVoltageRange(-hvMesh*1., 0);
+    //vf->SetVoltageRange(-hvMesh*1., 0);
+    vf->SetVoltageRange(-550, 0);
     
     const bool plotField = true;
     if (plotField) {
         //vf->SetVoltageRange(-600., 0.);
-        vf->SetArea(0, 0, width, 3*damp);
+        //vf->SetArea(0, 0, width, 3*damp);
+        vf->SetArea(0, 0, width, 3*damp+0.2);
         TCanvas* c1 = new TCanvas("cf", "Potential view", 1200, 600);
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
         vf->PlotContour();
         c1->SaveAs(Form("Figures/potential_model%d.pdf", modelNum));
+        vf->PlotContour("e");
+        c1->SaveAs(Form("Figures/field_model%d.pdf", modelNum));
     }
     
     const bool zoom = true;
     if (zoom) {
         //vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
-        vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
+        //vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
+        vf->SetArea(pitch, 0.2120-pitch, 5*pitch, 0.2120+4*pitch);
         vf->SetNumberOfContours(70);
         vf->SetNumberOfSamples2d(40, 40);
         TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);

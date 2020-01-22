@@ -22,8 +22,8 @@ int Convolute() {
     //______________________
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-CO2";
-    const int modelNum = 4;
+    std::string gasName = "Ar-iC4H10";
+    const int modelNum = 1;
     //____________________
     
     

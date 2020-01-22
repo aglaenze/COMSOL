@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 5;
+    const int modelNum = 6;
     //____________________
     
     time_t t0 = time(NULL);
@@ -88,7 +88,7 @@ int main(int argc, char * argv[]) {
         double x0 = RndmUniform() * pitch;
         double y0 = RndmUniform() * depth;
         //double z0 = 2*damp + (ddrift-2*damp)*RndmUniform();
-        double z0 = 0.4;
+        double z0 = 0.3;
         double t0 = 0;
         double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
@@ -103,16 +103,19 @@ int main(int argc, char * argv[]) {
         double xi2, yi2, zi2, ti2;
         int status;
         for (int j = np; j--;) {
-            aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1,
-            xe2, ye2, ze2, te2, e2, status);
+            aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+            /*
             if (ze2 < 0.012){
             std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
             std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             }
-            //drift->DriftIon(xe1, ye1, ze1, te1);
-            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+             */
+            drift->DriftIon(xe1, ye1, ze1, te1);
+            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }
+    
+    return 0;
     
     const bool plotDrift = false;
     if (plotDrift) {
@@ -126,11 +129,13 @@ int main(int argc, char * argv[]) {
     // Set up the object for FE mesh visualization.
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
-    vFE->SetArea(-0.2, -0.2, 0,  0.2, 0.2, 0.4);
+    //vFE->SetArea(-5*pitch, -5*pitch, 0.2-2*pitch,  5*pitch, 5*pitch, 0.2+8*pitch);
+    vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
-    vFE->SetPlane(0, -1, 0, 0, 0, damp);
-    vFE->SetFillMesh(true);
+    //vFE->SetPlane(0, -1, 0, 0, 0, damp);
+    vFE->SetPlane(0, -1, 0, 0, 0, 0.2);
+    vFE->SetFillMesh(false);
     const bool plotDrift2 = true;
     if (plotDrift2) {
         TCanvas* c2 = new TCanvas();
@@ -138,7 +143,7 @@ int main(int argc, char * argv[]) {
         //for (unsigned int i = 0; i < nMaterials; ++i) vFE->SetColor(i, kGray+i);
         //vFE->SetColor(0, kWhite);
         //vFE->SetColor(0, kYellow + 3);
-        vFE->SetColor(1, kGray);
+        //vFE->SetColor(1, kGray);
         //vFE->SetColor(2, kYellow + 3);
         vFE->EnableAxes();
         vFE->SetXaxisTitle("x (cm)");
@@ -155,7 +160,7 @@ int main(int argc, char * argv[]) {
     
     //app.Run(true);
     
-    //return 0;
+    return 0;
 }
 
 

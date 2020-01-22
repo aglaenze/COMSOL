@@ -28,11 +28,11 @@ int Analyse() {
     
     //______________________
     // variables
-    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 4;
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 1;
     const bool gainCurve = true;
-    const bool drawIbf = false;
+    const bool drawIbf = true;
     //____________________
 
     time_t t0 = time(NULL);
@@ -56,7 +56,20 @@ int Analyse() {
             TString fileName = Form("rootFiles/%s/model%d/Fe_spectrum_convoluted_%dV.root", gasName.c_str(), modelNum, hvMesh);
             TFile* fGain = TFile::Open(fileName, "READ");
             TH1F* hGain = (TH1F*)fGain->Get("hFeElectrons");
+            /*
+            int nBins = hGain1->GetNbinsX();
+            Double_t xMaxh = hGain1->GetXaxis()->GetBinCenter( nBins);
+            TH1F* hGain = new TH1F("", "", 40000*nBins/xMaxh, 0, 40000 );
+            //std::cout << hGain1->GetEntries() << std::endl;
+            for (int i=0; i<hGain1->GetEntries(); i++) {
+                Double_t value = hGain1->GetBinContent( i );
+                Double_t x = hGain1->GetXaxis()->GetBinCenter( i);
+                hGain->Fill(x, value);
+            }
+             */
             hGain->SetTitle(Form("Number of secondary electrons for V_{mesh} = %d V with a simulated Fe source", hvMesh));
+            hGain->Scale(1/hGain->GetMaximum());
+            hGain->SetMaximum(1.2);
             //hGain->Rebin(8);
             //hGain->GetXaxis()->SetRangeUser(2, 10000);
             hGain->SetLineColor(kBlue + 2);
@@ -64,8 +77,8 @@ int Analyse() {
             Int_t iBinMax = hGain->GetMaximumBin();
             Int_t xMax = hGain->GetXaxis()->GetBinCenter( iBinMax );
             
-            Int_t fitRangeMin = xMax - 1.0 * hGain->GetRMS();
-            Int_t fitRangeMax = xMax + 1.0 * hGain->GetRMS();
+            Int_t fitRangeMin = xMax - 0.6 * hGain->GetRMS();
+            Int_t fitRangeMax = xMax + 0.6 * hGain->GetRMS();
 
             TF1* f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
             f->SetParNames("Mean", "Sigma", "Amplitude");
@@ -75,12 +88,14 @@ int Analyse() {
                         
             c2->cd(k+1);
             hGain->GetXaxis()->SetRangeUser(0, xMax + 3*hGain->GetRMS());
-            hGain->Draw();
+            //hGain->GetXaxis()->SetRangeUser(0, 40000);
+            hGain->Draw("hist");
             f->Draw("same");
             hvMeshList[k] = hvMesh;
             gainList[k] = f->GetParameter(0);
             gainErrorList[k] = f->GetParError(0);
             //std::cout << "Gain = " << gainList[k] << std::endl;
+            //c2->SaveAs(Form("Figures/gains_%s_model%d_%d.pdf", gasName.c_str(), modelNum, hvMesh));
         }
         c2->SaveAs(Form("Figures/gains_%s_model%d.pdf", gasName.c_str(), modelNum));
 
@@ -159,7 +174,7 @@ int Analyse() {
             f->SetParNames("Mean", "Sigma", "Amplitude");
             f->SetParameters(hIbf->GetMean(), hIbf->GetRMS(), hIbf->GetMaximum());
             hIbf->Fit(f, "0");
-            hIbf->Rebin(2);
+            //hIbf->Rebin(2);
             c4->cd(k+1);
             hIbf->Draw();
             f->Draw("same");
@@ -204,12 +219,12 @@ int Analyse() {
         TGraph* tgIBFsignal = new TGraph(numS, hvMeshListS, ibfSignalList );
         tgIBFsignal->SetMarkerStyle(20);
         tgIBFsignal->SetMarkerColor(3);
-        tgIBFsignal->Draw("CP same");
+        //tgIBFsignal->Draw("CP same");
         
       // Same with data
       const Int_t dataNum = dataQuantity(gasName);
       Double_t hvMeshListIBF1[dataNum], ionBackFlowCorrectedVect1[dataNum], ionBackFlowCorrectedErrorVect1[dataNum];
-      LoadGainData(gasName, dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1, ionBackFlowCorrectedErrorVect1);
+      LoadIbfData(gasName, dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1, ionBackFlowCorrectedErrorVect1);
          
      TGraphErrors* tgIBF = new TGraphErrors(dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1, 0, ionBackFlowCorrectedErrorVect1 );
      tgIBF->SetMarkerStyle(20);
@@ -220,7 +235,7 @@ int Analyse() {
      //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
      legend->AddEntry(tgIBF,"Data","lp");
      legend->AddEntry(gr,"Simulation (counting IBF)","lp");
-     legend->AddEntry(tgIBFsignal, "Simulation (current signals)", "lp");
+     //legend->AddEntry(tgIBFsignal, "Simulation (current signals)", "lp");
      legend->Draw();
 
      c5->SaveAs(Form("Figures/IBFCurve_%s_model%d.pdf", gasName.c_str(), modelNum));
