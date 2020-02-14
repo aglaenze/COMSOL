@@ -28,8 +28,9 @@ using namespace Garfield;
 int main(int argc, char * argv[]) {
     
     // variables
-    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 6;
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 8;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -39,7 +40,10 @@ int main(int argc, char * argv[]) {
         std::cout << "Please enter a HVmesh like this: ./plotField $hvMesh " << std::endl;
         return 0;
     }
-    const int hvMesh = atoi(argv[1]);
+    //const int hvMesh = atoi(argv[1]);
+    const int hvMeshDown = atoi(argv[1]);
+    const int hvMeshUp = atoi(argv[2]);
+    const int hvDrift = atoi(argv[3]);
 
     //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -49,7 +53,8 @@ int main(int argc, char * argv[]) {
       // Make a gas medium.
       MediumMagboltz* gas = InitiateGas(gasName);
       // Load field map
-      ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+      //ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+    ComponentComsol* fm = InitiateField(modelNum, hvMeshDown, hvMeshUp, hvDrift, gas);
     //return 0;
     
     ViewField* vf = new ViewField();
@@ -77,8 +82,8 @@ int main(int argc, char * argv[]) {
     const bool zoom = true;
     if (zoom) {
         //vf->SetArea(pitch, damp-pitch, 3*pitch, damp+pitch);
-        //vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
-        vf->SetArea(pitch, 0.2120-pitch, 5*pitch, 0.2120+4*pitch);
+        vf->SetArea(pitch, 0, 5*pitch, damp+pitch);
+        //vf->SetArea(pitch, 0.2120-pitch, 5*pitch, 0.2120+4*pitch);
         vf->SetNumberOfContours(70);
         vf->SetNumberOfSamples2d(40, 40);
         TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);

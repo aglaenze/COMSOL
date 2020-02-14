@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 9;
     //____________________
     
     time_t t0 = time(NULL);
@@ -53,10 +53,20 @@ int main(int argc, char * argv[]) {
         return 0;
     }
      */
-    
-    const int hvMesh = atoi(argv[1]);
-    const int saveNum = atoi(argv[2]);
-    
+
+    int hvMesh = 0, hvMeshDown = 0, hvMeshUp = 0, hvDrift = 0, saveNum = 0;
+    if (modelNum == 1) {
+        hvMesh = atoi(argv[1]);
+        hvDrift = atoi(argv[2]);
+        saveNum = atoi(argv[3]);
+    }
+    else if (modelNum > 6) {
+        hvMeshDown = atoi(argv[1]);
+        hvMeshUp = atoi(argv[2]);
+        hvDrift = atoi(argv[3]);
+        saveNum = atoi(argv[4]);
+    }
+
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
@@ -68,7 +78,10 @@ int main(int argc, char * argv[]) {
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
     // Load field map
-    ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+    ComponentComsol* fm;
+    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+    else if (modelNum > 6 ) fm = InitiateField(modelNum, hvMeshDown, hvMeshUp, hvDrift, gas);
+    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -82,16 +95,19 @@ int main(int argc, char * argv[]) {
 
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
-    //int nBins = int(0.05*TMath::Exp(0.0352*hvMesh));
-    int nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
+    int nBins;
+    if (modelNum == 1) nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
+    //else if (modelNum > 6) nBins = int(0.2*TMath::Exp(0.0352*hvMeshUp));
+    else if (modelNum > 6) nBins = 200000;
     TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", nBins, 0, 4*nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
     hElectrons->SetYTitle("# counts");
     
     // Write the histograms to the TFile.
-    //const char* name = Form("rootFiles/%s/model%d/gain_%dV_%s.root", gasName.c_str(), modelNum, hvMesh, argv[2]);
-    const char* name = Form("rootFiles/%s/model%d/gain_%dV_%d.root", gasName.c_str(), modelNum, hvMesh, saveNum);
+    char* name;
+    if (modelNum == 1) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
+    else if (modelNum > 6) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMeshDown, hvMeshUp, hvDrift, saveNum);
     TFile* f = new TFile(name, "RECREATE");
     
     const int nEvents = 12000;
@@ -117,7 +133,10 @@ int main(int argc, char * argv[]) {
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "Avalanche size = " << ne2 << std::endl;
         if (ne2 < 2) continue;
-        //hElectrons->Fill(ne2);    // ok for modelNum < 4
+        if (modelNum == 1) {
+            hElectrons->Fill(ne2);    // ok for modelNum < 4
+            continue;
+        }
         // need to look at the avalanche for modelNum >= 4
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
@@ -143,7 +162,8 @@ int main(int argc, char * argv[]) {
         hElectrons->SetFillColor(kBlue + 2);
         hElectrons->SetLineColor(kBlue + 2);
         hElectrons->Draw();
-        c->SaveAs(Form("Gain_%dV_model%d_%d.pdf", hvMesh, modelNum, saveNum));
+        if (modelNum == 1) c->SaveAs(Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum));
+        else if (modelNum > 6) c->SaveAs(Form("Gain-%d-%d-%d-model%d-%d.pdf", hvMeshDown, hvMeshUp, hvDrift, modelNum, saveNum));
     }
     
     

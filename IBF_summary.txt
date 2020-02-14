@@ -16,3 +16,87 @@ Ions that escaped : 165654
 IBF = 8.28345 %
 
 
+VmeshDown = 300V 
+VmeshUp = 600V 
+Total number of ions : 2.08501e+06
+Ions that escaped : 2616
+IBF = 0.125467 %
+
+
+VmeshDown = 300V 
+VmeshUp = 600V 
+Total number of ions : 1.91159e+07
+Ions that escaped : 11040
+IBF = 0.057753 %
+
+
+VmeshDown = 360V 
+VmeshUp = 720V 
+Total number of ions : 1.33506e+08
+Ions that escaped : 18461
+IBF = 0.0138279 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 962598
+Ions that escaped : 24702
+IBF = 2.56618 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 1.87279e+06
+Ions that escaped : 46010
+IBF = 2.45677 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 0
+Ions that escaped : 0
+IBF = nan %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 3.61086e+06
+Ions that escaped : 86581
+IBF = 2.39779 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 7.04739e+06
+Ions that escaped : 160672
+IBF = 2.27988 %
+
+
+VmeshDown = 300V 
+VmeshUp = 600V 
+Total number of ions : 1.59029e+07
+Ions that escaped : 9940
+IBF = 0.0625043 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 957003
+Ions that escaped : 24752
+IBF = 2.58641 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 1.87144e+06
+Ions that escaped : 45391
+IBF = 2.42545 %
+
+
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 1.3816e+07
+Ions that escaped : 305106
+IBF = 2.20836 %
+
+

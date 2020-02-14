@@ -30,9 +30,9 @@ int main(int argc, char * argv[]) {
     
     //______________________
     // variables
-    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 4;
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 1;
     //____________________
     
     time_t t0 = time(NULL);
@@ -41,7 +41,20 @@ int main(int argc, char * argv[]) {
         std::cout << "Please enter HVmesh like this: ./ibf $hvMesh" << std::endl;
         return 0;
     }
-    const int hvMesh = atoi(argv[1]);
+    
+    int hvMesh = 0, hvMeshDown = 0, hvMeshUp = 0, hvDrift = 0, saveNum = 0;
+    if (modelNum == 1) {
+        hvMesh = atoi(argv[1]);
+        hvDrift = atoi(argv[2]);
+        saveNum = atoi(argv[3]);
+    }
+    else if (modelNum > 6) {
+        hvMeshDown = atoi(argv[1]);
+        hvMeshUp = atoi(argv[2]);
+        hvDrift = atoi(argv[3]);
+        saveNum = atoi(argv[4]);
+    }
+
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -63,7 +76,10 @@ int main(int argc, char * argv[]) {
      */
     
     // Load field map
-    ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+    ComponentComsol* fm;
+    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+    else if (modelNum > 6 ) fm = InitiateField(modelNum, hvMeshDown, hvMeshUp, hvDrift, gas);
+    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -94,15 +110,18 @@ int main(int argc, char * argv[]) {
     //TH1::StatOverflows(true);
     hIbf->SetXTitle("IBF (%)");
     hIbf->SetYTitle("# counts");
+    /*
     TH1F* hTransparencySA = new TH1F("hTransparencySA", "hTransparencySA", 1000, 0., 1.);
     hTransparencySA->SetYTitle("# counts");
     hTransparencySA->SetXTitle("fraction of e- that passed");
+     */
     
     //TH1F* hze1 = new TH1F("hze1", "hze1", 10000, 0, damp);
 
     // Write the histograms to the TFile.
-    const char* name = Form("rootFiles/%s/model%d/ibf_%dV.root", gasName.c_str(), modelNum, hvMesh);
-    //const char* name = Form("rootFiles/%s/model%d/test.root", gasName.c_str(), modelNum);
+    char* name;
+    if (modelNum == 1) name = Form("rootFiles/%s/model%d/ibf-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
+    else if (modelNum > 6) name = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvMeshDown, hvMeshUp, hvDrift);
     TFile* f = new TFile(name, "RECREATE");
     
     const int nEvents = 1000;
@@ -135,14 +154,16 @@ int main(int argc, char * argv[]) {
         double xi2, yi2, zi2, ti2;
         int status;
         int ionBackNum = 0;
-        int electronsAboveSA = 0;
-        int electronsBelowSA = 0;
+        //int electronsAboveSA = 0;
+        //int electronsBelowSA = 0;
         for (int j = np; j--;) {
             aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+            /*
             if (ze1 > 0.0147) {
                 electronsAboveSA++;
                 if (ze2 < 0.008) electronsBelowSA++;
             }
+             */
             //std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
             //std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             drift->DriftIon(xe1, ye1, ze1, te1);
@@ -152,8 +173,11 @@ int main(int argc, char * argv[]) {
             if (zi2 > 3*damp) ionBackNum+=1;
         }
         hIbf->Fill( ionBackNum*100./ni);
-        hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
-        if (i % division == 0) {hIbf->Write("", TObject::kOverwrite); hTransparencySA->Write("", TObject::kOverwrite);}
+        //hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
+        if (i % division == 0) {
+            hIbf->Write("", TObject::kOverwrite);
+            //hTransparencySA->Write("", TObject::kOverwrite);
+        }
         totalIonBackNum += ionBackNum;
         totalIonNum += ni;
     }
@@ -165,7 +189,9 @@ int main(int argc, char * argv[]) {
         
     if(fichier)  // si l'ouverture a réussi
     {
-        fichier << "Vmesh = " << hvMesh << "V " << std::endl;
+        //fichier << "Vmesh = " << hvMesh << "V " << std::endl;
+        fichier << "VmeshDown = " << hvMeshDown << "V " << std::endl;
+        fichier << "VmeshUp = " << hvMeshUp << "V " << std::endl;
         fichier << "Total number of ions : " << totalIonNum << std::endl;
         fichier << "Ions that escaped : " << totalIonBackNum << std::endl;
         fichier << "IBF = " << totalIonBackNum * 100./totalIonNum << " %\n\n" << std::endl;
