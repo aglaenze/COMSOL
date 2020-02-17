@@ -138,7 +138,7 @@ int main(int argc, char * argv[]) {
             std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             }
              */
-            drift->DriftIon(xe1, ye1, ze1, te1);
+            //drift->DriftIon(xe1, ye1, ze1, te1);
             //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }

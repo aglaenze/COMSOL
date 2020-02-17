@@ -39,7 +39,7 @@ int Analyse() {
     gStyle->SetOptStat(0);
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
      
-    if (gainCurve) {
+    //if (gainCurve) {
         // Get number of files to look at
         //Int_t num = 3;
         Int_t num = GetNumberOfFiles(path, "convoluted");
@@ -169,7 +169,7 @@ int Analyse() {
         legend->Draw();
         
         c3->SaveAs(Form("Figures/GainCurve_%s_model%d.pdf", gasName.c_str(), modelNum));
-    }
+    //}
     
     
     if (drawIbf) {
@@ -214,13 +214,11 @@ int Analyse() {
             f->Draw("same");
             hvMmList[k] = hvMm;
             hvDriftList[k] = hvDrift;
-            hvRatioList[k] = hvMm/(hvDrift-hvMm) * (ddrift-damp)/damp;
+            hvRatioList[k] = hvMmList[k]/(hvDriftList[k]-hvMmList[k]) * (ddrift-damp)/damp;
             ibfList[k] = f->GetParameter(0);
             ibfErrorList[k] = f->GetParError(0);
-            std::cout << hvMm << " " << hvDrift << " " << hvRatioList[k] << std::endl;
             
         }
-        return 0;
         c4->SaveAs(Form("Figures/ibfResults-%s-model%d.pdf", gasName.c_str(), modelNum));
         
         Int_t numS = GetNumberOfFiles(path, "signal");
@@ -264,16 +262,15 @@ int Analyse() {
         //tgIBFsignal->Draw("CP same");
         
         // Same with data
-        const Int_t dataNum = dataQuantity(gasName);
+        //const Int_t dataNum = dataQuantity(gasName);
         Double_t hvMmListIBF1[dataNum], hvDriftListIBF1[dataNum], ionBackFlowCorrectedVect1[dataNum], ionBackFlowCorrectedErrorVect1[dataNum], ionBackFlowCorrectedVect1_old[dataNum], ionBackFlowCorrectedErrorVect1_old[dataNum];
         LoadIbfData(gasName, dataNum, hvMmListIBF1, hvDriftListIBF1, ionBackFlowCorrectedVect1, ionBackFlowCorrectedErrorVect1, ionBackFlowCorrectedVect1_old, ionBackFlowCorrectedErrorVect1_old);
+        //Double_t hvMmListData[dataNum], hvDriftListData[dataNum], gainListData[dataNum], gainErrorListData_old[dataNum], gainListData_old[dataNum], gainErrorListData[dataNum];
+        //LoadGainData(gasName, dataNum, hvMmListData, hvDriftListData, gainListData, gainErrorListData, gainListData_old, gainErrorListData_old);
+        
         
         Double_t ratioListData[dataNum];
         for (int i = 0; i < dataNum; i++) {ratioListData[i] = hvMmListIBF1[i]/(hvDriftListIBF1[i]-hvMmListIBF1[i]) * (ddrift-damp)/damp;}
-        
-        PrintList("ratioListData", ratioListData, num);
-        PrintList("hvRatioList", hvRatioList, num);
-        return 0;
          
         TGraphErrors* tgIBF = new TGraphErrors(dataNum, hvMmListIBF1, ionBackFlowCorrectedVect1, 0, ionBackFlowCorrectedErrorVect1 );
         tgIBF->SetMarkerStyle(20);
@@ -297,7 +294,7 @@ int Analyse() {
 
         c5->cd(2);
         TGraphErrors* gr2 = new TGraphErrors(num, hvRatioList, ibfList, 0, ibfErrorList);
-           gr2->SetTitle("IBF curve in the Micromegas");
+           gr2->SetTitle("IBF = f(E ratio)");
            gr2->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
            gr2->GetYaxis()->SetTitle( "IBF (%)" );
            //gr2->GetXaxis()->SetLimits(0, 4);  // along X axis
@@ -327,6 +324,41 @@ int Analyse() {
            legendr->AddEntry(gr,"Simulation (counting IBF)", "lp");
            //legendr->AddEntry(tgIBFsignal, "Simulation (current signals)", "lp");
            legendr->Draw();
+        
+        c5->cd(3);
+        gPad->SetLogx();
+        
+        TGraphErrors* gr3 = new TGraphErrors(num, gainList, ibfList, gainErrorList, ibfErrorList);
+           gr3->SetTitle("IBF = f(Gain)");
+           gr3->GetXaxis()->SetTitle( "Gain" );
+           gr3->GetYaxis()->SetTitle( "IBF (%)" );
+           //gr3->GetXaxis()->SetLimits(0, 4);  // along X axis
+           gr3->GetHistogram()->SetMinimum(0.);   // along Y axis
+           gr3->GetHistogram()->SetMaximum(4.);   // along Y axis
+           gr3->SetMarkerStyle(20);
+        gr3->SetMarkerSize(0.3);
+           //gr3->GetXaxis()->SetLimits(hvRatioList[0]-5, hvRatioList[num]+5);
+           gr3->Draw("ACP");
+
+
+           TGraphErrors* tgIBFg = new TGraphErrors(dataNum, gainListData, ionBackFlowCorrectedVect1, gainErrorListData, ionBackFlowCorrectedErrorVect1 );
+           tgIBFg->SetMarkerStyle(20);
+        tgIBFg->SetMarkerSize(0.3);
+           tgIBFg->SetMarkerColor(2);
+           tgIBFg->Draw("CP same");
+           TGraphErrors* tgIBF2g = new TGraphErrors(dataNum, gainListData_old, ionBackFlowCorrectedVect1_old, gainErrorListData_old, ionBackFlowCorrectedErrorVect1_old );
+           tgIBF2g->SetMarkerStyle(20);
+        tgIBF2g->SetMarkerSize(0.3);
+           tgIBF2g->SetMarkerColor(3);
+           tgIBF2g->Draw("CP same");
+        
+           TLegend* legendg = new TLegend(0.5,0.65,0.9,0.9);
+           //legendg->SetHeader("The Legend Title","C"); // option "C" allows to center the header
+           legendg->AddEntry(tgIBF, "Data", "lp");
+           legendg->AddEntry(tgIBF2, "Data old", "lp");
+           legendg->AddEntry(gr,"Simulation (counting IBF)", "lp");
+           //legendg->AddEntry(tgIBFsignal, "Simulation (current signals)", "lp");
+           legendg->Draw();
 
 
         c5->SaveAs(Form("Figures/IBFCurve-%s-model%d.pdf", gasName.c_str(), modelNum));

@@ -37,23 +37,48 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
-    if (argc < 2) {
-        std::cout << "Please enter HVmesh like this: ./ibf $hvMesh" << std::endl;
-        return 0;
-    }
+    char* fOutputName;
     
-    int hvMesh = 0, hvMeshDown = 0, hvMeshUp = 0, hvDrift = 0, saveNum = 0;
+    // Make a gas medium.
+    MediumMagboltz* gas = InitiateGas(gasName);
+    // Load field map
+    ComponentComsol* fm;
+    
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     if (modelNum == 1) {
+        if (argc < 3) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh" << std::endl;
+            return 0;
+        }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
-        saveNum = atoi(argv[3]);
+        fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+        fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
-    else if (modelNum > 6) {
-        hvMeshDown = atoi(argv[1]);
-        hvMeshUp = atoi(argv[2]);
+    else if (modelNum > 6 && modelNum < 10) {
+        if (argc < 4) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp" << std::endl;
+            return 0;
+        }
+        hvDmDown = atoi(argv[1]);
+        hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
-        saveNum = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
+    else if (modelNum == 10) {
+        if (argc < 5) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvDmDown = atoi(argv[2]);
+        hvDmUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
+    }
+    else {std::cout << "Wrong model number" << std::endl; return 0;}
 
     
     TApplication app("app", &argc, argv);
@@ -64,10 +89,6 @@ int main(int argc, char * argv[]) {
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
 
-    
-    // Make a gas medium.
-    MediumMagboltz* gas = InitiateGas(gasName);
-
     /*
     Medium* wire = new Medium();
     wire->SetTemperature(293.15);
@@ -75,11 +96,6 @@ int main(int argc, char * argv[]) {
     //wire->SetComposition("Stainless steel");
      */
     
-    // Load field map
-    ComponentComsol* fm;
-    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-    else if (modelNum > 6 ) fm = InitiateField(modelNum, hvMeshDown, hvMeshUp, hvDrift, gas);
-    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -119,10 +135,7 @@ int main(int argc, char * argv[]) {
     //TH1F* hze1 = new TH1F("hze1", "hze1", 10000, 0, damp);
 
     // Write the histograms to the TFile.
-    char* name;
-    if (modelNum == 1) name = Form("rootFiles/%s/model%d/ibf-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
-    else if (modelNum > 6) name = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvMeshDown, hvMeshUp, hvDrift);
-    TFile* f = new TFile(name, "RECREATE");
+    TFile* f = new TFile(fOutputName, "RECREATE");
     
     const int nEvents = 1000;
     int division = int(nEvents/20);
@@ -190,8 +203,8 @@ int main(int argc, char * argv[]) {
     if(fichier)  // si l'ouverture a réussi
     {
         //fichier << "Vmesh = " << hvMesh << "V " << std::endl;
-        fichier << "VmeshDown = " << hvMeshDown << "V " << std::endl;
-        fichier << "VmeshUp = " << hvMeshUp << "V " << std::endl;
+        fichier << "VmeshDown = " << hvDmDown << "V " << std::endl;
+        fichier << "VmeshUp = " << hvDmUp << "V " << std::endl;
         fichier << "Total number of ions : " << totalIonNum << std::endl;
         fichier << "Ions that escaped : " << totalIonBackNum << std::endl;
         fichier << "IBF = " << totalIonBackNum * 100./totalIonNum << " %\n\n" << std::endl;

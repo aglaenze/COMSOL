@@ -37,6 +37,13 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
+    TString fOutputName;
+    
+    // Make a gas medium.
+    MediumMagboltz* gas = InitiateGas(gasName);
+    // Load field map
+    ComponentComsol* fm;
+    
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0, saveNum = 0;
     if (modelNum == 1) {
         if (argc < 4) {
@@ -46,6 +53,8 @@ int main(int argc, char * argv[]) {
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
         saveNum = atoi(argv[3]);
+        fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+        fOutputName = Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum);
     }
     else if (modelNum > 6 && modelNum < 10) {
         if (argc < 5) {
@@ -56,6 +65,8 @@ int main(int argc, char * argv[]) {
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
         saveNum = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
     }
     else if (modelNum == 10) {
         if (argc < 6) {
@@ -67,7 +78,10 @@ int main(int argc, char * argv[]) {
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
         saveNum = atoi(argv[5]);
+        fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("Gain-%d-%d-%d-%d-model%d-%d.pdf", hvMesh, hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
     }
+    else {std::cout << "Wrong model number" << std::endl; return 0;}
 
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -79,14 +93,6 @@ int main(int argc, char * argv[]) {
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
 
-    // Make a gas medium.
-    MediumMagboltz* gas = InitiateGas(gasName);
-    // Load field map
-    ComponentComsol* fm;
-    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-    else if (modelNum > 6 && modelNum < 10) fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-    else if (modelNum == 10 ) fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -145,7 +151,9 @@ int main(int argc, char * argv[]) {
             hElectrons->Fill(ne2);    // ok for modelNum < 4
             continue;
         }
-        // need to look at the avalanche for modelNum >= 4
+        // need to look at the end points of the electron in the avalanche for modelNum >= 4
+        // if electrons are stopped above the last MM, they won't count in the gain
+        // need to select the winners
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
         double xe2, ye2, ze2, te2, e2;
@@ -169,9 +177,7 @@ int main(int argc, char * argv[]) {
         hElectrons->SetFillColor(kBlue + 2);
         hElectrons->SetLineColor(kBlue + 2);
         hElectrons->Draw();
-        if (modelNum == 1) c->SaveAs(Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum));
-        else if (modelNum > 6 && modelNum < 10) c->SaveAs(Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum));
-        else if (modelNum == 10) c->SaveAs(Form("Gain-%d-%d-%d-%d-model%d-%d.pdf", hvMesh, hvDmDown, hvDmUp, hvDrift, modelNum, saveNum));
+        c->SaveAs(fOutputName);
     }
     
     
