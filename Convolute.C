@@ -23,7 +23,7 @@ int Convolute() {
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10";
-    const int modelNum = 1;
+    const int modelNum = 9;
     //____________________
     
     
@@ -40,11 +40,32 @@ int Convolute() {
     Int_t nPrimaryTh = GetPrimary(gasName);
     //Int_t nPrimaryTh = 600;
     
+    TString fGainName, fOutputName;
+    
     for (unsigned int k = 0; k < num; ++k) {
-        Int_t hvMesh = 320 + k*20;
-        if (modelNum == 4) hvMesh = 350 + k*10;
+        Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
+        if (modelNum == 1) {
+            hvMm = 340+20*k;
+            hvDrift = 540+20*k;
+            fGainName = path+Form("gain-%d-%d", hvMm, hvDrift);
+            fOutputName = Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
+        }
+        else if (modelNum > 6 && modelNum < 10) {
+            hvDmDown = 300;
+            hvDmUp = 600;
+            hvDrift = 800;
+            fGainName = path+Form("gain-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
+            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
+        }
+        else if (modelNum == 10) {
+            hvMm = 300;
+            hvDmDown = 300;
+            hvDmUp = 600;
+            hvDrift = 800;
+            fGainName = path+Form("gain-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
+            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
+        }
 
-        TString fGainName = path+Form("gain_%dV", hvMesh);
         TFile fGain(fGainName + ".root");
         TH1F* hGain = (TH1F*) fGain.Get("hElectrons");
         //hGain->Rebin(15);
@@ -57,7 +78,8 @@ int Convolute() {
         const Int_t nBins = int(nGain/4);
         Int_t iBinMax = hGain->GetMaximumBin(); // Return location of bin with maximum value in the range
         Double_t xMax = hGain->GetXaxis()->GetBinCenter(iBinMax);
-        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, 0.02*TMath::Exp(0.0352*hvMesh) );
+        //TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, 0.02*TMath::Exp(0.0352*hvMm) );
+        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*20 );
         
         std::cout << "maximum bin = " << hGain->GetMaximumBin() << std::endl;
         
@@ -85,7 +107,7 @@ int Convolute() {
         //c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
         
         // Write convolution histograms in root files
-        TFile* f = new TFile(path+Form("Fe_spectrum_convoluted_%dV.root", hvMesh), "RECREATE");
+        TFile* f = new TFile(path+fOutputName, "RECREATE");
         hFeElectrons->Write();
         f->Close();
     }

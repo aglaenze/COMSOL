@@ -32,39 +32,41 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 9;
+    const int modelNum = 10;
     //____________________
     
     time_t t0 = time(NULL);
     
-    if (argc < 3) {
-        std::cout << "Please enter HVmesh like this: ./gain $hvMesh $gain$i " << std::endl;
-        return 0;
-    }
-     /*
-    if (argc < 2 && modelNum < 4 ) {
-        std::cout << "Please enter HVmesh like this: ./gain $hvMesh " << std::endl;
-        return 0;
-    }
-    */
-    /*
-    else if (argc < 3 && modelNum == 4 ) {
-        std::cout << "Please enter HVmesh like this: ./gain $hvMesh_down $hvMesh_up " << std::endl;
-        return 0;
-    }
-     */
-
-    int hvMesh = 0, hvMeshDown = 0, hvMeshUp = 0, hvDrift = 0, saveNum = 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0, saveNum = 0;
     if (modelNum == 1) {
+        if (argc < 4) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $saveNum " << std::endl;
+            return 0;
+        }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
         saveNum = atoi(argv[3]);
     }
-    else if (modelNum > 6) {
-        hvMeshDown = atoi(argv[1]);
-        hvMeshUp = atoi(argv[2]);
+    else if (modelNum > 6 && modelNum < 10) {
+        if (argc < 5) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $saveNum " << std::endl;
+            return 0;
+        }
+        hvDmDown = atoi(argv[1]);
+        hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
         saveNum = atoi(argv[4]);
+    }
+    else if (modelNum == 10) {
+        if (argc < 6) {
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $saveNum " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvDmDown = atoi(argv[2]);
+        hvDmUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+        saveNum = atoi(argv[5]);
     }
 
     TApplication app("app", &argc, argv);
@@ -74,13 +76,16 @@ int main(int argc, char * argv[]) {
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
+    //return 0;
 
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
     // Load field map
     ComponentComsol* fm;
     if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-    else if (modelNum > 6 ) fm = InitiateField(modelNum, hvMeshDown, hvMeshUp, hvDrift, gas);
+    else if (modelNum > 6 && modelNum < 10) fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+    else if (modelNum == 10 ) fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
     else {return 0;}
     
     // Make a sensor.
@@ -96,9 +101,10 @@ int main(int argc, char * argv[]) {
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
     int nBins;
-    if (modelNum == 1) nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
-    //else if (modelNum > 6) nBins = int(0.2*TMath::Exp(0.0352*hvMeshUp));
-    else if (modelNum > 6) nBins = 200000;
+    //if (modelNum == 1) nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
+    if (modelNum == 1) nBins = 50000;
+    //else if (modelNum > 6) nBins = int(0.2*TMath::Exp(0.0352*hvDmUp));
+    else if (modelNum > 6) nBins = 50000;
     TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", nBins, 0, 4*nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
@@ -107,10 +113,11 @@ int main(int argc, char * argv[]) {
     // Write the histograms to the TFile.
     char* name;
     if (modelNum == 1) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
-    else if (modelNum > 6) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMeshDown, hvMeshUp, hvDrift, saveNum);
+    else if (modelNum > 6 && modelNum < 10) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
+    else if (modelNum == 10 ) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
     TFile* f = new TFile(name, "RECREATE");
     
-    const int nEvents = 12000;
+    const int nEvents = 10000;
     //const int nEvents = 5000;
     int division = int(nEvents/20);
     
@@ -120,6 +127,7 @@ int main(int argc, char * argv[]) {
             time_t t = time(NULL);
             PrintTime(t0, t);            
         }
+        if (i % division == 0) hElectrons->Write("", TObject::kOverwrite);
         // Initial coordinates of the photon.
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;
@@ -151,7 +159,6 @@ int main(int argc, char * argv[]) {
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) hElectrons->Fill(nWinners);
-        if (i % division == 0) hElectrons->Write("", TObject::kOverwrite);
     }
     f->Close();
     
@@ -163,7 +170,8 @@ int main(int argc, char * argv[]) {
         hElectrons->SetLineColor(kBlue + 2);
         hElectrons->Draw();
         if (modelNum == 1) c->SaveAs(Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum));
-        else if (modelNum > 6) c->SaveAs(Form("Gain-%d-%d-%d-model%d-%d.pdf", hvMeshDown, hvMeshUp, hvDrift, modelNum, saveNum));
+        else if (modelNum > 6 && modelNum < 10) c->SaveAs(Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum));
+        else if (modelNum == 10) c->SaveAs(Form("Gain-%d-%d-%d-%d-model%d-%d.pdf", hvMesh, hvDmDown, hvDmUp, hvDrift, modelNum, saveNum));
     }
     
     

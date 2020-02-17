@@ -100,3 +100,10 @@ Ions that escaped : 305106
 IBF = 2.20836 %
 
 
+VmeshDown = 0V 
+VmeshUp = 0V 
+Total number of ions : 2.58077e+07
+Ions that escaped : 560004
+IBF = 2.16991 %
+
+

@@ -28,17 +28,41 @@ int main(int argc, char * argv[]) {
     
     //______________________
     // variables
-    std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 6;
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 10;
     //____________________
     
     time_t t0 = time(NULL);
     
-    if (argc < 2) {
-        std::cout << "Please enter HVmesh like this: ./avalanche $hvMesh " << std::endl;
-        return 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
+    if (modelNum == 1) {
+        if (argc < 3) {
+            std::cout << "Please enter command like this: ./avalanche $hvMesh " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvDrift = atoi(argv[2]);
     }
-    const int hvMesh = atoi(argv[1]);
+    else if (modelNum > 6 && modelNum < 10) {
+        if (argc < 4) {
+            std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp " << std::endl;
+            return 0;
+        }
+        hvDmDown = atoi(argv[1]);
+        hvDmUp = atoi(argv[2]);
+        hvDrift = atoi(argv[3]);
+    }
+    else if (modelNum == 10) {
+        if (argc < 5) {
+            std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDmDown $hvDmUp " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvDmDown = atoi(argv[2]);
+        hvDmUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+    }
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -52,7 +76,11 @@ int main(int argc, char * argv[]) {
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
     // Load field map
-    ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
+    ComponentComsol* fm;
+    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+    else if (modelNum > 6 && modelNum < 10) fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+    else if (modelNum == 10 ) fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
+    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -111,11 +139,11 @@ int main(int argc, char * argv[]) {
             }
              */
             drift->DriftIon(xe1, ye1, ze1, te1);
-            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }
     
-    return 0;
+    //return 0;
     
     const bool plotDrift = false;
     if (plotDrift) {
@@ -129,12 +157,13 @@ int main(int argc, char * argv[]) {
     // Set up the object for FE mesh visualization.
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
-    //vFE->SetArea(-5*pitch, -5*pitch, 0.2-2*pitch,  5*pitch, 5*pitch, 0.2+8*pitch);
-    vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
+    //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
+    vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);
+    //vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
-    //vFE->SetPlane(0, -1, 0, 0, 0, damp);
-    vFE->SetPlane(0, -1, 0, 0, 0, 0.2);
+    vFE->SetPlane(0, -1, 0, 0, 0, damp);
+    //vFE->SetPlane(0, -1, 0, 0, 0, 0.2);
     vFE->SetFillMesh(false);
     const bool plotDrift2 = true;
     if (plotDrift2) {
