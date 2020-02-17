@@ -37,7 +37,10 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
-    TString fOutputName;
+    TApplication app("app", &argc, argv);
+    plottingEngine.SetDefaultStyle();
+    
+    TString fFigureName, fOutputName;
     
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
@@ -46,7 +49,7 @@ int main(int argc, char * argv[]) {
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0, saveNum = 0;
     if (modelNum == 1) {
-        if (argc < 4) {
+        if (argc != 4) {
             std::cout << "Please enter HVmesh like this: ./gain $hvMesh $saveNum " << std::endl;
             return 0;
         }
@@ -54,10 +57,11 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[2]);
         saveNum = atoi(argv[3]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-        fOutputName = Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum);
+        fFigureName = Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum);
+        fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
     }
     else if (modelNum > 6 && modelNum < 10) {
-        if (argc < 5) {
+        if (argc != 5) {
             std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $saveNum " << std::endl;
             return 0;
         }
@@ -66,10 +70,11 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[3]);
         saveNum = atoi(argv[4]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
+        fFigureName = Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
+        fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
     else if (modelNum == 10) {
-        if (argc < 6) {
+        if (argc != 6) {
             std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $saveNum " << std::endl;
             return 0;
         }
@@ -79,12 +84,10 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[4]);
         saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("Gain-%d-%d-%d-%d-model%d-%d.pdf", hvMesh, hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
+        fFigureName = Form("Gain-%d-%d-%d-%d-model%d-%d.pdf", hvMesh, hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
+        fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
-
-    TApplication app("app", &argc, argv);
-    plottingEngine.SetDefaultStyle();
     
         //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -103,25 +106,21 @@ int main(int argc, char * argv[]) {
     // Create an avalanche object
     AvalancheMicroscopic* aval = new AvalancheMicroscopic();
     aval->SetSensor(&sensor);
+    
+    return 0;
 
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000
     int nBins;
     //if (modelNum == 1) nBins = int(0.2*TMath::Exp(0.0352*hvMesh));
-    if (modelNum == 1) nBins = 50000;
-    //else if (modelNum > 6) nBins = int(0.2*TMath::Exp(0.0352*hvDmUp));
-    else if (modelNum > 6) nBins = 50000;
+    nBins = 50000;
     TH1F* hElectrons = new TH1F("hElectrons", "Number of secondary electrons", nBins, 0, 4*nBins);
     //TH1::StatOverflows(true);
     hElectrons->SetXTitle("# secondary electrons");
     hElectrons->SetYTitle("# counts");
     
     // Write the histograms to the TFile.
-    char* name;
-    if (modelNum == 1) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
-    else if (modelNum > 6 && modelNum < 10) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
-    else if (modelNum == 10 ) name = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
-    TFile* f = new TFile(name, "RECREATE");
+    TFile* f = new TFile(fOutputName, "RECREATE");
     
     const int nEvents = 10000;
     //const int nEvents = 5000;
@@ -177,7 +176,7 @@ int main(int argc, char * argv[]) {
         hElectrons->SetFillColor(kBlue + 2);
         hElectrons->SetLineColor(kBlue + 2);
         hElectrons->Draw();
-        c->SaveAs(fOutputName);
+        c->SaveAs(fFigureName);
     }
     
     

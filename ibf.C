@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 10;
     //____________________
     
     time_t t0 = time(NULL);
@@ -46,7 +46,7 @@ int main(int argc, char * argv[]) {
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     if (modelNum == 1) {
-        if (argc < 3) {
+        if (argc != 3 ) {
             std::cout << "Please enter HVmesh like this: ./gain $hvMesh" << std::endl;
             return 0;
         }
@@ -56,7 +56,7 @@ int main(int argc, char * argv[]) {
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
     else if (modelNum > 6 && modelNum < 10) {
-        if (argc < 4) {
+        if (argc != 4) {
             std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp" << std::endl;
             return 0;
         }
@@ -67,10 +67,7 @@ int main(int argc, char * argv[]) {
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
     else if (modelNum == 10) {
-        if (argc < 5) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp " << std::endl;
-            return 0;
-        }
+        if (argc != 5) {std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp " << std::endl; return 0;}
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);
@@ -79,6 +76,9 @@ int main(int argc, char * argv[]) {
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
+    
+    std::cout << fOutputName << std::endl;
+    //return 0;
 
     
     TApplication app("app", &argc, argv);
@@ -102,6 +102,8 @@ int main(int argc, char * argv[]) {
     sensor.AddComponent(fm);
     sensor.SetArea(0, 0, 0, width, depth, ddrift);
     //sensor.SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
+    
+    return 0;
 
     /*
     // To look at the avalanche
