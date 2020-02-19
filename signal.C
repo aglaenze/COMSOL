@@ -35,24 +35,45 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
-    if (argc < 2) {
-        std::cout << "Please enter HVmesh like this: ./signal $hvMesh " << std::endl;
-        return 0;
-    }
-    const int hvMesh = atoi(argv[1]);
+    // Make a gas medium.
+    MediumMagboltz* gas = InitiateGas(gasName);
+    // Load field map
+    ComponentComsol* fm;
     
-    TApplication app("app", &argc, argv);
-    plottingEngine.SetDefaultStyle();
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
+    if (modelNum == 1) {
+        if (argc != 3 ) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvMesh" << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvDrift = atoi(argv[2]);
+        fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+    }
+    else if (modelNum > 6 && modelNum < 10) {
+        if (argc != 4) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp" << std::endl;
+            return 0;
+        }
+        hvDmDown = atoi(argv[1]);
+        hvDmUp = atoi(argv[2]);
+        hvDrift = atoi(argv[3]);
+        fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+    }
+    else if (modelNum == 10) {
+        if (argc != 5) {std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp " << std::endl; return 0;}
+        hvMesh = atoi(argv[1]);
+        hvDmDown = atoi(argv[2]);
+        hvDmUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
+    }
+    else {std::cout << "Wrong model number" << std::endl; return 0;}
     
     //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-    
-    // Make a gas medium.
-    MediumMagboltz* gas = InitiateGas(gasName);
-    // Load field map
-    ComponentComsol* fm = InitiateField(modelNum, hvMesh, gas);
         
     
     // Make a sensor.

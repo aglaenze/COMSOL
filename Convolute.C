@@ -23,7 +23,7 @@ int Convolute() {
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10";
-    const int modelNum = 9;
+    const int modelNum = 10;
     //____________________
     
     
@@ -59,11 +59,11 @@ int Convolute() {
         }
         else if (modelNum == 10) {
             hvMm = 300;
-            hvDmDown = 300;
-            hvDmUp = 600;
-            hvDrift = 800;
-            fGainName = path+Form("gain-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
-            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
+            hvDmDown = 400;
+            hvDmUp = 700;
+            hvDrift = 900;
+            fGainName = path+Form("gain-%d-%d-%d-%d", hvMm, hvDmDown, hvDmUp, hvDrift);
+            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d-%d.root", hvMm, hvDmDown, hvDmUp, hvDrift);
         }
 
         TFile fGain(fGainName + ".root");

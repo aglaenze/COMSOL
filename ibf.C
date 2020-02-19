@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 10;
+    const int modelNum = 11;
     //____________________
     
     time_t t0 = time(NULL);
@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
-    else if (modelNum == 10) {
+    else if (modelNum >= 10 && modelNum < 13) {
         if (argc != 5) {std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp " << std::endl; return 0;}
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
@@ -76,10 +76,6 @@ int main(int argc, char * argv[]) {
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
-    
-    std::cout << fOutputName << std::endl;
-    //return 0;
-
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -102,8 +98,6 @@ int main(int argc, char * argv[]) {
     sensor.AddComponent(fm);
     sensor.SetArea(0, 0, 0, width, depth, ddrift);
     //sensor.SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
-    
-    return 0;
 
     /*
     // To look at the avalanche
@@ -185,7 +179,8 @@ int main(int argc, char * argv[]) {
             //hze1->Fill(ze1);
             drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
             //std::cout << "arrival of the ion in z : " << zi2 << std::endl;
-            if (zi2 > 3*damp) ionBackNum+=1;
+            //if (zi2 > 3*damp) ionBackNum+=1;
+            if (zi2 > 1.5*damp) ionBackNum+=1;
         }
         hIbf->Fill( ionBackNum*100./ni);
         //hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);

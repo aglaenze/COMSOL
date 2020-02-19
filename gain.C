@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 10;
+    const int modelNum = 11;
     //____________________
     
     time_t t0 = time(NULL);
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]) {
         fFigureName = Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
         fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
-    else if (modelNum == 10) {
+    else if (modelNum >= 10 && modelNum < 13) {
         if (argc != 6) {
             std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $saveNum " << std::endl;
             return 0;
@@ -106,8 +106,6 @@ int main(int argc, char * argv[]) {
     // Create an avalanche object
     AvalancheMicroscopic* aval = new AvalancheMicroscopic();
     aval->SetSensor(&sensor);
-    
-    return 0;
 
     // Create ROOT histograms of the signal and a file in which to store them.
     //const int nBins = 50000;    //12000

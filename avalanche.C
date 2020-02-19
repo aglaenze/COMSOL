@@ -35,52 +35,50 @@ int main(int argc, char * argv[]) {
     
     time_t t0 = time(NULL);
     
+    // Make a gas medium.
+    MediumMagboltz* gas = InitiateGas(gasName);
+    // Load field map
+    ComponentComsol* fm;
+    
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     if (modelNum == 1) {
         if (argc < 3) {
-            std::cout << "Please enter command like this: ./avalanche $hvMesh " << std::endl;
+            std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDrift " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
+        fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
     }
     else if (modelNum > 6 && modelNum < 10) {
         if (argc < 4) {
-            std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp " << std::endl;
+            std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
+        fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
     }
     else if (modelNum == 10) {
         if (argc < 5) {
-            std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDmDown $hvDmUp " << std::endl;
+            std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
     }
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
     //Load geometry parameters
-        //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-    
-    // Make a gas medium.
-    MediumMagboltz* gas = InitiateGas(gasName);
-    // Load field map
-    ComponentComsol* fm;
-    if (modelNum == 1) fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-    else if (modelNum > 6 && modelNum < 10) fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-    else if (modelNum == 10 ) fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-    else {return 0;}
     
     // Make a sensor.
     Sensor sensor;
@@ -99,11 +97,13 @@ int main(int argc, char * argv[]) {
     aval->SetSensor(&sensor);
     AvalancheMC* drift = new AvalancheMC();
     drift->SetSensor(&sensor);
-    //drift->SetDistanceSteps(2.e-4);
+    drift->SetDistanceSteps(2.e-4);
+    
     aval->EnablePlotting(driftView);
     aval->EnablePlotting(driftView2);
     drift->EnablePlotting(driftView);
     drift->EnablePlotting(driftView2);
+    
     
     const int nEvents = 1;
     
@@ -138,8 +138,8 @@ int main(int argc, char * argv[]) {
             std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             }
              */
-            //drift->DriftIon(xe1, ye1, ze1, te1);
-            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            drift->DriftIon(xe1, ye1, ze1, te1);
+            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }
     
@@ -150,7 +150,7 @@ int main(int argc, char * argv[]) {
         TCanvas* c1 = new TCanvas();
         driftView->SetCanvas(c1);
         driftView->Plot();
-        c1->SaveAs(Form("Figures/avalanche_%s.pdf", gasName.c_str()));
+        c1->SaveAs(Form("Figures/avalanche-%s.pdf", gasName.c_str()));
     }
   
         
@@ -179,7 +179,7 @@ int main(int argc, char * argv[]) {
         vFE->SetYaxisTitle("z (cm)");
         std::cout << "Plotting..." << std::endl;
         vFE->Plot();
-        c2->SaveAs(Form("Figures/avalanche2d_%s_model%d.pdf", gasName.c_str(), modelNum));
+        c2->SaveAs(Form("Figures/avalanche2d-%s-model%d.pdf", gasName.c_str(), modelNum));
     }
     
     time_t t1 = time(NULL);

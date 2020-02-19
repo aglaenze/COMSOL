@@ -64,7 +64,7 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
         ddrift = 0.5;  //cm
         pitch = 0.0063;    // cm
     }
-    else if (modelNum == 10) {
+    else if (modelNum >= 10 && modelNum < 13) {
         damp = 2*0.0128+0.2;
         radius = 0.0009;   // cm
         ddrift = 0.7;  //cm

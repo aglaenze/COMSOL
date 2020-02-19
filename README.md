@@ -12,3 +12,4 @@ To draw the gain:
 
 To compute the IBF:
 1) ./ibf
+2) root -l -q Analyse.C
