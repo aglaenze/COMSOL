@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 10;
+    const int modelNum = 7;
     //____________________
     
     time_t t0 = time(NULL);
@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[3]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
     }
-    else if (modelNum == 10) {
+    else if (modelNum >= 10 && modelNum < 13) {
         if (argc < 5) {
             std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -115,8 +115,8 @@ int main(int argc, char * argv[]) {
         // Initial coordinates of the electron.
         double x0 = RndmUniform() * pitch;
         double y0 = RndmUniform() * depth;
-        //double z0 = 2*damp + (ddrift-2*damp)*RndmUniform();
-        double z0 = 0.3;
+        double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
+        //double z0 = 0.3;
         double t0 = 0;
         double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
@@ -138,8 +138,8 @@ int main(int argc, char * argv[]) {
             std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             }
              */
-            drift->DriftIon(xe1, ye1, ze1, te1);
-            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            //drift->DriftIon(xe1, ye1, ze1, te1);
+            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
         }
     }
     
@@ -158,7 +158,8 @@ int main(int argc, char * argv[]) {
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
     //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
-    vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);
+    if (modelNum > 6 && modelNum < 10) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
+    else if (modelNum >= 10 && modelNum < 13) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
     //vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);

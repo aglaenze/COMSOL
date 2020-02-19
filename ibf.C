@@ -146,7 +146,7 @@ int main(int argc, char * argv[]) {
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;
         double y0 = depth/2. + RndmUniform() * pitch;
-        double z0 = damp + radius + (ddrift-damp-radius)*RndmUniform();
+        double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
         double t0 = 0;
         double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
