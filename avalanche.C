@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 7;
+    const int modelNum = 10;
     //____________________
     
     time_t t0 = time(NULL);
@@ -40,6 +40,7 @@ int main(int argc, char * argv[]) {
     // Load field map
     ComponentComsol* fm;
     
+    TString fOutputName;
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     if (modelNum == 1) {
         if (argc < 3) {
@@ -49,6 +50,7 @@ int main(int argc, char * argv[]) {
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
+        fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
     else if (modelNum > 6 && modelNum < 10) {
         if (argc < 4) {
@@ -59,6 +61,7 @@ int main(int argc, char * argv[]) {
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
     else if (modelNum >= 10 && modelNum < 13) {
         if (argc < 5) {
@@ -70,6 +73,7 @@ int main(int argc, char * argv[]) {
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
+        fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
     }
     
     TApplication app("app", &argc, argv);
@@ -160,6 +164,7 @@ int main(int argc, char * argv[]) {
     //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
     if (modelNum > 6 && modelNum < 10) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
     else if (modelNum >= 10 && modelNum < 13) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
+    vFE->SetArea(-10*pitch, -10*pitch, damp-15*pitch,  10*pitch, 10*pitch, damp+5*pitch);
     //vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
@@ -180,7 +185,7 @@ int main(int argc, char * argv[]) {
         vFE->SetYaxisTitle("z (cm)");
         std::cout << "Plotting..." << std::endl;
         vFE->Plot();
-        c2->SaveAs(Form("Figures/avalanche2d-%s-model%d.pdf", gasName.c_str(), modelNum));
+        c2->SaveAs(fOutputName);
     }
     
     time_t t1 = time(NULL);

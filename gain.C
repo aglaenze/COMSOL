@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 11;
+    const int modelNum = 10;
     //____________________
     
     time_t t0 = time(NULL);
@@ -50,7 +50,7 @@ int main(int argc, char * argv[]) {
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0, saveNum = 0;
     if (modelNum == 1) {
         if (argc != 4) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $saveNum " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
     }
     else if (modelNum > 6 && modelNum < 10) {
         if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $saveNum " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
@@ -75,7 +75,7 @@ int main(int argc, char * argv[]) {
     }
     else if (modelNum >= 10 && modelNum < 13) {
         if (argc != 6) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $saveNum " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
@@ -120,7 +120,7 @@ int main(int argc, char * argv[]) {
     // Write the histograms to the TFile.
     TFile* f = new TFile(fOutputName, "RECREATE");
     
-    const int nEvents = 10000;
+    const int nEvents = 20000;
     //const int nEvents = 5000;
     int division = int(nEvents/20);
     
@@ -161,6 +161,7 @@ int main(int argc, char * argv[]) {
             //std::cout << "departure of the electron in x y z : " << xe1 << " " << ye1 << " " <<  ze1 << std::endl;
             //std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             if (ze2 < 0.01) nWinners++;
+            //if (ze2 < damp) nWinners++;
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) hElectrons->Fill(nWinners);

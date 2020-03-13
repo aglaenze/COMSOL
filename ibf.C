@@ -47,7 +47,7 @@ int main(int argc, char * argv[]) {
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     if (modelNum == 1) {
         if (argc != 3 ) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvMesh" << std::endl;
+            std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDrift" << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
@@ -57,7 +57,7 @@ int main(int argc, char * argv[]) {
     }
     else if (modelNum > 6 && modelNum < 10) {
         if (argc != 4) {
-            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp" << std::endl;
+            std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $hvDrift" << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
@@ -67,7 +67,7 @@ int main(int argc, char * argv[]) {
         fOutputName = Form("rootFiles/%s/model%d/ibf-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
     else if (modelNum >= 10 && modelNum < 13) {
-        if (argc != 5) {std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp " << std::endl; return 0;}
+        if (argc != 5) {std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $hvDrift" << std::endl; return 0;}
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);

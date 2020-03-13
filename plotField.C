@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 10;
+    const int modelNum = 9;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -61,7 +61,7 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[3]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
     }
-    else if (modelNum == 10) {
+    else if (modelNum >= 10 && modelNum < 13) {
         if (argc < 5) {
             std::cout << "Please enter command like this: ./avalanche $hvMm $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
