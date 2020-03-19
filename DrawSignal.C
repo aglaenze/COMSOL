@@ -37,8 +37,8 @@ int DrawSignal() {
     */
     Int_t electrodeNum = 0;
     if (modelNum == 1) electrodeNum = 3;
-    else if (modelNum > 6 && modelNum < 10) electrodeNum = 4;
-    else if (modelNum >= 10 && modelNum < 13) electrodeNum = 5;
+    else if (modelNum >= 2 && modelNum < 5) electrodeNum = 4;
+    else if (modelNum >= 5 && modelNum < 10) electrodeNum = 5;
     TCanvas* cvf = new TCanvas("cvf");
     cvf->Divide(electrodeNum, num);
     
