@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
         fFigureName = Form("Gain-%d-%d-model%d-%d.pdf", hvMesh, hvDrift, modelNum, saveNum);
         fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
     }
-    else if (modelNum > 6 && modelNum < 10) {
+    else if (modelNum >= 2 && modelNum < 5) {
         if (argc != 5) {
             std::cout << "Please enter HVmesh like this: ./gain $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
@@ -73,7 +73,7 @@ int main(int argc, char * argv[]) {
         fFigureName = Form("Gain-%d-%d-%d-model%d-%d.pdf", hvDmDown, hvDmUp, hvDrift, modelNum, saveNum);
         fOutputName = Form("rootFiles/%s/model%d/gain-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
-    else if (modelNum >= 10 && modelNum < 13) {
+    else if (modelNum >= 5 && modelNum < 8) {
         if (argc != 6) {
             std::cout << "Please enter HVmesh like this: ./gain $hvMesh $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;

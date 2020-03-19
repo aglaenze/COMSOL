@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 10;
+    const int modelNum = 8;
     //____________________
     
     time_t t0 = time(NULL);
@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
     ComponentComsol* fm;
     
     TString fOutputName;
-    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
     if (modelNum == 1) {
         if (argc < 3) {
             std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDrift " << std::endl;
@@ -52,7 +52,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
-    else if (modelNum > 6 && modelNum < 10) {
+    else if (modelNum >= 2 && modelNum < 5) {
         if (argc < 4) {
             std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
-    else if (modelNum >= 10 && modelNum < 13) {
+    else if (modelNum >= 5 && modelNum < 8) {
         if (argc < 5) {
             std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -75,6 +75,19 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
     }
+    else if (modelNum >= 8 && modelNum < 10) {
+        if (argc != 5) {
+            std::cout << "Please enter HVmesh like this: ./avalanche $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvGemDown = atoi(argv[2]);
+        hvGemUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
+        fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
+    }
+    else {std::cout << "Wrong model number" << std::endl; return 0;}
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -114,7 +127,7 @@ int main(int argc, char * argv[]) {
     int j = 0;
     for (unsigned int i = 0; i < nEvents; ++i) {
         j++;
-        if (j==10) break;
+        if (j==50) break;
         //std::cout << "hello " << i << "\n\n" << std::endl;
         // Initial coordinates of the electron.
         double x0 = RndmUniform() * pitch;
@@ -162,14 +175,15 @@ int main(int argc, char * argv[]) {
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
     //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
-    if (modelNum > 6 && modelNum < 10) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
-    else if (modelNum >= 10 && modelNum < 13) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
-    vFE->SetArea(-10*pitch, -10*pitch, damp-15*pitch,  10*pitch, 10*pitch, damp+5*pitch);
-    //vFE->SetArea(-0.15, -0.15, 0,  0.15, 0.15, 0.3);
+    if (modelNum > 1 && modelNum < 5) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
+    else if (modelNum >= 5 && modelNum < 8) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
+    //vFE->SetArea(-10*pitch, -10*pitch, damp-15*pitch,  10*pitch, 10*pitch, damp+5*pitch);
+    vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., 0,  (damp+5*pitch)/2., (damp+5*pitch)/2., damp+5*pitch);
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
-    vFE->SetPlane(0, -1, 0, 0, 0, damp);
-    //vFE->SetPlane(0, -1, 0, 0, 0, 0.2);
+    //vFE->SetPlane(0, -1, 0, 0, 0, damp);
+    //vFE->SetPlane(0, -1, 0, 0, 0, 0);
+    vFE->SetPlane(0, -1, 0, 0, 0, 0.2);
     vFE->SetFillMesh(false);
     const bool plotDrift2 = true;
     if (plotDrift2) {

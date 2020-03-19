@@ -19,8 +19,6 @@
 // Set up detector geometry
 
 void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddrift, double& dmylar, double& radius, double& pitch, double& width, double& depth) {
-    const double dPA = 0.024 + 0.0027;
-    const double dSA = 0.012;
     periodicityNum = 2000;
     if (modelNum == 1) {
         damp = 0.0128;
@@ -28,47 +26,41 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
         radius = 0.0009;   // cm
         pitch = 0.0063;    // cm
     }
-    else if (modelNum == 4) {
-        damp = dSA + dPA;
-        radius = 0.0027;   // cm
-        ddrift = 0.3 + damp + radius;  //cm
-        pitch = 0.025;    // cm
-    }
-    else if (modelNum == 5) {
-        damp = 0.0120;
-        radius = 0.0009;   // cm
-        ddrift = 0.5182;  //cm
-        pitch = 0.0063;    // cm
-    }
-    else if (modelNum == 6) {
-        damp = 0.0120;
-        radius = 0.0009;   // cm
-        ddrift = 0.5240;  //cm
-        pitch = 0.0063;    // cm
-    }
-    else if (modelNum == 7) {
+    else if (modelNum == 2) {
         damp = 2*0.0128;
         radius = 0.0009;   // cm
         ddrift = 0.5;  //cm
         pitch = 0.0045;    // cm
     }
-    else if (modelNum == 8) {
+    else if (modelNum == 3) {
         damp = 2*0.0128;
         radius = 0.0009;   // cm
         ddrift = 0.5;  //cm
         pitch = 0.0078;    // cm
     }
-    else if (modelNum == 9) {
+    else if (modelNum == 4) {
         damp = 2*0.0128;
         radius = 0.0009;   // cm
         ddrift = 0.5;  //cm
         pitch = 0.0063;    // cm
     }
-    else if (modelNum >= 10 && modelNum < 13) {
+    else if (modelNum >= 5 && modelNum < 8) {
         damp = 2*0.0128+0.2;
         radius = 0.0009;   // cm
         ddrift = 0.7;  //cm
         pitch = 0.0063;    // cm
+    }
+    else if (modelNum == 8) {  // from here, GEM
+        damp = 0.0128+0.2+0.0060;
+        radius = 0.0009;   // cm
+        ddrift = 0.5;  //cm
+        pitch = 0.0126;    // cm
+    }
+    else if (modelNum == 9) {
+        damp = 0.0128+0.4+0.0060;
+        radius = 0.0009;   // cm
+        ddrift = 0.7;  //cm
+        pitch = 0.0126;    // cm
     }
     else {std::cout << "Model num?" << std::endl; return;}
     dmylar = 3.;       // cm

@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 8;
     //____________________
     
     time_t t0 = time(NULL);
@@ -47,7 +47,7 @@ int main(int argc, char * argv[]) {
     // Load field map
     ComponentComsol* fm;
     
-    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0, saveNum = 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
     int electrodeNum = 0;
     if (modelNum == 1) {
         if (argc != 3) {
@@ -56,12 +56,11 @@ int main(int argc, char * argv[]) {
         }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
-        saveNum = atoi(argv[3]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
         electrodeNum = 3;
     }
-    else if (modelNum > 6 && modelNum < 10) {
+    else if (modelNum >= 2 && modelNum < 5) {
         if (argc != 4) {
             std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -69,12 +68,11 @@ int main(int argc, char * argv[]) {
         hvDmDown = atoi(argv[1]);
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
-        saveNum = atoi(argv[4]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
         electrodeNum = 4;
     }
-    else if (modelNum >= 10 && modelNum < 13) {
+    else if (modelNum >= 5 && modelNum < 8) {
         if (argc != 5) {
             std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -83,9 +81,21 @@ int main(int argc, char * argv[]) {
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
-        saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
+        electrodeNum = 5;
+    }
+    else if (modelNum >= 8 && modelNum < 10) {
+        if (argc != 5) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
+            return 0;
+        }
+        hvMesh = atoi(argv[1]);
+        hvGemDown = atoi(argv[2]);
+        hvGemUp = atoi(argv[3]);
+        hvDrift = atoi(argv[4]);
+        fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
+        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
         electrodeNum = 5;
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
@@ -108,7 +118,7 @@ int main(int argc, char * argv[]) {
     // Set the signal binning.
     //const int nTimeBins = 10000;
     const double tStep = 0.1;   //ns
-    const int nEvents = 500;
+    const int nEvents = 700;
     const double rate = 1.e7;               // number of events per s (note that t units are ns here)
     const double timespace = 1./rate*1.e9;    // in ns
     const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
@@ -154,7 +164,7 @@ int main(int argc, char * argv[]) {
         int ne2 = 0, ni = 0;
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "\nAvalanche size = " << ne2 << std::endl;
-        if (ne2 < 2) {i--; continue;}
+        if (ne2 < 4) {i--; continue;}
         const int np = aval->GetNumberOfElectronEndpoints();
         double xe1, ye1, ze1, te1, e1;
         double xe2, ye2, ze2, te2, e2;
