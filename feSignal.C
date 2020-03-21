@@ -19,6 +19,9 @@
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/SolidTube.hh"
 #include "Garfield/ViewSignal.hh"
+#include "Garfield/TrackHeed.hh"
+#include "Garfield/GeometrySimple.hh"
+#include "Garfield/SolidBox.hh"
 #include "Garfield/ComponentConstant.hh"
 #include "Garfield/Sensor.hh"
 #include "Garfield/FundamentalConstants.hh"
@@ -106,6 +109,15 @@ int main(int argc, char * argv[]) {
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
+    
+    // Set up detector geometry
+    GeometrySimple* geo = new GeometrySimple();
+    
+    // Set up the bulk
+    SolidBox bulk = SolidBox(width/2., depth/2., ddrift/2., width/2., depth/2., ddrift/2.);
+    geo->AddSolid(&bulk, gas);
+    fm->SetGeometry(geo);
+    //return 0;
 
     
     // Make a sensor.
@@ -115,7 +127,13 @@ int main(int argc, char * argv[]) {
     //sensor->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
     for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
     
-    const int nEvents = 1000;
+    // Use Heed for simulating the photon absorption.
+    TrackHeed* track = nullptr;
+    track->SetSensor(sensor);
+    
+    // il lui faut une géométrie !
+    
+    const int nEvents = 5;
     
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
@@ -158,7 +176,7 @@ int main(int argc, char * argv[]) {
     drift->EnableSignalCalculation();
     
     int division = int(nEvents/10);
-    
+    return 0;
     
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) {
@@ -168,13 +186,38 @@ int main(int argc, char * argv[]) {
         }
         if (i % division == 0) tGain->Write("", TObject::kOverwrite);
         // Initial coordinates of the photon.
+        double x0 = width/2.;
+        double y0 = depth/2.;
+        double z0 = ddrift;
+        return 0;
+        /*
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;
         double y0 = depth/2. + RndmUniform() * pitch;
         double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
         //double t0 = ( i + RndmUniform() )* timespace;
+         */
         double t0 = i * timespace;
-        double e = 0;
+        // Sample the photon energy, using the relative intensities according to XDB.
+        const double r = 167. * RndmUniform();
+        const double egamma = r < 100. ? 5898.8 : r < 150. ? 5887.6 : 6490.4;
+        /* // translation
+         double egamma;
+         if ( r<100) egamma = 5898.8;
+         else if ( r<150 ) egamma = 5887.6;
+         else egamma = 6490.4;
+         */
+        int ne = 0;
+        track->TransportPhoton(x0, y0, z0, t0, egamma, 0., 0., -1, ne);
+        double xcls,  ycls,  zcls, tcls;
+        int n;
+        double e;
+        double extra;
+        track->GetCluster(xcls, ycls, zcls, tcls, n, e, extra);
+        std::cout << xcls << ycls << " " << zcls << " " << tcls << " " << n << " " <<  e << " " << extra << std::endl;
+        return 0;
+        // change the following
+        //double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
         int ne2 = 0, ni = 0;
         aval->GetAvalancheSize(ne2, ni);

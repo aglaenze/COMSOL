@@ -23,7 +23,7 @@ int Convolute() {
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10";
-    const int modelNum = 10;
+    const int modelNum = 1;
     //____________________
     
     
@@ -35,66 +35,101 @@ int Convolute() {
     TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
      
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-    Int_t num = GetNumberOfFiles(path, "gain");
+    Int_t num = GetNumberOfFiles(path, "signal");
+    num = 1;
     
     Int_t nPrimaryTh = GetPrimary(gasName);
     //Int_t nPrimaryTh = 600;
     
-    TString fGainName, fOutputName;
+    TString fSignalName, fChargeName, fOutputName;
     
-    for (unsigned int k = 0; k < num; ++k) {
+    Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
+    hvMm = 340;
+    hvDrift = 540;
+    fSignalName = path+Form("signal-%d-%d.root", hvMm, hvDrift);
+    fChargeName = path+Form("charges-%d-%d.root", hvMm, hvDrift);
+    fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
+    
+    std::map <std::string, int> electrode;
+    if (modelNum==1) {
+        electrode["mesh"] = 2;
+        electrode["drift"] = 3;
+        electrode["pad"] = 4;
+    }
+    
+    //for (unsigned int k = 0; k < num; ++k) {
+    /*
         Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
         if (modelNum == 1) {
             hvMm = 340+20*k;
             hvDrift = 540+20*k;
-            fGainName = path+Form("gain-%d-%d", hvMm, hvDrift);
-            fOutputName = Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
+            fsignalName = path+Form("signal-%d-%d", hvMm, hvDrift);
+            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
         }
-        else if (modelNum > 6 && modelNum < 10) {
+        else if (modelNum >= 2 && modelNum < 5) {
             hvDmDown = 300;
             hvDmUp = 600;
             hvDrift = 800;
-            fGainName = path+Form("gain-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
-            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
+            fsignalName = path+Form("signal-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
+            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
         }
-        else if (modelNum == 10) {
+        else if (modelNum == 5) {
             hvMm = 300;
             hvDmDown = 400;
             hvDmUp = 700;
             hvDrift = 900;
-            fGainName = path+Form("gain-%d-%d-%d-%d", hvMm, hvDmDown, hvDmUp, hvDrift);
-            fOutputName = Form("Fe-spectrum-convoluted-%d-%d-%d-%d.root", hvMm, hvDmDown, hvDmUp, hvDrift);
+            fsignalName = path+Form("signal-%d-%d-%d-%d", hvMm, hvDmDown, hvDmUp, hvDrift);
+            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d-%d-%d.root", hvMm, hvDmDown, hvDmUp, hvDrift);
         }
 
-        TFile fGain(fGainName + ".root");
-        TH1F* hGain = (TH1F*) fGain.Get("hElectrons");
-        //hGain->Rebin(15);
+        TFile fsignal(fSignalName + ".root");
+        TH1F* hsignal = (TH1F*) fsignal.Get("hElectrons");
+        //hsignal->Rebin(15);
+     */
+    
+    int readoutElectrode = electrode["pad"];
+    
+    TFile fSignal(fSignalName);
+    TTree* tGain = (TTree*) fSignal.Get("tGain");
+    Int_t gain;
+    tGain->SetBranchAddress("secondaryElectrons", &gain);
+    
+    TFile fCharge(fChargeName);
+    TTree* tCharge = (TTree*) fCharge.Get(Form("tCharges_V%d", readoutElectrode));
+    Double_t nTotal;
+    tCharge->SetBranchAddress("nTotal", &nTotal);
         
-        Int_t nGain = hGain->GetEntries();
+        Int_t nGain = tGain->GetEntries();
+        Int_t nCharge = tCharge->GetEntries();
         Int_t nFe = hFe->GetEntries();
-        std::cout << "Number of entries in hGain = " << nGain << std::endl;
+        std::cout << "Number of entries in tGain = " << nGain << std::endl;
         std::cout << "Number of entries in hFe = " << nFe << std::endl;
+    std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
 
-        const Int_t nBins = int(nGain/4);
-        Int_t iBinMax = hGain->GetMaximumBin(); // Return location of bin with maximum value in the range
-        Double_t xMax = hGain->GetXaxis()->GetBinCenter(iBinMax);
-        //TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, 0.02*TMath::Exp(0.0352*hvMm) );
-        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*20 );
+        //const Int_t nBins = int(nGain/4);
+        const Int_t nBins = int(tGain->GetMaximum("secondaryElectrons")/4);
+    const Int_t nBins2 = int(tCharge->GetMaximum("nTotal")/4);
+    
+        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*4 );
+    TH1F* hFeSignal = new TH1F("hFeSignal", "Signal with Fe source", nBins2, 0, nBins2*4 );
         
-        std::cout << "maximum bin = " << hGain->GetMaximumBin() << std::endl;
+        //std::cout << "maximum bin = " << hsignal->GetMaximumBin() << std::endl;
         
         for (unsigned int i = 0; i < 100000; ++i) {
             Int_t nPrim = hFe->GetRandom();
             //std::cout << "\nNprim = " << nPrim << std::endl;
-            Double_t gtot = 0;
+            Double_t gtot = 0, gtot2 = 0;
             for (unsigned int j = 0; j < nPrim; ++j) {
-                Double_t gain = hGain->GetRandom();
-                //std::cout << "gainBin = " << gainBin << std::endl;
-                //std::cout << "gain = " << gain << std::endl;
+                int r = rand() % nGain;
+                tGain->GetEntry(r);
                 gtot += gain;
-                //hFeElectrons->Fill(gain);
+                int r2 = rand() % nCharge;
+                //return 0;
+                tCharge->GetEntry(r2);
+                gtot2 += nTotal;
             }
             hFeElectrons->Fill(gtot/nPrimaryTh);
+            hFeSignal->Fill(gtot2/nPrimaryTh);
             //std::cout << gtot << std::endl;
         }
         
@@ -105,12 +140,16 @@ int Convolute() {
         hFeElectrons->SetYTitle("# counts");
         hFeElectrons->Draw();
         //c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
+    
+    hFeSignal->SetXTitle("# secondary electrons");
+    hFeSignal->SetYTitle("# counts");
         
         // Write convolution histograms in root files
-        TFile* f = new TFile(path+fOutputName, "RECREATE");
+        TFile* f = new TFile(fOutputName, "RECREATE");
         hFeElectrons->Write();
+        hFeSignal->Write();
         f->Close();
-    }
+    //}
 
     
     time_t t1 = time(NULL);
