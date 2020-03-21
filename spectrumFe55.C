@@ -45,9 +45,6 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
-    // Set up detector geometry
-    GeometrySimple* geo = new GeometrySimple();
-    
     //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
@@ -68,7 +65,8 @@ int main(int argc, char * argv[]) {
     geo->AddSolid(&tube, gas);
      */
     
-    
+    // Set up detector geometry
+    GeometrySimple* geo = new GeometrySimple();
     // Set up the bulk
     SolidBox bulk = SolidBox(width/2., depth/2., ddrift/2., width/2., depth/2., ddrift/2.);
     geo->AddSolid(&bulk, gas);

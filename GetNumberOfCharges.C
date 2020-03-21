@@ -13,7 +13,7 @@
 
 
 
-int DrawSignal() {
+int GetNumberOfCharges() {
     
     //______________________
     // variables
@@ -91,10 +91,10 @@ int DrawSignal() {
         //TFile* fAmp = new TFile(fOutputName, "RECREATE");
     
     TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540.root", "READ");
-    TFile* fAmp = new TFile("rootFiles/Ar-iC4H10/model1/charges-340-540.root", "RECREATE");
+    TFile* fCharge = new TFile("rootFiles/Ar-iC4H10/model1/charges-340-540.root", "RECREATE");
     
     std::map <std::string, int> electrode;
-    if (modelNum==1) {
+    if (modelNum == 1) {
         electrode["mesh"] = 2;
         electrode["drift"] = 3;
         electrode["pad"] = 4;
@@ -195,7 +195,7 @@ int DrawSignal() {
             
 
         }
-        fAmp->Close();
+        fCharge->Close();
      //}
     
      

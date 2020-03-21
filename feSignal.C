@@ -1,3 +1,8 @@
+/*
+Note that the spectrum shape only depends on the detector geometry
+ Photons create electrons with energy = 0
+*/
+
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -6,9 +11,6 @@
 #include <TROOT.h>
 #include <TApplication.h>
 #include <TH1F.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TBranch.h>
 
 #include "_Utils.C"
 #include "parameters.C"
@@ -16,10 +18,9 @@
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
 #include "Garfield/AvalancheMC.hh"
+#include "Garfield/TrackHeed.hh"
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/SolidTube.hh"
-#include "Garfield/ViewSignal.hh"
-#include "Garfield/TrackHeed.hh"
 #include "Garfield/GeometrySimple.hh"
 #include "Garfield/SolidBox.hh"
 #include "Garfield/ComponentConstant.hh"
@@ -27,6 +28,7 @@
 #include "Garfield/FundamentalConstants.hh"
 #include "Garfield/Random.hh"
 #include "Garfield/Plotting.hh"
+#include "Garfield/ViewSignal.hh"
 
 using namespace Garfield;
 
@@ -34,6 +36,7 @@ int main(int argc, char * argv[]) {
     
     //______________________
     // variables
+    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     //____________________
@@ -51,33 +54,30 @@ int main(int argc, char * argv[]) {
     ComponentComsol* fm;
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
-    int electrodeNum = 0;
     if (modelNum == 1) {
         if (argc != 3) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDrift " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDrift " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
-        electrodeNum = 3;
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
     else if (modelNum >= 2 && modelNum < 5) {
         if (argc != 4) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
-        electrodeNum = 4;
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
     }
     else if (modelNum >= 5 && modelNum < 8) {
         if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
@@ -85,12 +85,11 @@ int main(int argc, char * argv[]) {
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
-        electrodeNum = 5;
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
     }
     else if (modelNum >= 8 && modelNum < 10) {
         if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
@@ -98,42 +97,38 @@ int main(int argc, char * argv[]) {
         hvGemUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
-        electrodeNum = 5;
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
     
-        //Load geometry parameters
+    //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
-    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-    //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
-    //return 0;
-    
+    int electrodeNum = 0;
+    std::map <std::string, int> electrodeMap;
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth, electrodeNum, electrodeMap);
+
+
     // Set up detector geometry
     GeometrySimple* geo = new GeometrySimple();
-    
     // Set up the bulk
     SolidBox bulk = SolidBox(width/2., depth/2., ddrift/2., width/2., depth/2., ddrift/2.);
     geo->AddSolid(&bulk, gas);
     fm->SetGeometry(geo);
-    //return 0;
+    geo->PrintSolids();
 
-    
-    // Make a sensor.
+    // Make a sensor
     Sensor* sensor = new Sensor();
     sensor->AddComponent(fm);
     sensor->SetArea(0, 0, 0, width, depth, ddrift);
-    //sensor->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
     for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
     
     // Use Heed for simulating the photon absorption.
-    TrackHeed* track = nullptr;
-    track->SetSensor(sensor);
+    TrackHeed track;
+    track.SetSensor(sensor);
+    track.EnableElectricField();
     
-    // il lui faut une géométrie !
-    
-    const int nEvents = 5;
+    const int nEvents = 100;
     
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
@@ -141,19 +136,17 @@ int main(int argc, char * argv[]) {
     
     TTree *tGain = new TTree("tGain","Gain");
     Int_t nWinners = 0;
-    tGain->Branch("secondaryElectrons", &nWinners, "secondaryElectrons/I");
+    tGain->Branch("electronNumber", &nWinners, "electronNumber/I");
 
-    
     // Set the signal binning.
     //const int nTimeBins = 10000;
     const double tStep = 0.1;   //ns
     const double rate = 1.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
-    //const double timespace = 1./rate*1.e9;    // in ns
-    const double timespace = 2000.;    // in ns
+    const double timespace = 1./rate*1.e9;    // in ns
     const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
     const double tStart =  0.;
     //const double tEnd = int(nEvents * timespace + ionDelay);
-    const double tEnd = int(nEvents * timespace);
+    const double tEnd = int(nEvents * timespace + ionDelay);
     //const double tStep = (tEnd - tStart) / nTimeBins;
     const int nTimeBins = (tEnd - tStart)/tStep;
     sensor->SetTimeWindow(tStart, tStep, nTimeBins);
@@ -176,28 +169,18 @@ int main(int argc, char * argv[]) {
     drift->EnableSignalCalculation();
     
     int division = int(nEvents/10);
-    return 0;
-    
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) {
             std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
             time_t t = time(NULL);
-            PrintTime(t0, t);            
+            PrintTime(t0, t);
+            tGain->Write("", TObject::kOverwrite);
         }
-        if (i % division == 0) tGain->Write("", TObject::kOverwrite);
         // Initial coordinates of the photon.
         double x0 = width/2.;
         double y0 = depth/2.;
         double z0 = ddrift;
-        return 0;
-        /*
-        double x0 = width/2. + RndmUniform() * pitch;
-        //double y0 = RndmUniform() * depth;
-        double y0 = depth/2. + RndmUniform() * pitch;
-        double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
-        //double t0 = ( i + RndmUniform() )* timespace;
-         */
-        double t0 = i * timespace;
+        double t0 = (i+RndmUniform() ) * timespace;
         // Sample the photon energy, using the relative intensities according to XDB.
         const double r = 167. * RndmUniform();
         const double egamma = r < 100. ? 5898.8 : r < 150. ? 5887.6 : 6490.4;
@@ -208,43 +191,44 @@ int main(int argc, char * argv[]) {
          else egamma = 6490.4;
          */
         int ne = 0;
-        track->TransportPhoton(x0, y0, z0, t0, egamma, 0., 0., -1, ne);
-        double xcls,  ycls,  zcls, tcls;
-        int n;
-        double e;
-        double extra;
-        track->GetCluster(xcls, ycls, zcls, tcls, n, e, extra);
-        std::cout << xcls << ycls << " " << zcls << " " << tcls << " " << n << " " <<  e << " " << extra << std::endl;
-        return 0;
-        // change the following
-        //double e = 0;
-        aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
-        int ne2 = 0, ni = 0;
-        aval->GetAvalancheSize(ne2, ni);
-        std::cout << "\nAvalanche size = " << ne2 << std::endl;
-        if (ne2 < 4) {i--; continue;}
-        /*
-        if (modelNum == 1) { nWinners = ne2;
-            //hElectrons->Fill(ne2);    // ok for modelNum < 4
-            //continue;
-        }
-         */
-        const int np = aval->GetNumberOfElectronEndpoints();
-        double xe1, ye1, ze1, te1, e1;
-        double xe2, ye2, ze2, te2, e2;
-        double xi1, yi1, zi1, ti1;
-        double xi2, yi2, zi2, ti2;
-        int status;
+        double dx0 = -1+RndmUniform()*2;
+        double dy0 = -1+RndmUniform()*2;
+        track.TransportPhoton(x0, y0, z0, t0, egamma, dx0, dy0, -1, ne);
+        if (ne < 2) continue;
+        std::cout << "ne = " << ne << std::endl;    // number of primaries
         nWinners = 0;
-        for (int j = np; j--;) {
-            aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-            drift->DriftIon(xe1, ye1, ze1, te1);
-            drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-            if (ze2 < 0.01) nWinners++;
+        double x, y, z, t, e, dx, dy, dz;
+        for (int j = 0; j < ne; j++) {
+            track.GetElectron(j, x, y, z, t, e, dx, dy, dz);
+            std::cout << x << " " << y << " " << z << " " << t << " " << e << " " << std::endl;
+            aval->AvalancheElectron(x, y, z, t, e, dx, dy, dz);
+            int ne2 = 0, ni = 0;
+            aval->GetAvalancheSize(ne2, ni);
+            std::cout << "\nAvalanche size = " << ne2 << std::endl;
+            if (ne2 < 4) {i--; continue;}
+            /*
+            if (modelNum == 1) { nWinners = ne2;
+                //hElectrons->Fill(ne2);    // ok for modelNum < 4
+                //continue;
+            }
+             */
+            const int np = aval->GetNumberOfElectronEndpoints();
+            double xe1, ye1, ze1, te1, e1;
+            double xe2, ye2, ze2, te2, e2;
+            double xi1, yi1, zi1, ti1;
+            double xi2, yi2, zi2, ti2;
+            int status;
+            for (int j = np; j--;) {
+                aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+                drift->DriftIon(xe1, ye1, ze1, te1);
+                drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+                if (ze2 < 0.01) nWinners++;
+            }
         }
-        std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-        if (nWinners > 0) tGain->Fill();
+        tGain->Fill();
+        
     }
+    tGain->Write();
 
     for (int k = 0; k < electrodeNum; k++) {
         TTree *tSignal = new TTree(Form("tSignal_V%d",k+2),"Currents");
@@ -253,8 +237,8 @@ int main(int argc, char * argv[]) {
         tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
         tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
         tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
+
         
-            
         for (int j = 0; j < nTimeBins; j++) {
             ft = j * tStep;
             //std::cout << ft << std::endl;
@@ -265,14 +249,13 @@ int main(int argc, char * argv[]) {
         }
         tSignal->Write();
     }
-    tGain->Write();
-    f->Close();
 
+    f->Close();
     
     // Plot the signal.
     const bool plotSignal = false;
     if (plotSignal) {
-        TCanvas* cSignal = new TCanvas("signal", "Signal");
+        TCanvas* cSignal = new TCanvas("feSignal", "Fe Signal");
         ViewSignal* vSignal = new ViewSignal();
         gPad->SetLeftMargin(0.15);
         vSignal->SetSensor(sensor);
@@ -280,13 +263,12 @@ int main(int argc, char * argv[]) {
         //void PlotSignal(const std::string& label, const bool total = true, const bool electron = false, const bool ion = false);
         vSignal->SetRangeX(0, nEvents*timespace+1000);
         vSignal->PlotSignal("V2", true, true, true);    // signal de la mesh
-        cSignal->SaveAs("Figures/Signal.pdf");
+        cSignal->SaveAs("Figures/FeSignal.pdf");
     }
-    
     
     time_t t1 = time(NULL);
     
-    std::cout << "\n" << nEvents << " events simulated" << std::endl;
+    std::cout << "\n" << nEvents << " events of photons simulated" << std::endl;
     PrintTime(t0, t1);
     
     //app.Run(true);
