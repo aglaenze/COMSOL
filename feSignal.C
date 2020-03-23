@@ -106,6 +106,8 @@ int main(int argc, char * argv[]) {
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
     
+    //fOutputName = Form("rootFiles/%s/model%d/feSignal-1event-test.root", gasName.c_str(), modelNum);
+    
     // for testing without overwriting good files
     //fOutputName = Form("rootFiles/%s/model%d/test-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
     
@@ -135,7 +137,8 @@ int main(int argc, char * argv[]) {
     track.SetSensor(sensor);
     track.EnableElectricField();
     
-    const int nEvents = 100;
+    //const int nEvents = 1;
+    const int nEvents = 20;
     
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
@@ -240,7 +243,7 @@ int main(int argc, char * argv[]) {
     tGain->Write();
 
     for (int k = 0; k < electrodeNum; k++) {
-        TTree *tSignal = new TTree(Form("tSignal_V%d",k+2),"Currents");
+        TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
         Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
         tSignal->Branch("time", &ft, "time/D");
         tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");

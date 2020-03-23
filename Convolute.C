@@ -95,7 +95,7 @@ int Convolute() {
     tGain->SetBranchAddress("secondaryElectrons", &gain);
     
     TFile fCharge(fChargeName);
-    TTree* tCharge = (TTree*) fCharge.Get(Form("tCharges_V%d", readoutElectrode));
+    TTree* tCharge = (TTree*) fCharge.Get(Form("tCharges_%d", readoutElectrode));
     Double_t nTotal;
     tCharge->SetBranchAddress("nTotal", &nTotal);
         

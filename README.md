@@ -1,6 +1,8 @@
 # COMSOL
 Garfield project for IBF simulation in a Micromegas detector
 
+For more details look at https://docs.google.com/presentation/d/1y05BzpoZSenbcIpKmfioo0CFtZaqDmReeGPT6FDoHwY/edit?usp=sharing
+
 Don't forget to change in the source code the unit length (in ComponentComsol.cc) --> it has to be in um and not m, replace 100.0 with 1.e-4
 
 - parameters.C: contains geometry characterization of each model

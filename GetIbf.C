@@ -142,14 +142,14 @@ void GetIbf() {
 
     Double_t fctPad = 0.;
     //Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
-    TTree* tSignalPad = (TTree*)fSignal->Get(Form("tSignal_V%d", electrodeMap["pad"]));
+    TTree* tSignalPad = (TTree*)fSignal->Get(Form("tSignal_%d", electrodeMap["pad"]));
     //tSignal->SetBranchAddress("time", &ft);
     tSignalPad->SetBranchAddress("totalCurrent", &fctPad);
     //tSignal->SetBranchAddress("electronCurrent", &fce);
     //tSignal->SetBranchAddress("ionCurrent", &fci);
     
     Double_t fctDrift = 0.;
-    TTree* tSignalDrift = (TTree*)fSignal->Get(Form("tSignal_V%d", electrodeMap["drift"]));
+    TTree* tSignalDrift = (TTree*)fSignal->Get(Form("tSignal_%d", electrodeMap["drift"]));
     tSignalDrift->SetBranchAddress("totalCurrent", &fctDrift);
     
     
@@ -173,7 +173,7 @@ void GetIbf() {
         if (abs(fctDrift) > 0) hCurrentDrift->Fill(fctDrift);
     }
     
-    TCanvas* cv = new TCanvas("cv", "cv");
+    TCanvas* cv = new TCanvas("cv", "cv", 800, 400);
     cv->Divide(2);
     
     cv->cd(1);

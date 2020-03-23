@@ -129,10 +129,8 @@ int main(int argc, char * argv[]) {
     // Set the signal binning.
     //const int nTimeBins = 10000;
     const double tStep = 0.1;   //ns
-    const double rate = 1.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
     //const double timespace = 1./rate*1.e9;    // in ns
     const double timespace = 2000.;    // in ns // 2µs so that events don't overlap
-    const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
     const double tStart =  0.;
     //const double tEnd = int(nEvents * timespace + ionDelay);
     const double tEnd = int(nEvents * timespace);
@@ -204,7 +202,7 @@ int main(int argc, char * argv[]) {
     }
 
     for (int k = 0; k < electrodeNum; k++) {
-        TTree *tSignal = new TTree(Form("tSignal_V%d",k+2),"Currents");
+        TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
         Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
         tSignal->Branch("time", &ft, "time/D");
         tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");

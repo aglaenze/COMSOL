@@ -24,9 +24,6 @@ int GetNumberOfCharges() {
     time_t t0 = time(NULL);
     gStyle->SetOptStat(0);
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-    TFile fFe(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()));
-    TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
-    Int_t nPrimaryTh = GetPrimary(gasName);
      
     // Get number of files to look at
     Int_t num = 1;
@@ -92,7 +89,7 @@ int GetNumberOfCharges() {
     TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540.root", "READ");
     TFile* fCharge = new TFile("rootFiles/Ar-iC4H10/model1/charges-340-540.root", "RECREATE");
     
-    std::map <std::string, int> electrode;
+    std::map <std::string, int> electrodeMap;
     LoadElectrodeMap(modelNum, electrodeMap);
 
   
@@ -103,12 +100,12 @@ int GetNumberOfCharges() {
             TCanvas* c2 = new TCanvas("c2", "c2", 1500, 500);
             c2->Divide(3);
             
-            TH1F* hIon = new TH1F(Form("hIon_V%d", j+2), Form("hIon_V%d", j+2), 100, 0, 0.2);
-            TH1F* hElectron = new TH1F(Form("hElectron_V%d", j+2), Form("hElectron_V%d", j+2), 300, 0, 3000);
-            TH1F* hTotal = new TH1F(Form("hTotal_V%d", j+2), Form("hTotal_V%d", j+2), 300, 0, 3000);
+            TH1F* hIon = new TH1F(Form("hIon_%d", j+2), Form("hIon_%d", j+2), 100, 0, 0.2);
+            TH1F* hElectron = new TH1F(Form("hElectron_%d", j+2), Form("hElectron_%d", j+2), 300, 0, 3000);
+            TH1F* hTotal = new TH1F(Form("hTotal_%d", j+2), Form("hTotal_%d", j+2), 300, 0, 3000);
              */
             
-            TTree *tCharges = new TTree(Form("tCharges_V%d", j+2),Form("tCharges_V%d", j+2));
+            TTree *tCharges = new TTree(Form("tCharges_%d", j+2),Form("tCharges_%d", j+2));
             Double_t nIons = 0, nElectrons = 0, nTotal = 0;
             tCharges->Branch("nIons", &nIons, "nIons/D");
             tCharges->Branch("nElectrons", &nElectrons, "nElectrons/D");
@@ -116,7 +113,7 @@ int GetNumberOfCharges() {
    
             
             Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
-            TTree* tSignal = (TTree*)fSignal->Get(Form("tSignal_V%d", j+2));
+            TTree* tSignal = (TTree*)fSignal->Get(Form("tSignal_%d", j+2));
             tSignal->SetBranchAddress("time", &ft);
             tSignal->SetBranchAddress("totalCurrent", &fct);
             tSignal->SetBranchAddress("electronCurrent", &fce);
@@ -128,7 +125,7 @@ int GetNumberOfCharges() {
             double threshold = 0;
             if ( abs(thresholdNeg) > abs(thresholdPos)) threshold = abs(thresholdNeg);
             else threshold = abs(thresholdPos);
-            threshold = 0.2;
+            //threshold = 0.2;
             std::cout << "threshold = " << threshold << std::endl;
             
             
@@ -148,9 +145,9 @@ int GetNumberOfCharges() {
                 timeRef = ft;
                 if (abs(fct)>threshold) {
                     if (!signal) {nEvents++; signal = true;}
-                    nIons+=abs(fci)/tStep;
-                    nElectrons+=abs(fce)/tStep;
-                    nTotal+=abs(fct)/tStep;
+                    nIons+=abs(fci)*tStep;
+                    nElectrons+=abs(fce)*tStep;
+                    nTotal+=abs(fct)*tStep;
                 }
                 else {
                     if (signal) {
@@ -184,7 +181,7 @@ int GetNumberOfCharges() {
              */
             tCharges->Write();
             
-            //c2->SaveAs(Form("Figures/CurrentsV%d.pdf", j+2));
+            //c2->SaveAs(Form("Figures/Currents%d.pdf", j+2));
             
             std::cout << nEvents << " events founds " << std::endl;
             
