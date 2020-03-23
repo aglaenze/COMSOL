@@ -87,7 +87,8 @@ int main(int argc, char * argv[]) {
     const int nBins = 500;
     TH1::StatOverflows(true);
     TH1F hElectrons("hElectrons", "Number of electrons", nBins, 0., nBins);
-    const int nEvents = 1000000;
+    const int nEvents = 200000;
+    int echecs = 0;
     int division = int(nEvents/10);
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) std::cout << i << "/" << nEvents << "\n";
@@ -113,6 +114,7 @@ int main(int argc, char * argv[]) {
         int ne = 0;
         track.TransportPhoton(x0, y0, z0, t0, egamma, 0., 0., -1, ne);
         if (ne > 2) hElectrons.Fill(ne);
+        else {echecs++; i--;}
     }
     
     const bool drawSpectrum = true;
@@ -144,6 +146,7 @@ int main(int argc, char * argv[]) {
     time_t t1 = time(NULL);
     
     std::cout << "\n" << nEvents << " events simulated" << std::endl;
+    std::cout << "\n" << echecs << " photons did not convert into electrons" << std::endl;
     PrintTime(t0, t1);
     
     //app.Run(true);

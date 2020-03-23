@@ -9,7 +9,6 @@
 #include <TMath.h>
 
 #include "_Utils.C"
-#include "_Data.C"
 
 
 
@@ -94,11 +93,7 @@ int GetNumberOfCharges() {
     TFile* fCharge = new TFile("rootFiles/Ar-iC4H10/model1/charges-340-540.root", "RECREATE");
     
     std::map <std::string, int> electrode;
-    if (modelNum == 1) {
-        electrode["mesh"] = 2;
-        electrode["drift"] = 3;
-        electrode["pad"] = 4;
-    }
+    LoadElectrodeMap(modelNum, electrodeMap);
 
   
         for (int j = 0; j < electrodeNum; j++) {

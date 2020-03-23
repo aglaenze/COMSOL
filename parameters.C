@@ -68,43 +68,25 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
     depth = periodicityNum * pitch;
 }
 
-void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddrift, double& dmylar, double& radius, double& pitch, double& width, double& depth, int& electrodeNum, std::map <std::string, int>& electrodeMap) {
+void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddrift, double& dmylar, double& radius, double& pitch, double& width, double& depth, int& electrodeNum) {
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
     if (modelNum == 1) {
         electrodeNum = 3;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
     else if (modelNum == 2) {
         electrodeNum = 4;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
     else if (modelNum == 3) {
         electrodeNum = 4;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
     else if (modelNum == 4) {
         electrodeNum = 4;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 5 && modelNum < 8) {
         electrodeNum = 5;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 8 && modelNum < 10) {  // from here, GEM
         electrodeNum = 5;
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
     }
 }
 

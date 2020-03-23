@@ -54,3 +54,23 @@ Int_t GetPrimary(std::string gasName) {
     else {std::cout << "What gas??" << std::endl; return 0;}
     return nPrimaryTh;
 }
+
+void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
+    if (modelNum == 1) {
+        electrodeMap["mesh"] = 2;
+        electrodeMap["drift"] = 3;
+        electrodeMap["pad"] = 4;
+    }
+    else if (modelNum == 2) {
+        electrodeMap["mesh"] = 2;
+        electrodeMap["drift"] = 3;
+        electrodeMap["pad"] = 4;
+    }
+    else {std::cout << "no info for this model" << std::endl;}
+}
+
+int GetElectrodeNum(int modelNum) {
+    if (modelNum == 1) return 3;
+    else if (modelNum == 2) return 4;
+    else {std::cout << "no info for this model" << std::endl; return 0;}
+}

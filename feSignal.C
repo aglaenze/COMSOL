@@ -54,59 +54,66 @@ int main(int argc, char * argv[]) {
     ComponentComsol* fm;
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
+    int saveNum;
     if (modelNum == 1) {
-        if (argc != 3) {
-            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDrift " << std::endl;
+        if (argc != 4) {
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDrift $saveNum" << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
+        saveNum = atoi(argv[3]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
     }
     else if (modelNum >= 2 && modelNum < 5) {
-        if (argc != 4) {
-            std::cout << "Please enter HVmesh like this: ./feSignal $hvDmDown $hvDmUp $hvDrift " << std::endl;
+        if (argc != 5) {
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvDmDown $hvDmUp $hvDrift $saveNum" << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
+        saveNum = atoi(argv[4]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
     else if (modelNum >= 5 && modelNum < 8) {
-        if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
+        if (argc != 6) {
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvDmDown $hvDmUp $hvDrift $saveNum" << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
+        saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
     }
     else if (modelNum >= 8 && modelNum < 10) {
-        if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
+        if (argc != 6) {
+            std::cout << "Please enter HVmesh like this: ./feSignal $hvMesh $hvGemDown $hvGemUp $hvDrift $saveNum" << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvGemDown = atoi(argv[2]);
         hvGemUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
+        saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/feSignal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
+    
+    // for testing without overwriting good files
+    //fOutputName = Form("rootFiles/%s/model%d/test-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
     
     //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     int electrodeNum = 0;
-    std::map <std::string, int> electrodeMap;
-    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth, electrodeNum, electrodeMap);
+    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth, electrodeNum);
 
 
     // Set up detector geometry
@@ -141,7 +148,7 @@ int main(int argc, char * argv[]) {
     // Set the signal binning.
     //const int nTimeBins = 10000;
     const double tStep = 0.1;   //ns
-    const double rate = 1.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
+    const double rate = 6.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
     const double timespace = 1./rate*1.e9;    // in ns
     const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
     const double tStart =  0.;
@@ -171,7 +178,7 @@ int main(int argc, char * argv[]) {
     int division = int(nEvents/10);
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) {
-            std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
+            std::cout << "\n\n\n\n" << i << "/" << nEvents << "\n\n" << std::endl;
             time_t t = time(NULL);
             PrintTime(t0, t);
             tGain->Write("", TObject::kOverwrite);
@@ -194,18 +201,20 @@ int main(int argc, char * argv[]) {
         double dx0 = -1+RndmUniform()*2;
         double dy0 = -1+RndmUniform()*2;
         track.TransportPhoton(x0, y0, z0, t0, egamma, dx0, dy0, -1, ne);
-        if (ne < 2) continue;
+        //track.TransportPhoton(x0, y0, z0, t0, egamma, 0, 0, -1, ne);
+        if (ne < 2) {i--; continue;}
         std::cout << "ne = " << ne << std::endl;    // number of primaries
+        //continue;
         nWinners = 0;
         double x, y, z, t, e, dx, dy, dz;
         for (int j = 0; j < ne; j++) {
             track.GetElectron(j, x, y, z, t, e, dx, dy, dz);
-            std::cout << x << " " << y << " " << z << " " << t << " " << e << " " << std::endl;
+            //std::cout << x << " " << y << " " << z << " " << t << " " << e << " " << std::endl;
             aval->AvalancheElectron(x, y, z, t, e, dx, dy, dz);
             int ne2 = 0, ni = 0;
             aval->GetAvalancheSize(ne2, ni);
-            std::cout << "\nAvalanche size = " << ne2 << std::endl;
-            if (ne2 < 4) {i--; continue;}
+            // std::cout << "\nAvalanche size = " << ne2 << std::endl;
+            //if (ne2 < 4) {j--; continue;}
             /*
             if (modelNum == 1) { nWinners = ne2;
                 //hElectrons->Fill(ne2);    // ok for modelNum < 4
@@ -261,7 +270,7 @@ int main(int argc, char * argv[]) {
         vSignal->SetSensor(sensor);
         vSignal->SetCanvas(cSignal);
         //void PlotSignal(const std::string& label, const bool total = true, const bool electron = false, const bool ion = false);
-        vSignal->SetRangeX(0, nEvents*timespace+1000);
+        vSignal->SetRangeX(0, tEnd);
         vSignal->PlotSignal("V2", true, true, true);    // signal de la mesh
         cSignal->SaveAs("Figures/FeSignal.pdf");
     }
