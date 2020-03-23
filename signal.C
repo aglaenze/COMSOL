@@ -131,7 +131,7 @@ int main(int argc, char * argv[]) {
     const double tStep = 0.1;   //ns
     const double rate = 1.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
     //const double timespace = 1./rate*1.e9;    // in ns
-    const double timespace = 2000.;    // in ns
+    const double timespace = 2000.;    // in ns // 2µs so that events don't overlap
     const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
     const double tStart =  0.;
     //const double tEnd = int(nEvents * timespace + ionDelay);
