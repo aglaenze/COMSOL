@@ -49,6 +49,8 @@ int main(int argc, char * argv[]) {
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    
+    //ddrift = 10.; // to test a much larger detector
 
     MediumMagboltz* gas = InitiateGas(gasName);
     //std::cout << "width = " << width << std::endl;
@@ -87,7 +89,7 @@ int main(int argc, char * argv[]) {
     const int nBins = 500;
     TH1::StatOverflows(true);
     TH1F hElectrons("hElectrons", "Number of electrons", nBins, 0., nBins);
-    const int nEvents = 200000;
+    const int nEvents = 1000000;
     int echecs = 0;
     int division = int(nEvents/10);
     for (unsigned int i = 0; i < nEvents; ++i) {
@@ -114,7 +116,7 @@ int main(int argc, char * argv[]) {
         int ne = 0;
         track.TransportPhoton(x0, y0, z0, t0, egamma, 0., 0., -1, ne);
         if (ne > 2) hElectrons.Fill(ne);
-        else {echecs++; i--;}
+        else {echecs++;}
     }
     
     const bool drawSpectrum = true;

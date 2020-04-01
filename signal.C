@@ -200,6 +200,7 @@ int main(int argc, char * argv[]) {
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) tGain->Fill();
     }
+    tGain->Write("", TObject::kOverwrite);
 
     for (int k = 0; k < electrodeNum; k++) {
         TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
@@ -220,7 +221,6 @@ int main(int argc, char * argv[]) {
         }
         tSignal->Write();
     }
-    tGain->Write();
     f->Close();
 
     

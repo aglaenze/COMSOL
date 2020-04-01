@@ -110,8 +110,7 @@ int GetNumberOfCharges() {
             tCharges->Branch("nIons", &nIons, "nIons/D");
             tCharges->Branch("nElectrons", &nElectrons, "nElectrons/D");
             tCharges->Branch("nTotal", &nTotal, "nTotal/D");
-   
-            
+               
             Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
             TTree* tSignal = (TTree*)fSignal->Get(Form("tSignal_%d", j+2));
             tSignal->SetBranchAddress("time", &ft);

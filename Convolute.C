@@ -107,11 +107,11 @@ int Convolute() {
     std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
 
         //const Int_t nBins = int(nGain/4);
-        const Int_t nBins = int(tGain->GetMaximum("secondaryElectrons")/4);
-    const Int_t nBins2 = int(tCharge->GetMaximum("nTotal")/4);
+    const Int_t nBins = int(tGain->GetMaximum("secondaryElectrons")/4);
+    const Int_t nBins2 = int(tCharge->GetMaximum("nTotal")/1);
     
         TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*4 );
-    TH1F* hFeSignal = new TH1F("hFeSignal", "Signal with Fe source", nBins2, 0, nBins2*4 );
+    TH1F* hFeSignal = new TH1F("hFeSignal", "Signal with Fe source", nBins2, 0, nBins2*1 );
         
         //std::cout << "maximum bin = " << hsignal->GetMaximumBin() << std::endl;
         

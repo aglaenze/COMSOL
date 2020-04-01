@@ -137,9 +137,6 @@ int main(int argc, char * argv[]) {
     track.SetSensor(sensor);
     track.EnableElectricField();
     
-    //const int nEvents = 1;
-    const int nEvents = 20;
-    
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
     //TFile* f = new TFile("rootFiles/test.root", "RECREATE");
@@ -147,10 +144,16 @@ int main(int argc, char * argv[]) {
     TTree *tGain = new TTree("tGain","Gain");
     Int_t nWinners = 0;
     tGain->Branch("electronNumber", &nWinners, "electronNumber/I");
+    TTree *tZstart = new TTree("tZstart","zStart");
+    Double_t zStart = 0.;
+    tZstart->Branch("zStart",&zStart,"zStart/D");
+    
+    //const int nEvents = 1;
+    const int nEvents = 100;
 
     // Set the signal binning.
     //const int nTimeBins = 10000;
-    const double tStep = 0.1;   //ns
+    const double tStep = 0.1;           //ns
     const double rate = 6.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
     const double timespace = 1./rate*1.e9;    // in ns
     const double ionDelay = 1.e3;    // time to collect all ions at the drift electrode ~1ms
@@ -185,6 +188,7 @@ int main(int argc, char * argv[]) {
             time_t t = time(NULL);
             PrintTime(t0, t);
             tGain->Write("", TObject::kOverwrite);
+            tZstart->Write("", TObject::kOverwrite);
         }
         // Initial coordinates of the photon.
         double x0 = width/2.;
@@ -205,7 +209,7 @@ int main(int argc, char * argv[]) {
         double dy0 = -1+RndmUniform()*2;
         track.TransportPhoton(x0, y0, z0, t0, egamma, dx0, dy0, -1, ne);
         //track.TransportPhoton(x0, y0, z0, t0, egamma, 0, 0, -1, ne);
-        if (ne < 2) {i--; continue;}
+        if (ne < 2) {continue;}
         std::cout << "ne = " << ne << std::endl;    // number of primaries
         //continue;
         nWinners = 0;
@@ -235,12 +239,14 @@ int main(int argc, char * argv[]) {
                 drift->DriftIon(xe1, ye1, ze1, te1);
                 drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
                 if (ze2 < 0.01) nWinners++;
+                zStart = ze1;
+                tZstart->Fill();
             }
         }
         tGain->Fill();
-        
     }
-    tGain->Write();
+    tGain->Write("", TObject::kOverwrite);
+    tZstart->Write("", TObject::kOverwrite);
 
     for (int k = 0; k < electrodeNum; k++) {
         TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");

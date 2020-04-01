@@ -2,6 +2,7 @@
 #include "TString.h"
 #include "TDatime.h"
 #include "TFile.h"
+#include "TColor.h"
 #include "TStyle.h"
 #include "TColor.h"
 #include <iostream>
@@ -37,12 +38,17 @@ double GetLowerLimit(double x) {
 Double_t FitGauss( Double_t* x, Double_t* par ) { //(Double_t x, Double_t mean = 0, Double_t sigma = 1, Bool_t norm = kFALSE)
 return  par[2]*TMath::Gaus( x[0], par[0], par[1]); }
 
-TF1* FitCurrent(TH1F* hCurrent) {
+TF1* FitCurrent(TH1F* hCurrent, Double_t fitWidth) {
     Int_t iBinMax = hCurrent->GetMaximumBin();
-    Int_t xMax = hCurrent->GetXaxis()->GetBinCenter( iBinMax );
+    Double_t xMax = hCurrent->GetXaxis()->GetBinCenter( iBinMax );
     
-    Int_t fitRangeMin = xMax - 0.6 * hCurrent->GetRMS();
-    Int_t fitRangeMax = xMax + 0.6 * hCurrent->GetRMS();
+    std::cout << "xMax = " << xMax << std::endl;
+    std::cout << "maximum = " << hCurrent->GetMaximum() << std::endl;
+    
+    //Int_t fitRangeMin = xMax - 0.6 * hCurrent->GetRMS();
+    //Int_t fitRangeMax = xMax + 0.6 * hCurrent->GetRMS();
+    Int_t fitRangeMin = xMax - fitWidth;
+    Int_t fitRangeMax = xMax + fitWidth;
 
     TF1* f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
     f->SetParNames("Mean", "Sigma", "Amplitude");
@@ -133,8 +139,8 @@ void GetIbf() {
         //TFile* fSignal = TFile::Open(signalFileName, "READ");
         //TFile* fAmp = new TFile(fOutputName, "RECREATE");
     
-    TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/feSignal-340-540.root", "READ");
-    //TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540.root", "READ");
+    //TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/feSignal-340-540.root", "READ");
+    TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540.root", "READ");
 
     
     std::map <std::string, int> electrodeMap;
@@ -164,8 +170,9 @@ void GetIbf() {
     double iPadMax = tSignalPad->GetMaximum("totalCurrent");
     double iPadMin = tSignalPad->GetMinimum("totalCurrent");
     
-    TH1F* hCurrentPad = new TH1F("hCurrentPad", "Currents in the pad", 300, GetLowerLimit(iPadMin), GetUpperLimit(iPadMax));
-    TH1F* hCurrentDrift = new TH1F("hCurrentDrift", "Currents in the drift electrode", 300, GetLowerLimit(iDriftMin), GetUpperLimit(iDriftMax));
+    //TH1F* hCurrentPad = new TH1F("hCurrentPad", "Currents in the pad", 400, GetLowerLimit(iPadMin), GetUpperLimit(iPadMax));
+    TH1F* hCurrentPad = new TH1F("hCurrentPad", "Currents in the pad", 10000, iPadMin-20, iPadMax+20);
+    TH1F* hCurrentDrift = new TH1F("hCurrentDrift", "Currents in the drift electrode", 5000, iDriftMin-1, iDriftMax+1);
     for (int k=0; k<nEntries; k++) {
         tSignalPad->GetEntry(k);
         tSignalDrift->GetEntry(k);
@@ -177,12 +184,15 @@ void GetIbf() {
     cv->Divide(2);
     
     cv->cd(1);
+    TF1* fPad = FitCurrent(hCurrentPad, 3.);
+    hCurrentPad->GetXaxis()->SetRangeUser(fPad->GetParameter(0)-20, fPad->GetParameter(0)+20);
     hCurrentPad->Draw();
-    TF1* fPad = FitCurrent(hCurrentPad);
     fPad->Draw("same");
     cv->cd(2);
+    TF1* fDrift = FitCurrent(hCurrentDrift, 0.01);
+    //hCurrentDrift->GetXaxis()->SetRangeUser(fDrift->GetParameter(0)-20, fDrift->GetParameter(0)+20);
     hCurrentDrift->Draw();
-    TF1* fDrift = FitCurrent(hCurrentDrift);
+    //fDrift->SetLineColor(kGreen);
     fDrift->Draw("same");
     
 /*
@@ -191,7 +201,7 @@ void GetIbf() {
             legend->AddEntry(hImonWithout[j],"Without source","l");
             legend->Draw();
  */
-    cv->SaveAs("Figures/currents.pdf");
+    cv->SaveAs("Figures/currents-signal.pdf");
     
     ibfList[0] = -fDrift->GetParameter(0)/fPad->GetParameter(0);
     std::cout << "ibf = " << ibfList[0] << "%" << std::endl;
