@@ -51,11 +51,7 @@ int Convolute() {
     fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
     
     std::map <std::string, int> electrode;
-    if (modelNum==1) {
-        electrode["mesh"] = 2;
-        electrode["drift"] = 3;
-        electrode["pad"] = 4;
-    }
+    LoadElectrodeMap(modelNum, electrode);
     
     //for (unsigned int k = 0; k < num; ++k) {
     /*
@@ -99,18 +95,18 @@ int Convolute() {
     Double_t nTotal;
     tCharge->SetBranchAddress("nTotal", &nTotal);
         
-        Int_t nGain = tGain->GetEntries();
-        Int_t nCharge = tCharge->GetEntries();
-        Int_t nFe = hFe->GetEntries();
-        std::cout << "Number of entries in tGain = " << nGain << std::endl;
-        std::cout << "Number of entries in hFe = " << nFe << std::endl;
+    Int_t nGain = tGain->GetEntries();
+    Int_t nCharge = tCharge->GetEntries();
+    Int_t nFe = hFe->GetEntries();
+    std::cout << "Number of entries in tGain = " << nGain << std::endl;
+    std::cout << "Number of entries in hFe = " << nFe << std::endl;
     std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
 
         //const Int_t nBins = int(nGain/4);
     const Int_t nBins = int(tGain->GetMaximum("secondaryElectrons")/4);
     const Int_t nBins2 = int(tCharge->GetMaximum("nTotal")/1);
     
-        TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*4 );
+    TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*4 );
     TH1F* hFeSignal = new TH1F("hFeSignal", "Signal with Fe source", nBins2, 0, nBins2*1 );
         
         //std::cout << "maximum bin = " << hsignal->GetMaximumBin() << std::endl;
@@ -136,19 +132,20 @@ int Convolute() {
         TCanvas* c1 = new TCanvas();
         c1->cd();
         
-        hFeElectrons->SetXTitle("# secondary electrons");
-        hFeElectrons->SetYTitle("# counts");
-        hFeElectrons->Draw();
-        //c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
+    hFeElectrons->SetXTitle("# secondary electrons");
+    hFeElectrons->SetYTitle("# counts");
+    hFeElectrons->Draw();
+    c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
     
     hFeSignal->SetXTitle("# secondary electrons");
     hFeSignal->SetYTitle("# counts");
         
-        // Write convolution histograms in root files
-        TFile* f = new TFile(fOutputName, "RECREATE");
-        hFeElectrons->Write();
-        hFeSignal->Write();
-        f->Close();
+    // Write convolution histograms in root files
+    TFile* f = new TFile(fOutputName, "RECREATE");
+    f->cd();
+    hFeElectrons->Write();
+    hFeSignal->Write();
+    f->Close();
     //}
 
     

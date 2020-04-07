@@ -18,7 +18,7 @@ int AddSignalTrees() {
     TString outputName = path + "feSignal-340-540.root";
     TFile* fOut = new TFile(outputName, "RECREATE");
     
-    const int numberOfFiles = 12;
+    const int numberOfFiles = 3;
     
     TTree *tGain = new TTree("tGain","Gain");
     TTree *tZstart = new TTree("tZstart","Departure z of electrons");
@@ -26,7 +26,7 @@ int AddSignalTrees() {
     Double_t zStart = 0.;
     tGain->Branch("gain", &gain, "gain/I");
     tZstart->Branch("zStart", &zStart, "zStart/D");
-    
+    /*
     for (int i = 1; i<numberOfFiles+1; i++) {
         TString fileName = path + Form("feSignal-340-540-%d.root", i);
         TFile* fIn = TFile::Open(fileName, "READ");
@@ -58,16 +58,17 @@ int AddSignalTrees() {
     fOut->cd();
     tGain->Write();
     tZstart->Write();
-    fOut->Close();
+    //fOut->Close();
+     */
     
 
-    return 0;
+    //return 0;
     
     //__________________//
     // à partir de là ça ne marche pas
     
     const int electrodeNum = 3;
-    const int nEvents = 100;
+    const int nEvents = 20;
     const double tStep = 0.1;   //ns
     const double rate = 6.e7;               // number of events per s (note that t units are ns here, we'll need a conversion factor)
     const double timespace = 1./rate*1.e9;    // in ns
@@ -76,7 +77,8 @@ int AddSignalTrees() {
     std::vector<TTree*> treeVector;
     
     
-    for (int k = 0; k < electrodeNum; k++) {
+    //for (int k = 0; k < electrodeNum; k++) {
+    for (int k = 0; k < 1; k++) {
         // new TTree
         TTree *tSignalNew = new TTree(Form("tSignal_%d",k+2),"Currents");
         Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
@@ -127,17 +129,19 @@ int AddSignalTrees() {
                 tSignal2->SetBranchAddress("electronCurrent", &ce2);
                 tSignal2->SetBranchAddress("ionCurrent", &ci2);
             }
-            
-            //int n = 1000;
+
             int n = tSignal->GetEntries();
-            std::cout << "tPast = " << tPast << std::endl;
-            
-            //Double_t tt = 0., ct = 0., ce = 0., ci = 0.;
+            std::cout << "\n\ntPast = " << tPast << std::endl;
+
             for (int l = nLimit; l < n; l++) {
                 //if (l-nLimit < 0) return 2;
                 tSignal->GetEntry(l);
                 ft = tPast + tt;
-                //if (ft-tRef != tStep) {std::cout << "problem in time, dt = " << ft-tRef << std::endl;}
+                // this cout does not work well
+                if (int(10*(ft-tRef-tStep)) > 0 ) {
+                    //std::cout << "problem in time, dt = " << ft-tRef << std::endl;
+                    //break;
+                }
                 //std::cout << "ft = " << ft << std::endl;
                 tRef = tPast + tt;
                 fct = ct;
@@ -145,12 +149,10 @@ int AddSignalTrees() {
                 fci = ci;
                 //return 0;
         
-                if (ft == signalDurationT) {
+                if (int(10*(ft-signalDurationT)) == 0) {
                     nLimit = l;
-                    std::cout << "\n\nnLimit = " << nLimit << std::endl;
+                    std::cout << "\n\n\n\n\n\nnLimit = " << nLimit << std::endl;
                 }
-                 
-                
                 if (ft > signalDurationT && i<numberOfFiles) {
                     tSignal2->GetEntry(l-nLimit);
                     fct += ct2;
@@ -165,13 +167,12 @@ int AddSignalTrees() {
             tPast+=signalDurationT;
                 //return 0;
         }   // end for i<numberOfFiles
-        //return 0;
-        treeVector.push_back(tSignalNew);
-        //tSignalNew->Write();
+        
+        fOut->cd();
+        tSignalNew->Write();
         
     } // end for k < electrodeNum
     
-    for (int i = 0; i<treeVector.size(); i++) treeVector[i]->Write();
     fOut->Close();
     
     return 0;

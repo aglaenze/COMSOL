@@ -45,15 +45,29 @@ int main(int argc, char * argv[]) {
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
     
+    MediumMagboltz* gas = InitiateGas(gasName);
+    
     //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
     
-    //ddrift = 10.; // to test a much larger detector
+    const char* nameOut = Form("rootFiles/%s/ConversionNumber.root", gasName.c_str());
+    TFile* fOut = new TFile(nameOut, "RECREATE");
+    
+    double ddriftMin = 0.3;
+    double zStep = 0.2;
+    int nStep = 50;
+    
+    TH1F* hConversion = new TH1F("hConversion", "Proportion of photons that converted", nStep, ddriftMin-zStep/2, ddriftMin+nStep*zStep-zStep/2);
+    
+    
+    for (int k = 0; k<nStep; k++) {
+        ddrift = ddriftMin+k*zStep; // cm
 
-    MediumMagboltz* gas = InitiateGas(gasName);
-    //std::cout << "width = " << width << std::endl;
+        std::cout << "\n\n\n" << nStep-k << " to go... " << std::endl;
+        time_t t1 = time(NULL);
+        PrintTime(t0, t1);
     
     /*
     // Create a cylinder in which the x-rays can convert.
@@ -118,8 +132,20 @@ int main(int argc, char * argv[]) {
         if (ne > 2) hElectrons.Fill(ne);
         else {echecs++;}
     }
+        hConversion->Fill(ddrift, 1-(double)echecs/nEvents);
+        std::cout << "\n" << nEvents << " events simulated" << std::endl;
+        std::cout << "\n" << echecs << " photons did not convert into electrons" << std::endl;
+    }
+    hConversion->Write();
+    fOut->Close();
+    gStyle->SetOptStat(0);
+    TCanvas* cv = new TCanvas("conv", "Proportion of photons that converted to electrons", 600, 300);
+    hConversion->SetXTitle("length traversed (cm)");
+    hConversion->Draw("hist");
+    cv->SaveAs("Figures/IonizingPhotons.pdf");
     
-    const bool drawSpectrum = true;
+    /*
+    const bool drawSpectrum = false;
     if (drawSpectrum) {
         TCanvas c("c", "", 600, 600);
         c.cd();
@@ -139,16 +165,17 @@ int main(int argc, char * argv[]) {
         std::cout << "nPrimary = 157 in Ne" << std::endl;
     }
     
-    // Write the histograms to the TFile.
-    const char* name = Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str());
-    TFile* f = new TFile(name, "RECREATE");
-    hElectrons.Write();
-    f->Close();
+    const bool saveResults = false;
+        if (saveResults) {
+        // Write the histograms to the TFile.
+        const char* name = Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str());
+        TFile* f = new TFile(name, "RECREATE");
+        hElectrons.Write();
+        f->Close();
+    }
+     */
     
     time_t t1 = time(NULL);
-    
-    std::cout << "\n" << nEvents << " events simulated" << std::endl;
-    std::cout << "\n" << echecs << " photons did not convert into electrons" << std::endl;
     PrintTime(t0, t1);
     
     //app.Run(true);

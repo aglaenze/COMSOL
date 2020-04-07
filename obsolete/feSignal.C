@@ -219,7 +219,7 @@ int main(int argc, char * argv[]) {
             //std::cout << x << " " << y << " " << z << " " << t << " " << e << " " << std::endl;
             aval->AvalancheElectron(x, y, z, t, e, dx, dy, dz);
             int ne2 = 0, ni = 0;
-            aval->GetAvalancheSize(ne2, ni);
+            aval->GetAvalancheSize(ne2, ni);    // ne2 = number of secondary electrons
             // std::cout << "\nAvalanche size = " << ne2 << std::endl;
             //if (ne2 < 4) {j--; continue;}
             /*
