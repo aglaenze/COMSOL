@@ -19,7 +19,7 @@ Attention ! Choisir la resolution de la mesh avec attention, ca doit être le pl
 
 6) Calculer
 
-7) Exporter les donéees
+7) Exporter les données
 - données avec V (potentiel de l'etude), V2, V3, ... (avec Vi weighting potential de l'electrode i, V=1 a l'electrode et 0 sur toutes les autres)
 Attention, dans options avancées, il faut aller dans resolution --> nombre de noeuds = 2
 - maillage mesh.mphtxt (!! attention a l'extension)

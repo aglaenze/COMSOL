@@ -166,6 +166,7 @@ int main(int argc, char * argv[]) {
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) hElectrons->Fill(nWinners);
     }
+    hElectrons->Write("", TObject::kOverwrite);
     f->Close();
     
     const bool drawSpectrum = false;

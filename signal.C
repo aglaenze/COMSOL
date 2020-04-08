@@ -33,6 +33,7 @@ int main(int argc, char * argv[]) {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
+    const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
     //____________________
     
     time_t t0 = time(NULL);
@@ -48,54 +49,59 @@ int main(int argc, char * argv[]) {
     ComponentComsol* fm;
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
+    int saveNum;
     int electrodeNum = 0;
     if (modelNum == 1) {
-        if (argc != 3) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDrift " << std::endl;
+        if (argc != 4) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDrift = atoi(argv[2]);
+        saveNum = atoi(argv[3]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
         electrodeNum = 3;
     }
     else if (modelNum >= 2 && modelNum < 5) {
-        if (argc != 4) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift " << std::endl;
+        if (argc != 5) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvDmDown = atoi(argv[1]);
         hvDmUp = atoi(argv[2]);
         hvDrift = atoi(argv[3]);
+        saveNum = atoi(argv[4]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
         electrodeNum = 4;
     }
     else if (modelNum >= 5 && modelNum < 8) {
-        if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
+        if (argc != 6) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvDmDown = atoi(argv[2]);
         hvDmUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
+        saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
         electrodeNum = 5;
     }
     else if (modelNum >= 8 && modelNum < 10) {
-        if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
+        if (argc != 6) {
+            std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvDrift $saveNum " << std::endl;
             return 0;
         }
         hvMesh = atoi(argv[1]);
         hvGemDown = atoi(argv[2]);
         hvGemUp = atoi(argv[3]);
         hvDrift = atoi(argv[4]);
+        saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
-        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
+        fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
         electrodeNum = 5;
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
@@ -123,7 +129,7 @@ int main(int argc, char * argv[]) {
     
     TTree *tGain = new TTree("tGain","Gain");
     Int_t nWinners = 0;
-    tGain->Branch("secondaryElectrons", &nWinners, "secondaryElectrons/I");
+    tGain->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 
     
     // Set the signal binning.
@@ -162,9 +168,9 @@ int main(int argc, char * argv[]) {
         if (i % division == 0) {
             std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
             time_t t = time(NULL);
-            PrintTime(t0, t);            
+            PrintTime(t0, t);
+            tGain->Write("", TObject::kOverwrite);
         }
-        if (i % division == 0) tGain->Write("", TObject::kOverwrite);
         // Initial coordinates of the photon.
         double x0 = width/2. + RndmUniform() * pitch;
         //double y0 = RndmUniform() * depth;
@@ -193,33 +199,36 @@ int main(int argc, char * argv[]) {
         nWinners = 0;
         for (int j = np; j--;) {
             aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+            if (ze2 < 0.01) nWinners++;
+            if (!computeIBF) continue;
             drift->DriftIon(xe1, ye1, ze1, te1);
             drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-            if (ze2 < 0.01) nWinners++;
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) tGain->Fill();
     }
     tGain->Write("", TObject::kOverwrite);
 
-    for (int k = 0; k < electrodeNum; k++) {
-        TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
-        Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
-        tSignal->Branch("time", &ft, "time/D");
-        tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
-        tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
-        tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
-        
+    if (computeIBF) {
+        for (int k = 0; k < electrodeNum; k++) {
+            TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
+            Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
+            tSignal->Branch("time", &ft, "time/D");
+            tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
+            tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
+            tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
             
-        for (int j = 0; j < nTimeBins; j++) {
-            ft = j * tStep;
-            //std::cout << ft << std::endl;
-            fct = sensor->GetSignal(Form("V%d", k+2), j) / ElementaryCharge;
-            fce = sensor->GetElectronSignal(Form("V%d", k+2), j) / ElementaryCharge;
-            fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
-            tSignal->Fill();
+                
+            for (int j = 0; j < nTimeBins; j++) {
+                ft = j * tStep;
+                //std::cout << ft << std::endl;
+                fct = sensor->GetSignal(Form("V%d", k+2), j) / ElementaryCharge;
+                fce = sensor->GetElectronSignal(Form("V%d", k+2), j) / ElementaryCharge;
+                fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
+                tSignal->Fill();
+            }
+            tSignal->Write();
         }
-        tSignal->Write();
     }
     f->Close();
 

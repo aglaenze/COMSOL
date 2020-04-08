@@ -161,7 +161,7 @@ void GetIbf() {
     
     int nEntries = tSignalPad->GetEntries();
     if (tSignalPad->GetEntries() != tSignalDrift->GetEntries() ) {
-        std::cout << "not the same number of entries in tree pas and tree drift" << std::endl;
+        std::cout << "not the same number of entries in tree pad and tree drift" << std::endl;
         return;
     }
     
