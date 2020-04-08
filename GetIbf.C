@@ -139,31 +139,37 @@ void GetIbf() {
         //TFile* fSignal = TFile::Open(signalFileName, "READ");
         //TFile* fAmp = new TFile(fOutputName, "RECREATE");
     
-    //TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/feSignal-340-540.root", "READ");
-    TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540.root", "READ");
+    TFile* fSignal = TFile::Open("rootFiles/Ar-iC4H10/model1/signal-340-540-1.root", "READ");
 
     
     std::map <std::string, int> electrodeMap;
     LoadElectrodeMap(modelNum, electrodeMap);
 
-    Double_t fctPad = 0.;
-    //Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
+    Double_t fctPad = 0., fcePad = 0., fciPad = 0.;
     TTree* tSignalPad = (TTree*)fSignal->Get(Form("tSignal_%d", electrodeMap["pad"]));
     //tSignal->SetBranchAddress("time", &ft);
     tSignalPad->SetBranchAddress("totalCurrent", &fctPad);
-    //tSignal->SetBranchAddress("electronCurrent", &fce);
-    //tSignal->SetBranchAddress("ionCurrent", &fci);
+    tSignalPad->SetBranchAddress("electronCurrent", &fcePad);
+    tSignalPad->SetBranchAddress("ionCurrent", &fciPad);
     
-    Double_t fctDrift = 0.;
+    Double_t fctDrift = 0., fceDrift = 0., fciDrift = 0.;
     TTree* tSignalDrift = (TTree*)fSignal->Get(Form("tSignal_%d", electrodeMap["drift"]));
     tSignalDrift->SetBranchAddress("totalCurrent", &fctDrift);
-    
-    
+    tSignalDrift->SetBranchAddress("electronCurrent", &fceDrift);
+    tSignalDrift->SetBranchAddress("ionCurrent", &fciDrift);
+        
     int nEntries = tSignalPad->GetEntries();
     if (tSignalPad->GetEntries() != tSignalDrift->GetEntries() ) {
         std::cout << "not the same number of entries in tree pad and tree drift" << std::endl;
         return;
     }
+    
+    Double_t currentDriftIntMax = tSignalDrift->GetMaximum("totalCurrentInt");
+    Double_t currentPadIntMin = tSignalPad->GetMinimum("totalCurrentInt");
+    std::cout << "currentDriftIntMax = " << currentDriftIntMax << std::endl;
+    std::cout << "currentPadIntMin = " << currentPadIntMin << std::endl;
+    std::cout << "IBF = " << -currentDriftIntMax/currentPadIntMin*100 << "%" << std::endl;
+    return;
     
     double iDriftMax = tSignalDrift->GetMaximum("totalCurrent");
     double iDriftMin = tSignalDrift->GetMinimum("totalCurrent");
@@ -172,12 +178,28 @@ void GetIbf() {
     
     //TH1F* hCurrentPad = new TH1F("hCurrentPad", "Currents in the pad", 400, GetLowerLimit(iPadMin), GetUpperLimit(iPadMax));
     TH1F* hCurrentPad = new TH1F("hCurrentPad", "Currents in the pad", 10000, iPadMin-20, iPadMax+20);
+    TH1F* hCurrentEPad = new TH1F("hCurrentEPad", "Currents form electrons in the pad", 10000, iPadMin-20, iPadMax+20);
+    TH1F* hCurrentIPad = new TH1F("hCurrentIPad", "Currents from ions in the pad", 10000, iPadMin-20, iPadMax+20);
     TH1F* hCurrentDrift = new TH1F("hCurrentDrift", "Currents in the drift electrode", 5000, iDriftMin-1, iDriftMax+1);
+    TH1F* hCurrentEDrift = new TH1F("hCurrentEDrift", "Currents from electrons in the drift electrode", 5000, iDriftMin-1, iDriftMax+1);
+    TH1F* hCurrentIDrift = new TH1F("hCurrentIDrift", "Currents from ions in the drift electrode", 5000, iDriftMin-1, iDriftMax+1);
     for (int k=0; k<nEntries; k++) {
         tSignalPad->GetEntry(k);
         tSignalDrift->GetEntry(k);
+        /*
         if (abs(fctPad) > 10) hCurrentPad->Fill(fctPad);
         if (abs(fctDrift) > 0) hCurrentDrift->Fill(fctDrift);
+         */
+        if (abs(fctPad) > 10) {
+            hCurrentPad->Fill(fctPad);
+            hCurrentEPad->Fill(fcePad);
+            hCurrentIPad->Fill(fciPad);
+        }
+        if (abs(fctDrift) > 0) {
+            hCurrentDrift->Fill(fctDrift);
+            hCurrentEDrift->Fill(fceDrift);
+            hCurrentIDrift->Fill(fciDrift);
+        }
     }
     
     TCanvas* cv = new TCanvas("cv", "cv", 800, 400);
@@ -186,12 +208,20 @@ void GetIbf() {
     cv->cd(1);
     TF1* fPad = FitCurrent(hCurrentPad, 3.);
     hCurrentPad->GetXaxis()->SetRangeUser(fPad->GetParameter(0)-20, fPad->GetParameter(0)+20);
+    hCurrentEPad->SetLineColor(28);
+    hCurrentIPad->SetLineColor(5);
     hCurrentPad->Draw();
+    hCurrentEPad->Draw("same");
+    hCurrentIPad->Draw("same");
     fPad->Draw("same");
     cv->cd(2);
     TF1* fDrift = FitCurrent(hCurrentDrift, 0.01);
     //hCurrentDrift->GetXaxis()->SetRangeUser(fDrift->GetParameter(0)-20, fDrift->GetParameter(0)+20);
+    hCurrentEDrift->SetLineColor(28); // brown
+    hCurrentIDrift->SetLineColor(5);    // yellow
     hCurrentDrift->Draw();
+    hCurrentEDrift->Draw("same");
+    hCurrentIDrift->Draw("same");
     //fDrift->SetLineColor(kGreen);
     fDrift->Draw("same");
     

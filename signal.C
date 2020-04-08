@@ -127,10 +127,11 @@ int main(int argc, char * argv[]) {
     TFile* f = new TFile(fOutputName, "RECREATE");
     //TFile* f = new TFile("rootFiles/test.root", "RECREATE");
     
-    TTree *tGain = new TTree("tGain","Gain");
+    TTree *tAvalanche = new TTree("tAvalanche","Gain");
     Int_t nWinners = 0;
-    tGain->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
-
+    tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
+    Double_t ibfRatio = 0.;
+    if (computeIBF) tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
     
     // Set the signal binning.
     //const int nTimeBins = 10000;
@@ -169,7 +170,7 @@ int main(int argc, char * argv[]) {
             std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
             time_t t = time(NULL);
             PrintTime(t0, t);
-            tGain->Write("", TObject::kOverwrite);
+            tAvalanche->Write("", TObject::kOverwrite);
         }
         // Initial coordinates of the photon.
         double x0 = width/2. + RndmUniform() * pitch;
@@ -196,6 +197,7 @@ int main(int argc, char * argv[]) {
         double xi1, yi1, zi1, ti1;
         double xi2, yi2, zi2, ti2;
         int status;
+        int ionBackNum = 0;
         nWinners = 0;
         for (int j = np; j--;) {
             aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
@@ -203,11 +205,15 @@ int main(int argc, char * argv[]) {
             if (!computeIBF) continue;
             drift->DriftIon(xe1, ye1, ze1, te1);
             drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            if (zi2 > 1.5*damp) ionBackNum+=1;
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-        if (nWinners > 0) tGain->Fill();
+        if (nWinners > 0) {
+            if (computeIBF) ibfRatio = ionBackNum/ni;
+            tAvalanche->Fill();}
+        //hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
     }
-    tGain->Write("", TObject::kOverwrite);
+    tAvalanche->Write("", TObject::kOverwrite);
 
     if (computeIBF) {
         for (int k = 0; k < electrodeNum; k++) {
@@ -227,7 +233,7 @@ int main(int argc, char * argv[]) {
                 fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
                 tSignal->Fill();
             }
-            tSignal->Write();
+            tSignal->Write("", TObject::kOverwrite);
         }
     }
     f->Close();
