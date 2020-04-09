@@ -24,6 +24,7 @@ int Convolute() {
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10";
     const int modelNum = 1;
+    const bool drawConvoluteSpectrum = true;
     //____________________
     
     
@@ -31,28 +32,22 @@ int Convolute() {
     
     gStyle->SetOptStat(0);
 
-    TFile fFe(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()));
-    TH1F* hFe = (TH1F*)fFe.Get("hElectrons");
      
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     Int_t num = GetNumberOfFiles(path, "signal");
     num = 1;
     
     Int_t nPrimaryTh = GetPrimary(gasName);
-    //Int_t nPrimaryTh = 600;
     
     TString fSignalName, fChargeName, fOutputName;
     
     Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
     hvMm = 340;
     hvDrift = 540;
-    fSignalName = path+Form("signal-%d-%d.root", hvMm, hvDrift);
-    fChargeName = path+Form("charges-%d-%d.root", hvMm, hvDrift);
-    fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
-    
-    std::map <std::string, int> electrode;
-    LoadElectrodeMap(modelNum, electrode);
-    
+    fSignalName = path+Form("signal-%d-%d-2.root", hvMm, hvDrift);
+    fOutputName = path+Form("fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
+    TFile* f = new TFile(fOutputName, "RECREATE");
+
     //for (unsigned int k = 0; k < num; ++k) {
     /*
         Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
@@ -77,78 +72,87 @@ int Convolute() {
             fsignalName = path+Form("signal-%d-%d-%d-%d", hvMm, hvDmDown, hvDmUp, hvDrift);
             fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d-%d-%d.root", hvMm, hvDmDown, hvDmUp, hvDrift);
         }
-
-        TFile fsignal(fSignalName + ".root");
-        TH1F* hsignal = (TH1F*) fsignal.Get("hElectrons");
-        //hsignal->Rebin(15);
      */
     
-    int readoutElectrode = electrode["pad"];
+    //int readoutElectrode = electrode["mesh"];   // if readout electrode = pad, do not foget the - sign
+    int electrodeNum = GetElectrodeNum(modelNum);
     
-    TFile fSignal(fSignalName);
-    TTree* tGain = (TTree*) fSignal.Get("tGain");
-    Int_t gain;
-    tGain->SetBranchAddress("secondaryElectrons", &gain);
-    
-    TFile fCharge(fChargeName);
-    TTree* tCharge = (TTree*) fCharge.Get(Form("tCharges_%d", readoutElectrode));
-    Double_t nTotal;
-    tCharge->SetBranchAddress("nTotal", &nTotal);
-        
-    Int_t nGain = tGain->GetEntries();
-    Int_t nCharge = tCharge->GetEntries();
+    // open input files
+    TFile* fFe = new TFile(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()), "read");
+    TH1F* hFe = (TH1F*)fFe->Get("hElectrons");
     Int_t nFe = hFe->GetEntries();
-    std::cout << "Number of entries in tGain = " << nGain << std::endl;
-    std::cout << "Number of entries in hFe = " << nFe << std::endl;
-    std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
-
-        //const Int_t nBins = int(nGain/4);
-    const Int_t nBins = int(tGain->GetMaximum("secondaryElectrons")/4);
-    const Int_t nBins2 = int(tCharge->GetMaximum("nTotal")/1);
     
-    TH1F* hFeElectrons = new TH1F("hFeElectrons", "Number of secondary electrons with Fe source", nBins, 0, nBins*4 );
-    TH1F* hFeSignal = new TH1F("hFeSignal", "Signal with Fe source", nBins2, 0, nBins2*1 );
+    TFile* fSignal = new TFile(fSignalName, "read");
+    TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
+    Int_t nAvalanche = tAvalanche->GetEntries();
+    
+    Int_t nAmplification;
+    tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+    const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons")/4);
+    
+    // First convolute the trees of induced charges with Fe spectrum
+    for (int k = 0; k<electrodeNum; k++) {
+        TTree* tCharge = (TTree*) fSignal->Get(Form("tInducedCharge_%d", k+2));
+        Double_t totalInducedCharge;
+        tCharge->SetBranchAddress("totalInducedCharge", &totalInducedCharge);
+        Int_t nCharge = tCharge->GetEntries();
+        if (nAvalanche != nCharge) {
+            std::cout << "nAvalanche != nCharge" << std::endl;
+            return 0;
+        }
+        std::cout << "Number of entries in tAvalanche = " << nAvalanche << std::endl;
+        std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
+        std::cout << "Number of entries in hFe = " << nFe << std::endl;
+        TH1F* hFeCharge = new TH1F(Form("hFeCharge_%d", k+2), "Number of induced charges with Fe source", nBins, 0, nBins*4 );
         
-        //std::cout << "maximum bin = " << hsignal->GetMaximumBin() << std::endl;
-        
-        for (unsigned int i = 0; i < 100000; ++i) {
+        for (unsigned int i = 0; i < 10000; ++i) {
             Int_t nPrim = hFe->GetRandom();
             //std::cout << "\nNprim = " << nPrim << std::endl;
-            Double_t gtot = 0, gtot2 = 0;
+            Double_t gtot = 0;
             for (unsigned int j = 0; j < nPrim; ++j) {
-                int r = rand() % nGain;
-                tGain->GetEntry(r);
-                gtot += gain;
-                int r2 = rand() % nCharge;
-                //return 0;
-                tCharge->GetEntry(r2);
-                gtot2 += nTotal;
+                int r = rand() % nCharge;
+                tCharge->GetEntry(r);
+                gtot += abs(totalInducedCharge);
             }
-            hFeElectrons->Fill(gtot/nPrimaryTh);
-            hFeSignal->Fill(gtot2/nPrimaryTh);
-            //std::cout << gtot << std::endl;
+            hFeCharge->Fill(gtot/nPrimaryTh);
         }
+        hFeCharge->SetXTitle("# induced charges");
+        hFeCharge->SetYTitle("# counts");
+        // Write convolution histograms in root files
+        f->cd();
+        hFeCharge->Write();
+    }
+
+    //return 0;
+    // Second convolute the trees of the avalanche size with Fe spectrum
+    TH1F* hFeAmplification = new TH1F("hFeAmplification", "Number of avalanche electrons with Fe source", nBins, 0, nBins*4 );
+    for (unsigned int i = 0; i < 10000; ++i) {
+        Int_t nPrim = hFe->GetRandom();
+        //std::cout << "\nNprim = " << nPrim << std::endl;
+        Double_t gtot = 0;
+        for (unsigned int j = 0; j < nPrim; ++j) {
+            int r = rand() % nAvalanche;
+            tAvalanche->GetEntry(r);
+            gtot += nAmplification;
+        }
+        hFeAmplification->Fill(gtot/nPrimaryTh);
+    }
         
+    if (drawConvoluteSpectrum) {
         TCanvas* c1 = new TCanvas();
         c1->cd();
+            
+        hFeAmplification->SetXTitle("# amplification electrons");
+        hFeAmplification->SetYTitle("# counts");
+        hFeAmplification->Draw("hist");
         
-    hFeElectrons->SetXTitle("# secondary electrons");
-    hFeElectrons->SetYTitle("# counts");
-    hFeElectrons->Draw();
-    c1->SaveAs(Form("Convolution_%s.pdf", gasName.c_str()));
-    
-    hFeSignal->SetXTitle("# secondary electrons");
-    hFeSignal->SetYTitle("# counts");
+        c1->SaveAs(Form("Figures/Convolution_%s.pdf", gasName.c_str()));
+    }
         
-    // Write convolution histograms in root files
-    TFile* f = new TFile(fOutputName, "RECREATE");
+    // Write convolution histogram in root files
     f->cd();
-    hFeElectrons->Write();
-    hFeSignal->Write();
+    hFeAmplification->Write();
     f->Close();
-    //}
-
-    
     time_t t1 = time(NULL);
     PrintTime(t0, t1);
     

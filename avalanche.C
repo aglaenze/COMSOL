@@ -30,7 +30,8 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 8;
+    const int modelNum = 1;
+    const bool plotDrift3D = false;
     //____________________
     
     time_t t0 = time(NULL);
@@ -155,15 +156,16 @@ int main(int argc, char * argv[]) {
             std::cout << "arrival of the electron in x y z : " << xe2 << " " << ye2 << " " <<  ze2 << std::endl;
             }
              */
-            //drift->DriftIon(xe1, ye1, ze1, te1);
-            //drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            if (plotDrift3D) {
+                drift->DriftIon(xe1, ye1, ze1, te1);
+                drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+            }
         }
     }
     
     //return 0;
     
-    const bool plotDrift = false;
-    if (plotDrift) {
+    if (plotDrift3D) {
         TCanvas* c1 = new TCanvas();
         driftView->SetCanvas(c1);
         driftView->Plot();

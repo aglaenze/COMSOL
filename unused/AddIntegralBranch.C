@@ -18,7 +18,7 @@ int AddIntegralBranch() {
     
     int modelNum = 1;
     TString path = Form("rootFiles/Ar-iC4H10/model%d/", modelNum);
-    TString fileName = path + "signal-360-560-1.root";
+    TString fileName = path + "signal-340-540-1.root";
     TFile *f = new TFile(fileName,"update");
 
     int electrodeNum = GetElectrodeNum(modelNum);

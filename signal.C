@@ -34,6 +34,7 @@ int main(int argc, char * argv[]) {
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
+    const int nEvents = 1000;  // number of avalanches to simulate
     //____________________
     
     time_t t0 = time(NULL);
@@ -113,15 +114,13 @@ int main(int argc, char * argv[]) {
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
 
-    
     // Make a sensor.
     Sensor* sensor = new Sensor();
     sensor->AddComponent(fm);
     sensor->SetArea(0, 0, 0, width, depth, ddrift);
     //sensor->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
     for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
-    
-    const int nEvents = 1000;
+    //return 0;
     
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
@@ -137,7 +136,7 @@ int main(int argc, char * argv[]) {
     //const int nTimeBins = 10000;
     const double tStep = 0.1;   //ns
     //const double timespace = 1./rate*1.e9;    // in ns
-    const double timespace = 2000.;    // in ns // 2µs so that events don't overlap
+    const double timespace = 1000.;    // in ns // 1µs so that events don't overlap
     const double tStart =  0.;
     //const double tEnd = int(nEvents * timespace + ionDelay);
     const double tEnd = int(nEvents * timespace);
@@ -209,31 +208,63 @@ int main(int argc, char * argv[]) {
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
         if (nWinners > 0) {
-            if (computeIBF) ibfRatio = ionBackNum/ni;
+            if (computeIBF) ibfRatio = (double)ionBackNum/ni;
+            //std::cout << ibfRatio << std::endl;
             tAvalanche->Fill();}
         //hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
     }
     tAvalanche->Write("", TObject::kOverwrite);
+    
+    //std::cout << "induced charge for electrode " << 2 << " = " << sensor->GetInducedCharge("V2") << std::endl;
 
     if (computeIBF) {
         for (int k = 0; k < electrodeNum; k++) {
             TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
             Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
+            Double_t fctInt = 0, fceInt = 0, fciInt = 0;
             tSignal->Branch("time", &ft, "time/D");
             tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
             tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
             tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
+            tSignal->Branch("totalCurrentInt",&fctInt,"totalCurrentInt/D");     // Integral
+            tSignal->Branch("electronCurrentInt",&fceInt,"electronCurrentInt/D");
+            tSignal->Branch("ionCurrentInt",&fciInt,"ionCurrentInt/D");
             
-                
+            TTree *tCharge = new TTree(Form("tInducedCharge_%d",k+2),"InducedCharge");
+            Double_t tic = 0., eic = 0., iic = 0.;
+            tCharge->Branch("totalInducedCharge", &tic, "totalInducedCharge/D");
+            tCharge->Branch("electronInducedCharge", &eic, "electronInducedCharge/D");
+            tCharge->Branch("ionInducedCharge", &iic, "ionInducedCharge/D");
+            
+     
+            //int evNum = 0;
             for (int j = 0; j < nTimeBins; j++) {
                 ft = j * tStep;
                 //std::cout << ft << std::endl;
                 fct = sensor->GetSignal(Form("V%d", k+2), j) / ElementaryCharge;
                 fce = sensor->GetElectronSignal(Form("V%d", k+2), j) / ElementaryCharge;
-                fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
+                fci = sensor->GetIonSignal(Form("V%d", k+2), j)/ ElementaryCharge;
+                fctInt+=fct*tStep;
+                fceInt+=fce*tStep;
+                fciInt+=fci*tStep;
                 tSignal->Fill();
+                
+                tic+=fct*tStep;
+                eic+=fce*tStep;
+                iic+=fci*tStep;
+                
+                if (int((j+1) * tStep/timespace) == (j+1) * tStep/timespace) {
+                    //tAvalanche->GetEntry(evNum);
+                    //std::cout << "number of amplification electrons = " << nWinners << std::endl;
+                    //std::cout << "total charge induced = " << int(tic) << std::endl;
+                    //evNum++;
+                    tCharge->Fill();
+                    tic = 0; eic = 0; iic = 0;
+                }
             }
             tSignal->Write("", TObject::kOverwrite);
+            tCharge->Write("", TObject::kOverwrite);
+            //std::cout << "induced charge for electrode " << k+2 << " = " << sensor->GetInducedCharge(Form("V%d", k+2)) << std::endl;
         }
     }
     f->Close();
