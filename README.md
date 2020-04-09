@@ -27,7 +27,7 @@ Don't forget to change in the source code the unit length (in ComponentComsol.cc
 
 - PhotonConversionRatio.C: to draw the proportion of photons that converted in the detector as a function of the thickness of the detector, and compare it to the theoretical calculation using the cross section (not found! --> find the cross section of photon at 5.9keV in Ar to finish this)
 
-
+- _Utils.C contains a few useful functions and _Data.C contains data for ZZBOT to compare with simulations
 
 
 
@@ -35,7 +35,11 @@ Note:
 _Utils.C and parameters.C have to be updated / at least checked when using another model than 1
 
 
-In the folder unused, to compute gain and IBF by counting the electrons and ions :
+############################################
+
+In the folder unused (you should NOT use it):
+
+To compute gain and IBF by counting the electrons and ions:
 
 To draw the gain:
 1) ./gain

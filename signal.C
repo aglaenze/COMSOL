@@ -243,7 +243,7 @@ int main(int argc, char * argv[]) {
                 //std::cout << ft << std::endl;
                 fct = sensor->GetSignal(Form("V%d", k+2), j) / ElementaryCharge;
                 fce = sensor->GetElectronSignal(Form("V%d", k+2), j) / ElementaryCharge;
-                fci = sensor->GetIonSignal(Form("V%d", k+2), j)/ ElementaryCharge;
+                fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
                 fctInt+=fct*tStep;
                 fceInt+=fce*tStep;
                 fciInt+=fci*tStep;
