@@ -11,6 +11,10 @@
 #include "_Utils.C"
 #include "_Data.C"
 
+/*
+ TO-DO:
+ - draw gain as a function of field ratio
+ */
 
 
 Double_t FitFunctionCrystalBall( Double_t* x, Double_t* par ) { //(x, alpha, n sigma, mu)
