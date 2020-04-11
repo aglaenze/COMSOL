@@ -42,9 +42,9 @@ int Convolute() {
     TString fSignalName, fChargeName, fOutputName;
     
     Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
-    hvMm = 340;
-    hvDrift = 540;
-    fSignalName = path+Form("signal-%d-%d-2.root", hvMm, hvDrift);
+    hvMm = 440;
+    hvDrift = hvMm+200;
+    fSignalName = path+Form("signal-%d-%d.root", hvMm, hvDrift);
     fOutputName = path+Form("fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
     TFile* f = new TFile(fOutputName, "RECREATE");
 

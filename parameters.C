@@ -80,30 +80,6 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
     depth = periodicityNum * pitch;
 }
 
-void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddrift, double& dmylar, double& radius, double& pitch, double& width, double& depth, int& electrodeNum) {
-    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-    if (modelNum == 1) {
-        electrodeNum = 3;
-    }
-    else if (modelNum == 2) {
-        electrodeNum = 4;
-    }
-    else if (modelNum == 3) {
-        electrodeNum = 4;
-    }
-    else if (modelNum == 4) {
-        electrodeNum = 4;
-    }
-    else if (modelNum >= 5 && modelNum < 8) {
-        electrodeNum = 5;
-    }
-    else if (modelNum >= 8 && modelNum < 10) {  // MM + GEM
-        electrodeNum = 5;
-    }
-    else if (modelNum >= 10 && modelNum < 12) {  // MM + (GEM+MM) combined
-        electrodeNum = 6;
-    }
-}
 
  // Make a gas medium.
 Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
@@ -114,7 +90,7 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
     const std::string path = getenv("GARFIELD_HOME");
     if (gasName=="Ar-iC4H10") {
         gas->SetComposition("Ar", 95., "C4H10", 5.);
-        rPenning = 0.45;
+        rPenning = 0.47;
         gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
         gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
     }
@@ -202,15 +178,6 @@ Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, i
     fm->EnableMirrorPeriodicityX();
     fm->EnableMirrorPeriodicityY();
     fm->PrintRange();
-    
-    // Associate the gas with the corresponding field map material.
-    /*
-     const unsigned int nMaterials = fm->GetNumberOfMaterials();
-     for (unsigned int i = 0; i < nMaterials; ++i) {
-     const double eps = fm->GetPermittivity(i);
-     if (eps == 1.) fm->SetMedium(i, gas);
-     }
-     */
     fm->SetMedium(0, gas);
     fm->PrintMaterials();
     return fm;
@@ -227,15 +194,6 @@ Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, i
     fm->EnableMirrorPeriodicityX();
     fm->EnableMirrorPeriodicityY();
     fm->PrintRange();
-    
-    // Associate the gas with the corresponding field map material.
-    /*
-     const unsigned int nMaterials = fm->GetNumberOfMaterials();
-     for (unsigned int i = 0; i < nMaterials; ++i) {
-     const double eps = fm->GetPermittivity(i);
-     if (eps == 1.) fm->SetMedium(i, gas);
-     }
-     */
     fm->SetMedium(0, gas);
     fm->PrintMaterials();
     return fm;

@@ -1,5 +1,5 @@
 # COMSOL
-Garfield project for IBF simulation in a Micromegas detector
+Garfield project for ion back flow simulation in a Micromegas detector
 
 For more details look at https://docs.google.com/presentation/d/1y05BzpoZSenbcIpKmfioo0CFtZaqDmReeGPT6FDoHwY/edit?usp=sharing
 
@@ -35,9 +35,9 @@ Note:
 _Utils.C and parameters.C have to be updated / at least checked when using another model than 1
 
 
-############################################
 
-In the folder unused (you should NOT use it):
+
+## In the folder unused (you should NOT use it):
 
 To compute gain and IBF by counting the electrons and ions:
 
@@ -60,3 +60,5 @@ To compute the IBF:
 --> fit gain and ibf
 --> draw gain and ibf curve
 --> compare with real data
+
+- GetIbf.C: to get IBF by looking at 1D distribution of current

@@ -52,7 +52,15 @@ int GetGain() {
     //____________________
 
     time_t t0 = time(NULL);
+    gStyle->SetTitleFontSize(.06);
+    gStyle->SetTitleSize(.06);
+
     gStyle->SetOptStat(0);
+    gStyle->SetTitleFontSize(.05);
+    gStyle->SetTitleXSize(.05);
+    gStyle->SetTitleYSize(.05);
+    gStyle->SetLabelSize(.05, "XY");
+    
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     
     double damp = 0.0128, ddrift = 0.5;
@@ -63,15 +71,14 @@ int GetGain() {
     int readoutElectrode = electrode["pad"];
 
     // Get number of files to look at
-    Int_t num = 1;
-    /*
+    //Int_t num = 1;
     Int_t num = GetNumberOfFiles(path, "convoluted");
     Int_t num2 = int(num/2.);
     if (num/2.> num2) num2+=1;
-     */
-    TCanvas* c2 = new TCanvas("c2");
-    c2->Divide(2);
-    //c2->Divide(2, num2);
+
+    TCanvas* c2 = new TCanvas("c2","c2", 600, 300*num2);
+    //c2->Divide(2);
+    c2->Divide(2, num2);
 
     Double_t hvMeshList[num];
     Double_t gainList[num], gainList2[num], gainErrorList[num], gainErrorList2[num];

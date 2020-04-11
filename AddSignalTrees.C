@@ -23,7 +23,7 @@ int AddSignalTrees() {
     
     time_t t0 = time(NULL);
 
-    int hvMm = 420;
+    int hvMm = 440;
     int hvDrift = hvMm+200;
     TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     TString outputName = path + Form("signal-%d-%d.root", hvMm, hvDrift);
@@ -109,7 +109,7 @@ int AddSignalTrees() {
             tSignalIn->GetEntry(4);
             Double_t t1 = timeIn;
             timeStep = t1-t0;
-            std::cout << "timeStep = " << timeStep << std::endl;
+            //std::cout << "timeStep = " << timeStep << std::endl;
             
             int nSignalIn = tSignalIn->GetEntries();
             for (int l = 0; l<nSignalIn; l++) {

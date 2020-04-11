@@ -32,9 +32,9 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 3;
+    const int modelNum = 1;
     const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
-    const int nEvents = 100;  // number of avalanches to simulate
+    const int nEvents = 1000;  // number of avalanches to simulate
     //____________________
     
     time_t t0 = time(NULL);
@@ -102,6 +102,10 @@ int main(int argc, char * argv[]) {
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
     
+    if (!fm || fm->GetMedium(0,0,0) == nullptr) {
+        std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+        return 0;
+    }
     
         //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -111,11 +115,6 @@ int main(int argc, char * argv[]) {
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
     
-    if (!fm || fm->GetMedium(width/2, width/2, depth/2) == nullptr) {
-        std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
-        return 0;
-    }
-
     // Make a sensor.
     Sensor* sensor = new Sensor();
     sensor->AddComponent(fm);
@@ -123,6 +122,7 @@ int main(int argc, char * argv[]) {
     //sensor->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
     for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
     //return 0;
+
     
     // Create ROOT histograms of the signal and a file in which to store them.
     TFile* f = new TFile(fOutputName, "RECREATE");
