@@ -55,22 +55,47 @@ Int_t GetPrimary(std::string gasName) {
     return nPrimaryTh;
 }
 
+int GetElectrodeNum(int modelNum) {
+    if (modelNum == 1) return 3;
+    else if (modelNum >= 2 && modelNum < 5) return 4;
+    else if (modelNum >= 5 && modelNum < 10) return 5;
+    else if (modelNum >= 10 && modelNum < 12) return 6;
+    else {std::cout << "no info for this model" << std::endl; return 0;}
+}
+
 void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
     if (modelNum == 1) {
         electrodeMap["mesh"] = 2;
         electrodeMap["drift"] = 3;
         electrodeMap["pad"] = 4;
     }
-    else if (modelNum == 2) {
-        electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
-        electrodeMap["pad"] = 4;
+    else if (modelNum >= 2 && modelNum < 5) {   // check it's the same for models 2, 3, 4
+        electrodeMap["drift"] = 0;
+        electrodeMap["DM up"] = 0;
+        electrodeMap["DM down"] = 0;
+        electrodeMap["pad"] = 0;
+    }
+    else if (modelNum >= 5 && modelNum < 8) {   // check it's the same for models 5, 6, 7
+        electrodeMap["drift"] = 0;
+        electrodeMap["DM up"] = 0;
+        electrodeMap["DM down"] = 0;
+        electrodeMap["mesh"] = 0;
+        electrodeMap["pad"] = 0;
+    }
+    else if (modelNum >= 8 && modelNum < 10) {   // check it's the same for models 8, 9
+        electrodeMap["drift"] = 0;
+        electrodeMap["GEM up"] = 0;
+        electrodeMap["GEM down"] = 0;
+        electrodeMap["mesh"] = 0;
+        electrodeMap["pad"] = 0;
+    }
+    else if (modelNum >= 10 && modelNum < 12) {   // check it's the same for models 10, 11
+        electrodeMap["drift"] = 0;
+        electrodeMap["mesh top"] = 0;
+        electrodeMap["GEM up"] = 0;
+        electrodeMap["GEM down"] = 0;
+        electrodeMap["mesh"] = 0;
+        electrodeMap["pad"] = 0;
     }
     else {std::cout << "no info for this model" << std::endl;}
-}
-
-int GetElectrodeNum(int modelNum) {
-    if (modelNum == 1) return 3;
-    else if (modelNum == 2) return 4;
-    else {std::cout << "no info for this model" << std::endl; return 0;}
 }

@@ -32,9 +32,9 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 3;
     const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
-    const int nEvents = 1000;  // number of avalanches to simulate
+    const int nEvents = 100;  // number of avalanches to simulate
     //____________________
     
     time_t t0 = time(NULL);
@@ -51,7 +51,6 @@ int main(int argc, char * argv[]) {
     
     int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
     int saveNum;
-    int electrodeNum = 0;
     if (modelNum == 1) {
         if (argc != 4) {
             std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDrift $saveNum " << std::endl;
@@ -62,7 +61,6 @@ int main(int argc, char * argv[]) {
         saveNum = atoi(argv[3]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
-        electrodeNum = 3;
     }
     else if (modelNum >= 2 && modelNum < 5) {
         if (argc != 5) {
@@ -75,7 +73,6 @@ int main(int argc, char * argv[]) {
         saveNum = atoi(argv[4]);
         fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
-        electrodeNum = 4;
     }
     else if (modelNum >= 5 && modelNum < 8) {
         if (argc != 6) {
@@ -89,7 +86,6 @@ int main(int argc, char * argv[]) {
         saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
-        electrodeNum = 5;
     }
     else if (modelNum >= 8 && modelNum < 10) {
         if (argc != 6) {
@@ -103,16 +99,22 @@ int main(int argc, char * argv[]) {
         saveNum = atoi(argv[5]);
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
-        electrodeNum = 5;
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
+    
     
         //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+    int electrodeNum = GetElectrodeNum(modelNum);
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
+    
+    if (!fm || fm->GetMedium(width/2, width/2, depth/2) == nullptr) {
+        std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+        return 0;
+    }
 
     // Make a sensor.
     Sensor* sensor = new Sensor();
@@ -163,7 +165,7 @@ int main(int argc, char * argv[]) {
     
     int division = int(nEvents/10);
     
-    
+    //return 0;
     for (unsigned int i = 0; i < nEvents; ++i) {
         if (i % division == 0) {
             std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
