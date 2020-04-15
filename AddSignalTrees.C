@@ -18,19 +18,31 @@ int AddSignalTrees() {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 14;
     //____________________
     
     time_t t0 = time(NULL);
 
-    int hvMm = 440;
-    int hvDrift = hvMm+200;
+	int hv1, hv2, hv3;
     TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-    TString outputName = path + Form("signal-%d-%d.root", hvMm, hvDrift);
-    TFile* fOut = new TFile(outputName, "RECREATE");
-    
+	TString outputName;
+	
     //const int numberOfFiles = 3;
-    const int numberOfFiles = GetNumberOfFiles(path, Form("signal-%d-%d-", hvMm, hvDrift));
+	int numberOfFiles;
+	if (modelNum == 1) {
+		hv1 = 340;
+		hv2 = hv1+200;
+		numberOfFiles = GetNumberOfFiles(path, Form("signal-%d-%d-", hv1, hv2));
+		outputName = path + Form("signal-%d-%d.root", hv1, hv2);
+	}
+	else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) {
+		hv1 = 300;
+		hv2 = 800;
+		hv3 = 900;
+		numberOfFiles = GetNumberOfFiles(path, Form("signal-%d-%d-%d-", hv1, hv2, hv3));
+		outputName = path + Form("signal-%d-%d-%d.root", hv1, hv2, hv3);
+	}
+	TFile* fOut = new TFile(outputName, "RECREATE");
     const int electrodeNum = GetElectrodeNum(modelNum);
 
     
@@ -44,7 +56,9 @@ int AddSignalTrees() {
     
     // On commence par remplir le TTree tAvalanche
     for (int i = 1; i<numberOfFiles+1; i++) {
-        TString inputName = path + Form("signal-%d-%d-%d.root", hvMm, hvDrift, i);
+		TString inputName;
+		if (modelNum == 1) inputName = path + Form("signal-%d-%d-%d.root", hv1, hv2, i);
+		else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) inputName = path + Form("signal-%d-%d-%d-%d.root", hv1, hv2, hv3, i);
         TFile* fIn = TFile::Open(inputName, "READ");
         TTree* tAvalancheIn = (TTree*)fIn->Get("tAvalanche");
         tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
@@ -88,7 +102,9 @@ int AddSignalTrees() {
         Double_t tFin = 0;
         Double_t timeStep = 0;
         for (int i = 1; i<numberOfFiles+1; i++) {
-            TString inputName = path + Form("signal-%d-%d-%d.root", hvMm, hvDrift, i);
+			TString inputName;
+			if (modelNum == 1) inputName= path + Form("signal-%d-%d-%d.root", hv1, hv2, i);
+			else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) inputName= path + Form("signal-%d-%d-%d-%d.root", hv1, hv2, hv3, i);
             TFile* fIn = TFile::Open(inputName, "READ");
             TTree* tSignalIn = (TTree*)fIn->Get(Form("tSignal_%d",k+2));
             Double_t timeIn;

@@ -125,7 +125,9 @@ int main(int argc, char * argv[]) {
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
     int periodicityNum = 0;
     LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-    int electrodeNum = GetElectrodeNum(modelNum);
+	int electrodeNum = 0;
+	electrodeNum = GetElectrodeNum(modelNum);
+	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
     //std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
     //return 0;
     

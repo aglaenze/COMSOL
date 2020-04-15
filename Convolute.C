@@ -23,7 +23,7 @@ int Convolute() {
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10";
-    const int modelNum = 1;
+    const int modelNum = 14;
     const bool drawConvoluteSpectrum = true;
     //____________________
     
@@ -41,11 +41,21 @@ int Convolute() {
     
     TString fSignalName, fChargeName, fOutputName;
     
-    Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
-    hvMm = 440;
-    hvDrift = hvMm+200;
-    fSignalName = path+Form("signal-%d-%d.root", hvMm, hvDrift);
-    fOutputName = path+Form("fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
+    Int_t hv1 = 0, hv2 = 0, hv3 = 0, hv4 = 0;
+	if (modelNum == 1) {
+		hv1 = 440;
+		hv2 = hv1+200;
+		fSignalName = path+Form("signal-%d-%d.root", hv1, hv2);
+		fOutputName = path+Form("fe-spectrum-convoluted-%d-%d.root", hv1, hv2);
+	}
+	else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) {
+		hv1 = 300;
+		hv2 = 800;
+		hv3 = 900;
+		fSignalName = path+Form("signal-%d-%d-%d.root", hv1, hv2, hv3);
+		fOutputName = path+Form("fe-spectrum-convoluted-%d-%d-%D.root", hv1, hv2, hv3);
+	}
+
     TFile* f = new TFile(fOutputName, "RECREATE");
 
     //for (unsigned int k = 0; k < num; ++k) {
@@ -146,7 +156,7 @@ int Convolute() {
         hFeAmplification->SetYTitle("# counts");
         hFeAmplification->Draw("hist");
         
-        c1->SaveAs(Form("Figures/Convolution_%s.pdf", gasName.c_str()));
+        c1->SaveAs(Form("Figures/Convolution_%d.pdf", modelNum));
     }
         
     // Write convolution histogram in root files
