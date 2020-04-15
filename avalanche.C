@@ -42,7 +42,7 @@ int main(int argc, char * argv[]) {
     ComponentComsol* fm;
     
     TString fOutputName;
-    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvMeshTop = 0, hvDrift = 0;
     if (modelNum == 1) {
         if (argc < 3) {
             std::cout << "Please enter command like this: ./avalanche $hvMesh $hvDrift " << std::endl;
@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
-    else if (modelNum >= 2 && modelNum < 5) {
+    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
         if (argc < 4) {
             std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -88,7 +88,24 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift);
     }
-    else {std::cout << "Wrong model number" << std::endl; return 0;}
+	else if (modelNum >= 10 && modelNum < 12) {
+		if (argc != 6) {
+			std::cout << "Please enter HVmesh like this: ./avalanche $hvMesh $hvGemDown $hvGemUp $hvMeshTop $hvDrift $saveNum " << std::endl;
+			return 0;
+		}
+		hvMesh = atoi(argv[1]);
+		hvGemDown = atoi(argv[2]);
+		hvGemUp = atoi(argv[3]);
+		hvMeshTop = atoi(argv[4]);
+		hvDrift = atoi(argv[5]);
+		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, gas);
+		fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d-%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift);
+	}
+	else {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
+		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+		return 0;
+	}
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -101,7 +118,7 @@ int main(int argc, char * argv[]) {
     // Make a sensor.
     Sensor sensor;
     sensor.AddComponent(fm);
-    sensor.SetArea(0, 0, 0, width, depth, ddrift);
+    sensor.SetArea(-width/2, -depth/2, 0, width/2, depth/2, ddrift);
     //sensor.SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
     
     // To look at the avalanche
@@ -177,10 +194,11 @@ int main(int argc, char * argv[]) {
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
     //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
-    if (modelNum > 1 && modelNum < 5) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
+    if (modelNum > 1 && modelNum < 5 || modelNum == 14) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
     else if (modelNum >= 5 && modelNum < 8) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
     //vFE->SetArea(-10*pitch, -10*pitch, damp-15*pitch,  10*pitch, 10*pitch, damp+5*pitch);
-    vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., 0,  (damp+5*pitch)/2., (damp+5*pitch)/2., damp+5*pitch);
+	else {
+		vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., 0,  (damp+5*pitch)/2., (damp+5*pitch)/2., damp+5*pitch);}
     vFE->SetComponent(fm);
     vFE->SetViewDrift(driftView2);
     //vFE->SetPlane(0, -1, 0, 0, 0, damp);

@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 14;
     const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
     const int nEvents = 1000;  // number of avalanches to simulate
     //____________________
@@ -49,7 +49,7 @@ int main(int argc, char * argv[]) {
     // Load field map
     ComponentComsol* fm;
     
-    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
+    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvMeshTop = 0, hvDrift = 0;
     int saveNum;
     if (modelNum == 1) {
         if (argc != 4) {
@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
     }
-    else if (modelNum >= 2 && modelNum < 5) {
+    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
         if (argc != 5) {
             std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;
@@ -100,6 +100,20 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
     }
+	else if (modelNum >= 10 && modelNum < 12) {
+		if (argc != 7) {
+			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp *hvMeshTop $hvDrift $saveNum " << std::endl;
+			return 0;
+		}
+		hvMesh = atoi(argv[1]);
+		hvGemDown = atoi(argv[2]);
+		hvGemUp = atoi(argv[3]);
+		hvMeshTop = atoi(argv[4]);
+		hvDrift = atoi(argv[5]);
+		saveNum = atoi(argv[6]);
+		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, gas);
+		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, saveNum);
+	}
     else {std::cout << "Wrong model number" << std::endl; return 0;}
     
     if (!fm || fm->GetMedium(0,0,0) == nullptr) {
@@ -129,8 +143,9 @@ int main(int argc, char * argv[]) {
     //TFile* f = new TFile("rootFiles/test.root", "RECREATE");
     
     TTree *tAvalanche = new TTree("tAvalanche","Gain");
-    Int_t nWinners = 0;
+    int ne2 = 0, nWinners = 0;
     tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
+	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
     Double_t ibfRatio = 0.;
     if (computeIBF) tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
     
@@ -182,10 +197,11 @@ int main(int argc, char * argv[]) {
         double t0 = i * timespace;
         double e = 0;
         aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
-        int ne2 = 0, ni = 0;
+        //int ne2 = 0, ni = 0;
+		int ni = 0;
         aval->GetAvalancheSize(ne2, ni);
         std::cout << "\nAvalanche size = " << ne2 << std::endl;
-        if (ne2 < 4) {i--; continue;}
+        //if (ne2 < 4) {i--; continue;}
         /*
         if (modelNum == 1) { nWinners = ne2;
             //hElectrons->Fill(ne2);    // ok for modelNum < 4
@@ -206,13 +222,12 @@ int main(int argc, char * argv[]) {
             if (!computeIBF) continue;
             drift->DriftIon(xe1, ye1, ze1, te1);
             drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-            if (zi2 > 1.5*damp) ionBackNum+=1;
+            if (zi2 > 1.2*damp) ionBackNum+=1;
         }
         std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-        if (nWinners > 0) {
-            if (computeIBF) ibfRatio = (double)ionBackNum/ni;
+		if (computeIBF) ibfRatio = (double)ionBackNum/ni;
             //std::cout << ibfRatio << std::endl;
-            tAvalanche->Fill();}
+		tAvalanche->Fill();
         //hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
     }
     tAvalanche->Write("", TObject::kOverwrite);

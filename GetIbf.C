@@ -59,6 +59,7 @@ int GetIbf() {
 	gStyle->SetTitleXSize(.05);
 	gStyle->SetTitleYSize(.05);
 	gStyle->SetLabelSize(.05, "XY");
+	gStyle->SetMarkerSize(0.3);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	
@@ -252,20 +253,17 @@ int GetIbf() {
 	grSim1->GetHistogram()->SetMinimum(0.);   // along Y axis
 	grSim1->GetHistogram()->SetMaximum(4.);   // along Y axis
 	grSim1->SetMarkerStyle(20);
-	grSim1->SetMarkerSize(0.3);
 	grSim1->SetMarkerColor(1);
 	//grSim1->GetXaxis()->SetLimits(hvMeshList[0]-5, hvMeshList[num]+5);
 	grSim1->Draw("ALP");
 	
 	TGraphErrors* grSim2 = new TGraphErrors(num, hvMeshList, ibfList2, 0, ibfErrorList2);
 	grSim2->SetMarkerStyle(20);
-	grSim2->SetMarkerSize(0.3);
 	grSim2->SetMarkerColor(2);
 	grSim2->Draw("LP same");
 	
 	TGraph* grSim3 = new TGraph(num, hvMeshList, ibfList3);
 	grSim3->SetMarkerStyle(20);
-	grSim3->SetMarkerSize(0.3);
 	grSim3->SetMarkerColor(3);
 	grSim3->Draw("LP same");
 	

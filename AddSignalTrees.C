@@ -36,9 +36,10 @@ int AddSignalTrees() {
     
     // Initialisation of the new TTree tAvalanche
     TTree *tAvalanche = new TTree("tAvalanche","Gain");
-    Int_t nWinners = 0;
+    Int_t nWinners = 0, ne2 = 0;
     Double_t ibfRatio = 0.;
     tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
+	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
     tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
     
     // On commence par remplir le TTree tAvalanche
@@ -47,6 +48,7 @@ int AddSignalTrees() {
         TFile* fIn = TFile::Open(inputName, "READ");
         TTree* tAvalancheIn = (TTree*)fIn->Get("tAvalanche");
         tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
+		tAvalancheIn->SetBranchAddress("avalancheSize", &ne2);
         tAvalancheIn->SetBranchAddress("ibfRatio", &ibfRatio);
         
         int nIn = tAvalancheIn->GetEntries();

@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
     // variables
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 8;
+    const int modelNum = 14;
     //____________________
     
     TApplication app("app", &argc, argv);
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[2]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
     }
-    else if (modelNum >= 2 && modelNum < 5) {
+    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
         if (argc < 4) {
             std::cout << "Please enter command like this: ./plotField $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
@@ -84,6 +84,10 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
     }
     else {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
+		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+		return 0;
+	}
     
 
     //Load geometry parameters
@@ -97,7 +101,7 @@ int main(int argc, char * argv[]) {
     //else if (modelNum == 5) vf->SetPlane(0, -1, 0, 0, 0.5*pitch, 0);
     //else vf->SetPlane(0, -1, 0, 0, 0, 0);
     vf->SetPlane(0, -1, 0, 0, 0, 0);
-    if (modelNum>=8) vf->SetPlane(0, -1, 0, pitch/2, pitch/2, 0);
+    if (modelNum>=8 && modelNum<14) vf->SetPlane(0, -1, 0, pitch/2, pitch/2, 0);
     //vf->SetVoltageRange(-550, 0);
     
     const bool plotField = true;
@@ -126,7 +130,7 @@ int main(int argc, char * argv[]) {
         //TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
         vf->SetCanvas(c2);
         if (modelNum==1) vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
-        else if (modelNum>=8) vf->SetVoltageRange(-hvGemUp*1.05, -hvGemDown/1.05);
+        else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvGemUp*1.05, -hvGemDown/1.05);
         vf->PlotContour("v");
         c2->SaveAs(Form("Figures/potentialZoom-model%d.pdf", modelNum));
         vf->PlotContour("e");
