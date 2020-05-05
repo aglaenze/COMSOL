@@ -16,6 +16,10 @@
  ! but there's an overlapping period (ionDelay) where currents need to be added
  */
 
+Double_t FitFunction(Double_t* x, Double_t* par ) { //(x, alpha, n sigma, mu)
+	return 1-exp(-x[0]*par[0]*par[1]);
+}
+
 int PhotonConversionRatio() {
     
     //______________________
@@ -41,8 +45,7 @@ int PhotonConversionRatio() {
     double ddriftMin = 0.3;
     double zStep = 0.2;
     int nStep = 50;
-    
-    TH1F* hTh = new TH1F("hTh", "Proportion of photons that converted (th)", nStep, ddriftMin-zStep/2, ddriftMin+nStep*zStep-zStep/2);
+	double ddriftMax = ddriftMin+nStep*zStep; // cm
     
     // properties of Argon
     double densityMass = 1.784e-3;      // g/cm3
@@ -54,14 +57,27 @@ int PhotonConversionRatio() {
     std::cout << "Argon density in the mixture = " << density << " cm-3" << std::endl;
     
     double crossSection = 1.6e-20;  // density x cross section has to be in cm-1    // A CHANGER !! TROUVER CETTE VALEUR POUR 5.9 keV
+	//For gases the one-photon absorption cross-section σ1 is typically of the order of 10−17cm2[20], whereas the two-photon and the three-photon cross-sections are of the order of σ2 = W/F 2 ∼ 10−50cm4s and σ3 = W/F 3 ∼ 10−83cm6s2, respectively.
+	// PDG chap 33.4.5, not an exact value but at least it's compatible
     
+	/*
+	 TH1F* hTh = new TH1F("hTh", "Proportion of photons that converted (th)", nStep, ddriftMin-zStep/2, ddriftMin+nStep*zStep-zStep/2);
     for (int k = 0; k<nStep; k++) {
         ddrift = ddriftMin+k*zStep; // cm
         hTh->Fill(ddrift, 1-exp(-density*crossSection*ddrift));
     }
-    
-    hTh->SetLineColor(2);
-    hTh->Draw("hist same");
+	 hTh->SetLineColor(2);
+	 hTh->Draw("hist same");
+	 */
+    TF1* fTh = new TF1("FitFunction", FitFunction, ddriftMin, ddriftMax, 2);
+	fTh->FixParameter(0, density);
+	fTh->SetParameter(1, crossSection);
+	hConversion->Fit(fTh);
+	fTh->Draw("same");
+	
+	double xText = ddriftMin + (ddriftMax-ddriftMin)*0.6;
+	TLatex* txt = new TLatex(xText,0.3,Form("#sigma_{#gamma-Ar} = %.3g cm^{-2}", fTh->GetParameter(1)));
+	txt->Draw();
     
     
     cv->SaveAs("Figures/PhotonConversionRatio.pdf");
