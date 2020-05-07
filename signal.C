@@ -29,13 +29,19 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
-    //______________________
-    // variables
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    //const int modelNum = 14;
-    const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
-    const int nEvents = 1000;  // number of avalanches to simulate
-    //____________________
+	bool testMode = true;
+	//______________________
+	// variables, to change in the file input.txt
+	int modelNum = 0;
+	std::string gasName = "";
+	bool computeIBF = true;
+	int nEvents = 0;  // number of avalanches to simulate
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF)) {std::cout << "variables not loaded" << std::endl; return 0;}
+	//____________________
+	//gasName = "Ar-iC4H10";
+	//modelNum = 1;
+	//std::cout << "gasName " << gasName << std::endl;
+	//return 0;
     
     time_t t0 = time(NULL);
     
@@ -120,6 +126,8 @@ int main(int argc, char * argv[]) {
         std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
         return 0;
     }
+	
+	if (testMode) fOutputName = Form("rootFiles/%s/model%d/signal-test.root", gasName.c_str(), modelNum);
     
         //Load geometry parameters
     double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -183,7 +191,7 @@ int main(int argc, char * argv[]) {
     int division = int(nEvents/10);
     
     //return 0;
-    for (unsigned int i = 0; i < nEvents; ++i) {
+    for (int i = 0; i < nEvents; ++i) {
         if (i % division == 0) {
             std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
             time_t t = time(NULL);

@@ -2,8 +2,9 @@
 #include <fstream>
 #include <cmath>
 #include <dirent.h>
-
 #include <string.h>
+#include <stdio.h>
+
 #include <TLatex.h>
 #include <TString.h>
 #include "TChain.h"
@@ -13,6 +14,7 @@
 #include "TKey.h"
 #include "Riostream.h"
 
+using namespace std;
 
 //____________________________________________
 void PrintTime(time_t t0, time_t t1)
@@ -104,4 +106,56 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
 		electrodeMap["pad"] = 0;
 	}
     else {std::cout << "no info for this model" << std::endl;}
+}
+
+bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& computeIBF)
+//T LoadVariable(string elementString)
+{
+	//std::cout << "elementString = " << elementString << std::endl;
+	ifstream file("input.txt", ios::in);
+	//T* element = nullptr;
+	string a, b;
+	bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false;
+	if(file) {
+		string line {};
+		getline(file, line);	//first line does not contains info
+		while(getline(file, line)) {
+			if (line.find("modelNum") != std::string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> modelNum;
+				modelFound = true;
+			}
+			else if (line.find("gasName") != std::string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> gasName;
+				gasFound = true;
+			}
+			else if (line.find("nEvents") != std::string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> nEvents;
+				nEventsFound = true;
+			}
+			else if (line.find("computeIBF") != std::string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> computeIBF;
+				computeInfoFound = true;
+			}
+		}
+		//std::cout << "Element " << elementString << " not found in input.txt";
+		if (modelFound && gasFound && nEventsFound && computeInfoFound) {
+			std::cout << std::endl;
+			std::cout << "#################################" << std::endl;
+			std::cout << "#\tmodelNum = " << modelNum << "\t\t#" << std::endl;
+			std::cout << "#\tgasName = " << gasName << "\t#" << std::endl;
+			std::cout << "#\tnEvents = " << nEvents << "\t\t#" << std::endl;
+			std::cout << "#\tcomputeIBF = " << computeIBF << "\t\t#" << std::endl;
+			std::cout << "#################################" << std::endl;
+			std::cout << std::endl;
+			return true;
+		}
+		else return false;
+	}
+	else cout << "Error: not possible to open input.txt file in reading mode" << endl;
+	return false;
+	//return *element;
 }
