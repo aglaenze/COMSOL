@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 14;
+    //const int modelNum = 14;
     const bool computeIBF = true;  // if false, it will only compute the number of amplification electrons in the avalanche
     const int nEvents = 1000;  // number of avalanches to simulate
     //____________________
