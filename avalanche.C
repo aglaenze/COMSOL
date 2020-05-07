@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("Figures/avalanche2d-%s-model%d-%d-%d.pdf", gasName.c_str(), modelNum, hvMesh, hvDrift);
     }
-    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
+    else if ((modelNum >= 2 && modelNum < 5) || modelNum == 14) {
         if (argc < 4) {
             std::cout << "Please enter command like this: ./avalanche $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;

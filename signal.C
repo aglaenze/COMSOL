@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
         fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
     }
-    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
+    else if ((modelNum >= 2 && modelNum < 5) || modelNum == 14) {
         if (argc != 5) {
             std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
             return 0;

@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
         hvDrift = atoi(argv[2]);
         fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
     }
-    else if (modelNum >= 2 && modelNum < 5 || modelNum == 14) {
+    else if ((modelNum >= 2 && modelNum < 5) || modelNum == 14) {
         if (argc < 4) {
             std::cout << "Please enter command like this: ./plotField $hvDmDown $hvDmUp $hvDrift " << std::endl;
             return 0;
