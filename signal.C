@@ -29,7 +29,7 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
-	bool testMode = true;
+	bool testMode = false;
 	//______________________
 	// variables, to change in the file input.txt
 	int modelNum = 0;
