@@ -194,7 +194,7 @@ int main(int argc, char * argv[]) {
     ViewFEMesh* vFE = new ViewFEMesh();
     //vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
     //vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
-    if (modelNum > 1 && modelNum < 5 || modelNum == 14) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
+    if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
     else if (modelNum >= 5 && modelNum < 8) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
     //vFE->SetArea(-10*pitch, -10*pitch, damp-15*pitch,  10*pitch, 10*pitch, damp+5*pitch);
 	else {

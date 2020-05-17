@@ -1,6 +1,6 @@
 # variables
-modelNum = 1
+modelNum = 14
 gasName = Ar-iC4H10 	# Ar-iC4H10 or Ne or Ar-CO2
-nEvents = 1000  	# number of events to simulate
-computeIBF = 1	 	# if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)
+nEvents = 100  		# number of events to simulate
+computeIBF = 0	 	# if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)
 
