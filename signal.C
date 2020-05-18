@@ -259,22 +259,43 @@ int main(int argc, char * argv[]) {
 		// start thread test
 		if (np > 8) {numberOfThreads = maxNumberOfThreads;}
 		else {numberOfThreads = 1;}
+		int *nWinnersPointerList[numberOfThreads];
+		int *ionBackNumPointerList[numberOfThreads];
+		int nWinnersList[numberOfThreads];
+		int ionBackNumList[numberOfThreads];
 		std::vector<std::thread> threads;
+		std::mutex lock;
+		numberOfThreads = 2;
+		//int k = 0;
 		for (int k = 0; k<numberOfThreads; k++) {
 			int nmin = k*threadStep;
 			int nmax = (k+1)*threadStep;
 			if (k+1 == numberOfThreads) nmax = np;
-			int* nWinnersPointer = &nWinners;
-			int* ionBackNumPointer = &ionBackNum;
-			threads.push_back(std::thread(DriftAvalanche, nmin, nmax, nWinnersPointer, ionBackNumPointer, aval, drift, computeIBF, damp));
-			//nWinnersList[i] = *nWinnersPointer;
-			//ionBackNum[i] = *ionBackNumPointer;
-			nWinners += *nWinnersPointer;
-			ionBackNum += *ionBackNumPointer;
+			
+			/*
+			 std::thread t1([&lock]() {
+			 lock.lock();
+			 DriftAvalanche(nmin, nmax, nWinnersPointer, ionBackNumPointer, aval, drift, computeIBF, damp);
+			 lock.unlock();
+			 });*/
+			
+			nWinnersPointerList[k] = &nWinnersList[k];
+			ionBackNumPointerList[k] = &ionBackNumList[k];
+			//std::thread t1(DriftAvalanche, nmin, nmax, nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp);
+			//t1.join();
+			
+			//return 0;
+			threads.push_back(std::thread (DriftAvalanche, nmin, nmax, nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp));
 		}
 		for (std::thread &t : threads) {
 			t.join();
 		}
+		
+		for (int k = 0; k<numberOfThreads; k++) {
+			nWinners += *nWinnersPointerList[k];
+			ionBackNum += *ionBackNumPointerList[k];
+		}
+		
 		//return 0;
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
 		if (computeIBF) ibfRatio = (double)ionBackNum/ni;
