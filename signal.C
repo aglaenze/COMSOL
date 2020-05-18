@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <thread>
+#include <mutex>
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -26,6 +28,27 @@
 #include "Garfield/Plotting.hh"
 
 using namespace Garfield;
+
+void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPointer, AvalancheMicroscopic* aval, AvalancheMC* drift, bool computeIBF, double damp) {
+	double xe1, ye1, ze1, te1, e1;
+	double xe2, ye2, ze2, te2, e2;
+	double xi1, yi1, zi1, ti1;
+	double xi2, yi2, zi2, ti2;
+	int status;
+	int nWinners = 0, ionBackNum = 0;
+	for (int j = start; j<end; j++) {
+		aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+		if (ze2 < 0.01) nWinners++;
+		if (computeIBF) {
+			drift->DriftIon(xe1, ye1, ze1, te1);
+			drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+			if (zi2 > 1.2*damp) ionBackNum+=1;
+		}
+	}
+	*nWinnersPointer = nWinners;
+	*ionBackNumPointer = ionBackNum;
+	
+}
 
 int main(int argc, char * argv[]) {
 	
@@ -221,22 +244,35 @@ int main(int argc, char * argv[]) {
 		 }
 		 */
 		const int np = aval->GetNumberOfElectronEndpoints();
-		double xe1, ye1, ze1, te1, e1;
-		double xe2, ye2, ze2, te2, e2;
-		double xi1, yi1, zi1, ti1;
-		double xi2, yi2, zi2, ti2;
-		int status;
 		int ionBackNum = 0;
 		nWinners = 0;
-		for (int j = np; j--;) {
-			aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-			if (ze2 < 0.01) nWinners++;
-			if (computeIBF) {
-				drift->DriftIon(xe1, ye1, ze1, te1);
-				drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-				if (zi2 > 1.2*damp) ionBackNum+=1;
+		
+		// start thread test
+		if (np > 4) {
+			int* nWinnersPointer = &nWinners;
+			int* ionBackNumPointer = &ionBackNum;
+			std::thread t1(DriftAvalanche, 0, np, nWinnersPointer, ionBackNumPointer, aval, drift, computeIBF, damp);
+			t1.join();
+			nWinners = *nWinnersPointer;
+			ionBackNum = *ionBackNumPointer;
+		}
+		else {
+			double xe1, ye1, ze1, te1, e1;
+			double xe2, ye2, ze2, te2, e2;
+			double xi1, yi1, zi1, ti1;
+			double xi2, yi2, zi2, ti2;
+			int status;
+			for (int j = np; j--;) {
+				aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+				if (ze2 < 0.01) nWinners++;
+				if (computeIBF) {
+					drift->DriftIon(xe1, ye1, ze1, te1);
+					drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+					if (zi2 > 1.2*damp) ionBackNum+=1;
+				}
 			}
 		}
+		//return 0;
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
 		if (computeIBF) ibfRatio = (double)ionBackNum/ni;
 		//std::cout << ibfRatio << std::endl;
