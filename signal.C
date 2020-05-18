@@ -182,6 +182,13 @@ int main(int argc, char * argv[]) {
 	Double_t ibfRatio = 0.;
 	if (computeIBF) tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
 	
+	const int maxNumberOfThreads = std::thread::hardware_concurrency();
+	//const int maxNumberOfThreads = 1;
+	int numberOfThreads = 1;
+	//std::cout << "number of threads = " << numberOfThreads << std::endl;
+	//int ionBackNumList[numberOfThreads] = {0,0,0,0,0};
+	//int nWinnersList[numberOfThreads] = {0,0,0,0,0};
+	
 	// Set the signal binning.
 	//const int nTimeBins = 10000;
 	const double tStep = 0.1;   //ns
@@ -247,30 +254,26 @@ int main(int argc, char * argv[]) {
 		int ionBackNum = 0;
 		nWinners = 0;
 		
+		int threadStep = int(np/numberOfThreads);
+		
 		// start thread test
-		if (np > 4) {
+		if (np > 8) {numberOfThreads = maxNumberOfThreads;}
+		else {numberOfThreads = 1;}
+		std::vector<std::thread> threads;
+		for (int k = 0; k<numberOfThreads; k++) {
+			int nmin = k*threadStep;
+			int nmax = (k+1)*threadStep;
+			if (k+1 == numberOfThreads) nmax = np;
 			int* nWinnersPointer = &nWinners;
 			int* ionBackNumPointer = &ionBackNum;
-			std::thread t1(DriftAvalanche, 0, np, nWinnersPointer, ionBackNumPointer, aval, drift, computeIBF, damp);
-			t1.join();
-			nWinners = *nWinnersPointer;
-			ionBackNum = *ionBackNumPointer;
+			threads.push_back(std::thread(DriftAvalanche, nmin, nmax, nWinnersPointer, ionBackNumPointer, aval, drift, computeIBF, damp));
+			//nWinnersList[i] = *nWinnersPointer;
+			//ionBackNum[i] = *ionBackNumPointer;
+			nWinners += *nWinnersPointer;
+			ionBackNum += *ionBackNumPointer;
 		}
-		else {
-			double xe1, ye1, ze1, te1, e1;
-			double xe2, ye2, ze2, te2, e2;
-			double xi1, yi1, zi1, ti1;
-			double xi2, yi2, zi2, ti2;
-			int status;
-			for (int j = np; j--;) {
-				aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-				if (ze2 < 0.01) nWinners++;
-				if (computeIBF) {
-					drift->DriftIon(xe1, ye1, ze1, te1);
-					drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-					if (zi2 > 1.2*damp) ionBackNum+=1;
-				}
-			}
+		for (std::thread &t : threads) {
+			t.join();
 		}
 		//return 0;
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;

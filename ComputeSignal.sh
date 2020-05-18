@@ -10,6 +10,7 @@ echo ./signal $1 $2 $3
 
 # run jobs in parallel, by packets of 5
 N=4
+make
 for ((k=0;k<=6;k++)); do
 V1=$((340+$k*20))
 V2=$((540+$k*20))
