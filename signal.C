@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cmath>
 #include <thread>
-#include <mutex>
 
 #include <TCanvas.h>
 #include <TROOT.h>
@@ -44,7 +43,7 @@ void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPoi
 			drift.DriftIon(xe1, ye1, ze1, te1);
 			drift.GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
 			if (zi2 > 1.2*damp) ionBackNum+=1;
-			std::cout << j << std::endl;
+			//std::cout << j << std::endl;
 		}
 	}
 	*nWinnersPointer = nWinners;
@@ -185,11 +184,7 @@ int main(int argc, char * argv[]) {
 	if (computeIBF) tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
 	
 	const int maxNumberOfThreads = std::thread::hardware_concurrency();
-	//const int maxNumberOfThreads = 1;
 	int numberOfThreads = 1;
-	//std::cout << "number of threads = " << numberOfThreads << std::endl;
-	//int ionBackNumList[numberOfThreads] = {0,0,0,0,0};
-	//int nWinnersList[numberOfThreads] = {0,0,0,0,0};
 	
 	// Set the signal binning.
 	//const int nTimeBins = 10000;
@@ -202,17 +197,11 @@ int main(int argc, char * argv[]) {
 	//const double tStep = (tEnd - tStart) / nTimeBins;
 	const int nTimeBins = (tEnd - tStart)/tStep;
 	sensor->SetTimeWindow(tStart, tStep, nTimeBins);
-	
-	// To look at the avalanche
-	ViewDrift* driftView = new ViewDrift();
-	//driftView->SetArea(390*pitch, 390*pitch, 0, 410*pitch, 410*pitch, damp+6*pitch);
-	driftView->SetArea(0, 0, 0, width, depth, ddrift);
-	
+
 	// Create an avalanche object
 	//AvalancheMicroscopic* aval = new AvalancheMicroscopic();
 	AvalancheMicroscopic aval;
 	aval.SetSensor(sensor);
-	aval.EnablePlotting(driftView);
 	aval.EnableSignalCalculation();
 	
 	//AvalancheMC* drift = new AvalancheMC();
@@ -220,7 +209,6 @@ int main(int argc, char * argv[]) {
 	if (computeIBF) {
 		drift.SetSensor(sensor);
 		drift.SetDistanceSteps(2.e-4);
-		drift.EnablePlotting(driftView);
 		drift.EnableSignalCalculation();
 	}
 	
@@ -256,7 +244,7 @@ int main(int argc, char * argv[]) {
 		// start thread test
 		if (np > 8) {numberOfThreads = maxNumberOfThreads;}
 		else {numberOfThreads = 1;}
-		//numberOfThreads = 2;
+		//numberOfThreads = 3;
 		int threadStep = int(np/numberOfThreads);
 		int *nWinnersPointerList[numberOfThreads];
 		int *ionBackNumPointerList[numberOfThreads];
@@ -264,7 +252,6 @@ int main(int argc, char * argv[]) {
 		int ionBackNumList[numberOfThreads];
 		int nmin[numberOfThreads], nmax[numberOfThreads];
 		std::vector<std::thread> threads;
-		//std::mutex lock;
 		for (int k = 0; k<numberOfThreads; k++) {
 			nmin[k] = k*threadStep;
 			nmax[k] = (k+1)*threadStep;
@@ -272,30 +259,10 @@ int main(int argc, char * argv[]) {
 			nWinnersPointerList[k] = &nWinnersList[k];	// needed, otherwise there's a segmentation violation
 			ionBackNumPointerList[k] = &ionBackNumList[k];
 		}
-		//int k = 0;
-		
-		
-		/*std::thread t1([&lock]() {
-		 lock.lock();
-		 DriftAvalanche(nmin, nmax, nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp);
-		 lock.unlock();
-		 });
-		 */
-		
-		//return 0;
-		
-		
-		/*
-		 std::thread t1(DriftAvalanche, nmin[k], nmax[k], nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp);
-		 //std::thread t1(DriftAvalanche, 0, np, nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp);
-		 t1.join();
-		 */
-		
-		
+
 		for (int k = 0; k<numberOfThreads; k++) {
-		//for (int k = 0; k< 1; k++) {
-			std::cout << nmin[k] << std::endl;
-			std::cout << nmax[k] << std::endl;
+			//std::cout << nmin[k] << std::endl;
+			//std::cout << nmax[k] << std::endl;
 			threads.push_back(std::thread (DriftAvalanche, nmin[k], nmax[k], nWinnersPointerList[k], ionBackNumPointerList[k], std::ref(aval), std::ref(drift), computeIBF, damp));
 			//std::cout << "thread push back done " << std::endl;
 		}
