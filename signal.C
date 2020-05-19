@@ -29,7 +29,7 @@
 
 using namespace Garfield;
 
-void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPointer, AvalancheMicroscopic* aval, AvalancheMC* drift, bool computeIBF, double damp) {
+void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPointer, AvalancheMicroscopic aval, AvalancheMC drift, bool computeIBF, double damp) {
 	double xe1, ye1, ze1, te1, e1;
 	double xe2, ye2, ze2, te2, e2;
 	double xi1, yi1, zi1, ti1;
@@ -37,12 +37,14 @@ void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPoi
 	int status;
 	int nWinners = 0, ionBackNum = 0;
 	for (int j = start; j<end; j++) {
-		aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+		aval.GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
 		if (ze2 < 0.01) nWinners++;
 		if (computeIBF) {
-			drift->DriftIon(xe1, ye1, ze1, te1);
-			drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+			if (drift.GetNumberOfIonEndpoints() > 1) std::cout << "drift.GetNumberOfIonEndpoints() " << drift.GetNumberOfIonEndpoints() << std::endl;
+			drift.DriftIon(xe1, ye1, ze1, te1);
+			drift.GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
 			if (zi2 > 1.2*damp) ionBackNum+=1;
+			std::cout << j << std::endl;
 		}
 	}
 	*nWinnersPointer = nWinners;
@@ -207,17 +209,19 @@ int main(int argc, char * argv[]) {
 	driftView->SetArea(0, 0, 0, width, depth, ddrift);
 	
 	// Create an avalanche object
-	AvalancheMicroscopic* aval = new AvalancheMicroscopic();
-	aval->SetSensor(sensor);
-	aval->EnablePlotting(driftView);
-	aval->EnableSignalCalculation();
+	//AvalancheMicroscopic* aval = new AvalancheMicroscopic();
+	AvalancheMicroscopic aval;
+	aval.SetSensor(sensor);
+	aval.EnablePlotting(driftView);
+	aval.EnableSignalCalculation();
 	
-	AvalancheMC* drift = new AvalancheMC();
+	//AvalancheMC* drift = new AvalancheMC();
+	AvalancheMC drift;
 	if (computeIBF) {
-		drift->SetSensor(sensor);
-		drift->SetDistanceSteps(2.e-4);
-		drift->EnablePlotting(driftView);
-		drift->EnableSignalCalculation();
+		drift.SetSensor(sensor);
+		drift.SetDistanceSteps(2.e-4);
+		drift.EnablePlotting(driftView);
+		drift.EnableSignalCalculation();
 	}
 	
 	int division = int(nEvents/10);
@@ -239,26 +243,20 @@ int main(int argc, char * argv[]) {
 		//double t0 = ( i + RndmUniform() )* timespace;
 		double t0 = i * timespace;
 		double e = 0;
-		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
+		aval.AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
 		//int ne2 = 0, ni = 0;
 		int ni = 0;
-		aval->GetAvalancheSize(ne2, ni);
+		aval.GetAvalancheSize(ne2, ni);
 		std::cout << "\nAvalanche size = " << ne2 << std::endl;
-		//if (ne2 < 4) {i--; continue;}
-		/*
-		 if (modelNum == 1) { nWinners = ne2;
-		 //hElectrons->Fill(ne2);    // ok for modelNum < 4
-		 //continue;
-		 }
-		 */
-		const int np = aval->GetNumberOfElectronEndpoints();
+
+		const int np = aval.GetNumberOfElectronEndpoints();
 		int ionBackNum = 0;
 		nWinners = 0;
 		
 		// start thread test
 		if (np > 8) {numberOfThreads = maxNumberOfThreads;}
 		else {numberOfThreads = 1;}
-		numberOfThreads = 2;
+		//numberOfThreads = 2;
 		int threadStep = int(np/numberOfThreads);
 		int *nWinnersPointerList[numberOfThreads];
 		int *ionBackNumPointerList[numberOfThreads];
@@ -266,12 +264,12 @@ int main(int argc, char * argv[]) {
 		int ionBackNumList[numberOfThreads];
 		int nmin[numberOfThreads], nmax[numberOfThreads];
 		std::vector<std::thread> threads;
-		std::mutex lock;
+		//std::mutex lock;
 		for (int k = 0; k<numberOfThreads; k++) {
 			nmin[k] = k*threadStep;
 			nmax[k] = (k+1)*threadStep;
 			if (k+1 == numberOfThreads) nmax[k] = np;
-			nWinnersPointerList[k] = &nWinnersList[k];
+			nWinnersPointerList[k] = &nWinnersList[k];	// needed, otherwise there's a segmentation violation
 			ionBackNumPointerList[k] = &ionBackNumList[k];
 		}
 		//int k = 0;
@@ -295,10 +293,11 @@ int main(int argc, char * argv[]) {
 		
 		
 		for (int k = 0; k<numberOfThreads; k++) {
+		//for (int k = 0; k< 1; k++) {
 			std::cout << nmin[k] << std::endl;
 			std::cout << nmax[k] << std::endl;
-			threads.push_back(std::thread (DriftAvalanche, nmin[k], nmax[k], nWinnersPointerList[k], ionBackNumPointerList[k], aval, drift, computeIBF, damp));
-			std::cout << "thread push back done " << std::endl;
+			threads.push_back(std::thread (DriftAvalanche, nmin[k], nmax[k], nWinnersPointerList[k], ionBackNumPointerList[k], std::ref(aval), std::ref(drift), computeIBF, damp));
+			//std::cout << "thread push back done " << std::endl;
 		}
 
 		for (std::thread &t : threads) {
