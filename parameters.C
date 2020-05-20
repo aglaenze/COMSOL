@@ -205,3 +205,18 @@ Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, i
     return fm;
 }
 
+Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, int V4, int V5, int V6, Garfield::MediumMagboltz* gas) {
+	// Load the field map.
+	std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
+	std::string dataFile = dataFolder + Form("ewfield-%d-%d-%d-%d-%d-%d.txt", V1, V2, V3, V4, V5, V6);
+	// Load the field map.
+	Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
+	fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
+	fm->PrintMaterials();
+	fm->EnableMirrorPeriodicityX();
+	fm->EnableMirrorPeriodicityY();
+	fm->PrintRange();
+	fm->SetMedium(0, gas);
+	fm->PrintMaterials();
+	return fm;
+}

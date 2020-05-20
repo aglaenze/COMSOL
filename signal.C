@@ -55,7 +55,7 @@ int main(int argc, char * argv[]) {
 	// Load field map
 	ComponentComsol* fm;
 	
-	int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvMeshTop = 0, hvDrift = 0;
+	int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvMeshTop = 0, hvGem2Down = 0, hvGem2Up = 0, hvDrift = 0;
 	int saveNum;
 	if (modelNum == 1) {
 		if (argc != 4) {
@@ -106,7 +106,7 @@ int main(int argc, char * argv[]) {
 		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
 		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
 	}
-	else if (modelNum >= 10 && modelNum < 12) {
+	else if (modelNum >= 10 && modelNum < 14) {
 		if (argc != 7) {
 			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvMeshTop $hvDrift $saveNum " << std::endl;
 			return 0;
@@ -119,6 +119,21 @@ int main(int argc, char * argv[]) {
 		saveNum = atoi(argv[6]);
 		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, gas);
 		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, saveNum);
+	}
+	else if (modelNum == 15) {
+		if (argc != 8) {
+			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGem1Down $hvGem1Up $hvGem2Down $hvGem2Up $hvDrift $saveNum " << std::endl;
+			return 0;
+		}
+		hvMesh = atoi(argv[1]);
+		hvGemDown = atoi(argv[2]);
+		hvGemUp = atoi(argv[3]);
+		hvGem2Down = atoi(argv[4]);
+		hvGem2Up = atoi(argv[5]);
+		hvDrift = atoi(argv[6]);
+		saveNum = atoi(argv[7]);
+		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvGem2Down, hvGem2Up, hvDrift, gas);
+		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvGem2Down, hvGem2Up, hvDrift, saveNum);
 	}
 	else {std::cout << "Wrong model number" << std::endl; return 0;}
 	
