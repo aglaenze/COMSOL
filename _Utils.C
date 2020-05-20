@@ -159,3 +159,9 @@ bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& comp
 	return false;
 	//return *element;
 }
+
+bool LoadVariables(int& modelNum, std::string& gasName) {
+	int nEvents = 0;
+	bool computeIBF = false;
+	return LoadVariables(modelNum, gasName, nEvents, computeIBF);
+}

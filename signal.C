@@ -108,7 +108,7 @@ int main(int argc, char * argv[]) {
 	}
 	else if (modelNum >= 10 && modelNum < 12) {
 		if (argc != 7) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp *hvMeshTop $hvDrift $saveNum " << std::endl;
+			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvMeshTop $hvDrift $saveNum " << std::endl;
 			return 0;
 		}
 		hvMesh = atoi(argv[1]);
@@ -171,22 +171,16 @@ int main(int argc, char * argv[]) {
 	const int nTimeBins = (tEnd - tStart)/tStep;
 	sensor->SetTimeWindow(tStart, tStep, nTimeBins);
 	
-	// To look at the avalanche
-	ViewDrift* driftView = new ViewDrift();
-	//driftView->SetArea(390*pitch, 390*pitch, 0, 410*pitch, 410*pitch, damp+6*pitch);
-	driftView->SetArea(0, 0, 0, width, depth, ddrift);
 	
 	// Create an avalanche object
 	AvalancheMicroscopic* aval = new AvalancheMicroscopic();
 	aval->SetSensor(sensor);
-	aval->EnablePlotting(driftView);
 	aval->EnableSignalCalculation();
 	
 	AvalancheMC* drift = new AvalancheMC();
 	if (computeIBF) {
 		drift->SetSensor(sensor);
 		drift->SetDistanceSteps(2.e-4);
-		drift->EnablePlotting(driftView);
 		drift->EnableSignalCalculation();
 	}
 	

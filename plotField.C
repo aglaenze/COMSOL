@@ -9,6 +9,7 @@
 #include <TMath.h>
 
 #include "parameters.C"
+#include "_Utils.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/ComponentBase.hh"
@@ -27,10 +28,10 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
-    // variables
-    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 14;
+	// variables, to change in the file input.txt
+	int modelNum = 0;
+	std::string gasName = "";
+	if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
     //____________________
     
     TApplication app("app", &argc, argv);
