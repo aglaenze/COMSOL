@@ -80,6 +80,12 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
 		ddrift = 0.35;  //cm
 		pitch = 0.0040;    // cm
 	}
+	else if (modelNum == 15) {   // MM + 2 GEMs
+		damp = 0.6125;
+		radius = 0.0008;   // cm
+		ddrift = 1.4125;  //cm
+		pitch = 0.0180;    // cm
+	}
     else {std::cout << "Model num?" << std::endl; return;}
     dmylar = 3.;       // cm
     width = periodicityNum * pitch;

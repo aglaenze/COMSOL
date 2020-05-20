@@ -61,7 +61,8 @@ int GetElectrodeNum(int modelNum) {
     if (modelNum == 1) return 3;
     else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) return 4;
     else if (modelNum >= 5 && modelNum < 10) return 5;
-    else if (modelNum >= 10 && modelNum < 12) return 6;
+    else if (modelNum >= 10 && modelNum < 14) return 6;
+	else if (modelNum == 15) return 7;
     else {std::cout << "no info for this model" << std::endl; return 0;}
 }
 
@@ -91,7 +92,7 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
         electrodeMap["mesh"] = 0;
         electrodeMap["pad"] = 0;
     }
-    else if (modelNum >= 10 && modelNum < 12) {   // check it's the same for models 10, 11
+    else if (modelNum >= 10 && modelNum < 14) {   // check it's the same for models 10, 11
         electrodeMap["drift"] = 0;
         electrodeMap["mesh top"] = 0;
         electrodeMap["GEM up"] = 0;
@@ -103,6 +104,14 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
 		electrodeMap["drift"] = 0;
 		electrodeMap["DM up"] = 0;
 		electrodeMap["DM down"] = 0;
+		electrodeMap["pad"] = 0;
+	}
+	else if (modelNum == 15) {
+		electrodeMap["drift"] = 0;
+		electrodeMap["GEM2 up"] = 0;
+		electrodeMap["GEM2 down"] = 0;
+		electrodeMap["GEM1 up"] = 0;
+		electrodeMap["GEM1 down"] = 0;
 		electrodeMap["pad"] = 0;
 	}
     else {std::cout << "no info for this model" << std::endl;}
@@ -146,7 +155,8 @@ bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& comp
 			std::cout << std::endl;
 			std::cout << "#################################" << std::endl;
 			std::cout << "#\tmodelNum = " << modelNum << "\t\t#" << std::endl;
-			std::cout << "#\tgasName = " << gasName << "\t#" << std::endl;
+			if (gasName.length() < 5) std::cout << "#\tgasName = " << gasName << "\t\t#" << std::endl;
+			else std::cout << "#\tgasName = " << gasName << "\t#" << std::endl;
 			std::cout << "#\tnEvents = " << nEvents << "\t\t#" << std::endl;
 			std::cout << "#\tcomputeIBF = " << computeIBF << "\t\t#" << std::endl;
 			std::cout << "#################################" << std::endl;

@@ -38,10 +38,7 @@ int main(int argc, char * argv[]) {
 	int nEvents = 0;  // number of avalanches to simulate
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF)) {std::cout << "variables not loaded" << std::endl; return 0;}
 	//____________________
-	//gasName = "Ar-iC4H10";
-	//modelNum = 1;
-	//std::cout << "gasName " << gasName << std::endl;
-	//return 0;
+
 	
 	time_t t0 = time(NULL);
 	
