@@ -67,12 +67,13 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 	f->SetParNames("Mean", "Sigma", "Amplitude");
 	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
 	std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
+	std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
 	if (!gauss) {
 		f->SetParLimits(0, 0.8*xMax, 1.3*xMax);
-		//f->FixParameter(0, xMax);
-		//f->SetParameter(1,0.001*h->GetRMS());
 		f->SetParLimits(1,0, 0.001*h->GetRMS());
-		f->SetParameter(2,4*h->GetMaximum());
+		f->FixParameter(2, 1);
+		//f->SetParLimits(2, 0.5*h->GetMaximum(), 5*h->GetMaximum());
+		//f->SetParameter(2,4*h->GetMaximum());
 	}
 	
 	h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
@@ -140,7 +141,7 @@ int Analyse() {
 	
 	// On récupère en même temps les fichiers d'IBF et de transparence
 	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
-
+	
 	TH1F* hIbf = new TH1F("ibf", "ibf", 1000, 0, 100);
 	for (int k = 0; k<nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
@@ -152,7 +153,7 @@ int Analyse() {
 		else {hTransparency->Fill(0);}
 		//if (ibfRatio*100. > 100.) std::cout << "problem !" << std::endl;
 	}
-
+	
 	cv->cd(1);
 	hTransparency->SetTitle("Transparency");
 	hTransparency->Scale(1./nAvalanche);
@@ -163,7 +164,7 @@ int Analyse() {
 	
 	TText* txttr = new TText(0.2,0.9*hTransparency->GetMaximum(),Form("Transparency = %.1f %s", transp*100, "%"));
 	txttr->Draw();
-
+	
 	// now draw the gain with the 2 different ways
 	
 	TFile* fGain = TFile::Open(fileName, "READ");
@@ -183,32 +184,32 @@ int Analyse() {
 	Int_t iBinMax = hFeAmplification->GetMaximumBin();
 	Double_t xMax = hFeAmplification->GetXaxis()->GetBinCenter( iBinMax );
 	hFeAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
-
+	
 	hFeCharge->Scale(1/hFeCharge->GetMaximum());
 	hFeCharge->SetLineColor(kRed);
 	TF1* f2 = GetFitGain(hFeCharge);
 	f2->SetLineColor(kRed);
-
+	
 	
 	// Now draw both spectra
 	cv->cd(2);
-
+	
 	hFeAmplification->Draw("hist");
 	f->Draw("same");
 	// Add text to frame
 	TString txt = Form("Number of electrons --> Gain = %.3g #pm %.3f", f->GetParameter(0), f->GetParError(0));
 	//Latex* txt = new TLatex(0.5*xMax,1,Form("Number of electrons --> Gain = %.3g #pm %.3f", f->GetParameter(0), f->GetParError(0)));
-
+	
 	hFeCharge->Draw("hist same");
 	f2->Draw("same");
 	TString txt2 = Form("Induced charge --> Gain = %.3g #pm %.3f", f2->GetParameter(0), f2->GetParError(0));
-
+	
 	TLegend* legend = new TLegend(0.2,0.75,0.9,0.9);
 	legend->AddEntry(f,txt,"l");
 	legend->AddEntry(f2,txt2,"l");
 	legend->SetTextSize(0.04);
 	legend->Draw("same");
-
+	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
 	// And finally draw the IBF
 	
@@ -250,21 +251,25 @@ int Analyse() {
 	for (int l = 0; l<nCharge; l++) {
 		tChargeReadout->GetEntry(l);
 		tChargeDrift->GetEntry(l);
-		hIbfCharge->Fill(abs(chargeDrift/chargeReadout*100.));
-		hIbfIonCharge->Fill(abs(ionChargeDrift/ionChargeReadout*100.));
+		//tAvalanche->GetEntry(l);
+		//if (nAmplification>1) {
+		if (abs(chargeReadout)>2) {
+			hIbfCharge->Fill(abs(chargeDrift/chargeReadout*100.));
+			hIbfIonCharge->Fill(abs(ionChargeDrift/ionChargeReadout*100.));
+		}
 	}
 	hIbfCharge->Scale(1/hIbfCharge->GetMaximum());
 	hIbfIonCharge->Scale(1/hIbfIonCharge->GetMaximum());
 	TF1* fIbf2 = GetFitIbf(hIbfCharge, false);
 	TF1* fIbf3 = GetFitIbf(hIbfIonCharge, false);
-
+	
 	// 3e étape : dessiner les histos d'ibf
 	cv->cd(3);
 	hIbf->SetTitle("IBF");
 	hIbf->Draw("hist");
 	fIbf->SetLineColor(kRed);
 	fIbf->Draw("same");
-
+	
 	hIbfCharge->SetLineColor(7);
 	hIbfCharge->Draw("hist same");
 	fIbf2->SetLineColor(7);
@@ -284,7 +289,7 @@ int Analyse() {
 	legend2->AddEntry(hIbfIonCharge,"Induced ion charges --> " + txtIbf3,"l");
 	legend2->SetTextSize(0.04);
 	legend2->Draw("same");
-
+	
 	
 	cv->cd(4);
 	hIbfCharge->SetTitle("IBF (zoom)");
@@ -296,11 +301,11 @@ int Analyse() {
 	
 	hIbfIonCharge->Draw("hist same");
 	fIbf3->Draw("same");
-
+	
 	TLegend* legend3 = (TLegend*)legend2->Clone();
 	legend3->DeleteEntry();
 	legend3->Draw();
-
+	
 	TString outputName = Form("Figures/Results/analysis_%s_model%d", gasName.c_str(), modelNum);
 	for (int k = 0; k<hv.size(); k++) {outputName += Form("-%d", hv[k]);}
 	outputName+=".pdf";
