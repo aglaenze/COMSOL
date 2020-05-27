@@ -73,46 +73,47 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
         electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 2 && modelNum < 5) {   // check it's the same for models 2, 3, 4
-        electrodeMap["drift"] = 0;
-        electrodeMap["DM up"] = 0;
-        electrodeMap["DM down"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 5;
+        electrodeMap["DM up"] = 4;
+        electrodeMap["DM down"] = 3;
+        electrodeMap["pad"] = 2;
     }
     else if (modelNum >= 5 && modelNum < 8) {   // check it's the same for models 5, 6, 7
-        electrodeMap["drift"] = 0;
-        electrodeMap["DM up"] = 0;
-        electrodeMap["DM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 5;
+        electrodeMap["DM up"] = 4;
+        electrodeMap["DM down"] = 3;
+        electrodeMap["mesh"] = 6;
+        electrodeMap["pad"] = 2;
     }
     else if (modelNum >= 8 && modelNum < 10) {   // check it's the same for models 8, 9
-        electrodeMap["drift"] = 0;
-        electrodeMap["GEM up"] = 0;
-        electrodeMap["GEM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 3;
+        electrodeMap["GEM up"] = 6;
+        electrodeMap["GEM down"] = 5;
+        electrodeMap["mesh"] = 2;
+        electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 10 && modelNum < 14) {   // check it's the same for models 10, 11
-        electrodeMap["drift"] = 0;
-        electrodeMap["mesh top"] = 0;
-        electrodeMap["GEM up"] = 0;
-        electrodeMap["GEM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 3;
+        electrodeMap["mesh top"] = 7;
+        electrodeMap["GEM up"] = 6;
+        electrodeMap["GEM down"] = 5;
+        electrodeMap["mesh"] = 2;
+        electrodeMap["pad"] = 4;
     }
 	else if (modelNum == 14) {
-		electrodeMap["drift"] = 0;
-		electrodeMap["DM up"] = 0;
-		electrodeMap["DM down"] = 0;
-		electrodeMap["pad"] = 0;
+		electrodeMap["drift"] = 5;
+		electrodeMap["DM up"] = 4;
+		electrodeMap["DM down"] = 3;
+		electrodeMap["pad"] = 2;
 	}
 	else if (modelNum == 15) {
-		electrodeMap["drift"] = 0;
-		electrodeMap["GEM2 up"] = 0;
-		electrodeMap["GEM2 down"] = 0;
-		electrodeMap["GEM1 up"] = 0;
-		electrodeMap["GEM1 down"] = 0;
-		electrodeMap["pad"] = 0;
+		electrodeMap["drift"] = 3;
+		electrodeMap["GEM2 up"] = 8;
+		electrodeMap["GEM2 down"] = 7;
+		electrodeMap["GEM1 up"] = 6;
+		electrodeMap["GEM1 down"] = 5;
+		electrodeMap["mesh"] = 2;
+		electrodeMap["pad"] = 4;
 	}
     else {std::cout << "no info for this model" << std::endl;}
 }

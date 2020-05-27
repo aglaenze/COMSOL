@@ -74,7 +74,19 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
         ddrift = 0.7;  //cm
         pitch = 0.0126;    // cm
     }
-	else if (modelNum == 14) {   // MM + (GEM+MM) combined
+	else if (modelNum == 12) {   // MM + (GEM+MM) combined
+		damp = 0.0128+0.2+0.0060+0.0256;
+		radius = 0.0009;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0126;    // cm
+	}
+	else if (modelNum == 13) {   // MM + (GEM+MM) combined
+		damp = 0.0128+0.4+0.0060+0.0256;
+		radius = 0.0009;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0126;    // cm
+	}
+	else if (modelNum == 14) {   // DM
 		damp = 0.0540;
 		radius = 0.0008;   // cm
 		ddrift = 0.35;  //cm
@@ -129,92 +141,13 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
     return gas;
 }
 
-Garfield::ComponentComsol* InitiateField(int modelNum, int hvMesh, int hvDrift, Garfield::MediumMagboltz* gas) {
-    // Load the field map.
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield-%d-%d.txt", hvMesh, hvDrift);
-    // Load the field map.
-    Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    fm->PrintMaterials();
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    fm->PrintRange();
-    
-    // Associate the gas with the corresponding field map material.
-    /*
-     const unsigned int nMaterials = fm->GetNumberOfMaterials();
-     for (unsigned int i = 0; i < nMaterials; ++i) {
-     const double eps = fm->GetPermittivity(i);
-     if (eps == 1.) fm->SetMedium(i, gas);
-     }
-     */
-    fm->SetMedium(0, gas);
-    fm->PrintMaterials();
-    return fm;
-}
 
-Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, Garfield::MediumMagboltz* gas) {
-    // Load the field map.
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield-%d-%d-%d.txt", V1, V2, V3);
-    // Load the field map.
-    Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    fm->PrintMaterials();
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    fm->PrintRange();
-    
-    // Associate the gas with the corresponding field map material.
-    /*
-     const unsigned int nMaterials = fm->GetNumberOfMaterials();
-     for (unsigned int i = 0; i < nMaterials; ++i) {
-     const double eps = fm->GetPermittivity(i);
-     if (eps == 1.) fm->SetMedium(i, gas);
-     }
-     */
-    fm->SetMedium(0, gas);
-    fm->PrintMaterials();
-    return fm;
-}
-
-Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, int V4, Garfield::MediumMagboltz* gas) {
-    // Load the field map.
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield-%d-%d-%d-%d.txt", V1, V2, V3, V4);
-    // Load the field map.
-    Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    fm->PrintMaterials();
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    fm->PrintRange();
-    fm->SetMedium(0, gas);
-    fm->PrintMaterials();
-    return fm;
-}
-
-Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, int V4, int V5, Garfield::MediumMagboltz* gas) {
-    // Load the field map.
-    std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-    std::string dataFile = dataFolder + Form("ewfield-%d-%d-%d-%d-%d.txt", V1, V2, V3, V4, V5);
-    // Load the field map.
-    Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
-    fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
-    fm->PrintMaterials();
-    fm->EnableMirrorPeriodicityX();
-    fm->EnableMirrorPeriodicityY();
-    fm->PrintRange();
-    fm->SetMedium(0, gas);
-    fm->PrintMaterials();
-    return fm;
-}
-
-Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, int V4, int V5, int V6, Garfield::MediumMagboltz* gas) {
+Garfield::ComponentComsol* InitiateField(int modelNum, std::vector<int> hvList, Garfield::MediumMagboltz* gas) {
 	// Load the field map.
 	std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
-	std::string dataFile = dataFolder + Form("ewfield-%d-%d-%d-%d-%d-%d.txt", V1, V2, V3, V4, V5, V6);
+	std::string dataFile = dataFolder + "ewfield";
+	for (int k = 0; k < (int)hvList.size(); k++) dataFile += Form("-%d", hvList[k]);
+	dataFile += ".txt";
 	// Load the field map.
 	Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
 	fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
@@ -222,6 +155,15 @@ Garfield::ComponentComsol* InitiateField(int modelNum, int V1, int V2, int V3, i
 	fm->EnableMirrorPeriodicityX();
 	fm->EnableMirrorPeriodicityY();
 	fm->PrintRange();
+	
+	// Associate the gas with the corresponding field map material.
+	/*
+	 const unsigned int nMaterials = fm->GetNumberOfMaterials();
+	 for (unsigned int i = 0; i < nMaterials; ++i) {
+	 const double eps = fm->GetPermittivity(i);
+	 if (eps == 1.) fm->SetMedium(i, gas);
+	 }
+	 */
 	fm->SetMedium(0, gas);
 	fm->PrintMaterials();
 	return fm;

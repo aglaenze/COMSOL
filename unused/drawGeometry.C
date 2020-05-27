@@ -5,7 +5,7 @@
 #include <TApplication.h>
 #include <TCanvas.h>
 
-#include "parameters.C"
+#include "../parameters.C"
 
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/Plotting.hh"
@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
         TCanvas* cd = new TCanvas();
         view->SetCanvas(cd);
         view->Plot();
-        cd->SaveAs("Figures/DetectorGeometry.pdf");
+        cd->SaveAs("../Figures/DetectorGeometry.pdf");
     }
     
     

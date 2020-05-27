@@ -22,9 +22,9 @@ int Convolute() {
     //______________________
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-iC4H10";
-    const int modelNum = 14;
-    const bool drawConvoluteSpectrum = true;
+    std::string gasName = "Ne";
+    const int modelNum = 15;
+    const bool drawConvoluteSpectrum = false;
     //____________________
     
     
@@ -39,50 +39,21 @@ int Convolute() {
     
     Int_t nPrimaryTh = GetPrimary(gasName);
     
-    TString fSignalName, fChargeName, fOutputName;
+    TString fInputHV;
     
     Int_t hv1 = 0, hv2 = 0, hv3 = 0, hv4 = 0;
 	if (modelNum == 1) {
 		hv1 = 440;
 		hv2 = hv1+200;
-		fSignalName = path+Form("signal-%d-%d.root", hv1, hv2);
-		fOutputName = path+Form("fe-spectrum-convoluted-%d-%d.root", hv1, hv2);
+		fInputHV = Form("%d-%d.root", hv1, hv2);
 	}
-	else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) {
-		hv1 = 300;
-		hv2 = 800;
-		hv3 = 900;
-		fSignalName = path+Form("signal-%d-%d-%d.root", hv1, hv2, hv3);
-		fOutputName = path+Form("fe-spectrum-convoluted-%d-%d-%D.root", hv1, hv2, hv3);
+	else {
+		fInputHV = "350-395-690-830-910-1230.root";
 	}
+	TString fSignalName = path+ "signal-" + fInputHV;
+	TString fOutputName = path+ "fe-spectrum-convoluted-" + fInputHV;
 
     TFile* f = new TFile(fOutputName, "RECREATE");
-
-    //for (unsigned int k = 0; k < num; ++k) {
-    /*
-        Int_t hvMm = 0, hvDmDown = 0, hvDmUp = 0, hvDrift = 0;
-        if (modelNum == 1) {
-            hvMm = 340+20*k;
-            hvDrift = 540+20*k;
-            fsignalName = path+Form("signal-%d-%d", hvMm, hvDrift);
-            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d.root", hvMm, hvDrift);
-        }
-        else if (modelNum >= 2 && modelNum < 5) {
-            hvDmDown = 300;
-            hvDmUp = 600;
-            hvDrift = 800;
-            fsignalName = path+Form("signal-%d-%d-%d", hvDmDown, hvDmUp, hvDrift);
-            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d-%d.root", hvDmDown, hvDmUp, hvDrift);
-        }
-        else if (modelNum == 5) {
-            hvMm = 300;
-            hvDmDown = 400;
-            hvDmUp = 700;
-            hvDrift = 900;
-            fsignalName = path+Form("signal-%d-%d-%d-%d", hvMm, hvDmDown, hvDmUp, hvDrift);
-            fOutputName = path+Form("Fe-spectrum-convoluted-%d-%d-%d-%d.root", hvMm, hvDmDown, hvDmUp, hvDrift);
-        }
-     */
     
     //int readoutElectrode = electrode["mesh"];   // if readout electrode = pad, do not foget the - sign
     int electrodeNum = GetElectrodeNum(modelNum);
