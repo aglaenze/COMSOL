@@ -9,6 +9,7 @@
 #include <TMath.h>
 
 #include "parameters.C"
+#include "_Utils.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/ComponentBase.hh"
@@ -27,73 +28,43 @@ using namespace Garfield;
 
 int main(int argc, char * argv[]) {
     
-    // variables
-    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 14;
+	// variables, to change in the file input.txt
+	int modelNum = 0;
+	std::string gasName = "";
+	if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
     //____________________
     
-    TApplication app("app", &argc, argv);
-    plottingEngine.SetDefaultStyle();
-    
-    // Make a gas medium.
-    MediumMagboltz* gas = InitiateGas(gasName);
-    // Load field map
-    ComponentComsol* fm;
-    
-    int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
-    if (modelNum == 1) {
-        if (argc < 3) {
-            std::cout << "Please enter command like this: ./plotField $hvMesh $hvDrift " << std::endl;
-            return 0;
-        }
-        hvMesh = atoi(argv[1]);
-        hvDrift = atoi(argv[2]);
-        fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-    }
-    else if ((modelNum >= 2 && modelNum < 5) || modelNum == 14) {
-        if (argc < 4) {
-            std::cout << "Please enter command like this: ./plotField $hvDmDown $hvDmUp $hvDrift " << std::endl;
-            return 0;
-        }
-        hvDmDown = atoi(argv[1]);
-        hvDmUp = atoi(argv[2]);
-        hvDrift = atoi(argv[3]);
-        fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-    }
-    else if (modelNum >= 5 && modelNum < 8) {
-        if (argc < 5) {
-            std::cout << "Please enter command like this: ./plotField $hvMesh $hvDmDown $hvDmUp $hvDrift " << std::endl;
-            return 0;
-        }
-        hvMesh = atoi(argv[1]);
-        hvDmDown = atoi(argv[2]);
-        hvDmUp = atoi(argv[3]);
-        hvDrift = atoi(argv[4]);
-        fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-    }
-    else if (modelNum >= 8 && modelNum < 10) {
-        if (argc != 5) {
-            std::cout << "Please enter HVmesh like this: ./plotField $hvMesh $hvGemDown $hvGemUp $hvDrift " << std::endl;
-            return 0;
-        }
-        hvMesh = atoi(argv[1]);
-        hvGemDown = atoi(argv[2]);
-        hvGemUp = atoi(argv[3]);
-        hvDrift = atoi(argv[4]);
-        fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
-    }
-    else {std::cout << "Wrong model number" << std::endl; return 0;}
+	//time_t t0 = time(NULL);
+	if (modelNum < 1 || modelNum > 15) {std::cout << "Wrong model number" << std::endl; return 0;}
+	
+	TApplication app("app", &argc, argv);
+	plottingEngine.SetDefaultStyle();
+	
+	int electrodeNum = 0;
+	electrodeNum = GetElectrodeNum(modelNum);
+	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
+	
+	TString errorMessage = "Please enter HVmesh like this: ./plotField";
+	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
+	if (argc != electrodeNum) {
+		std::cout << errorMessage << std::endl;
+		return 0;
+	}
+	std::vector<int> hvList = {};
+	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
+	
+	// Make a gas medium.
+	MediumMagboltz* gas = InitiateGas(gasName);
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
 		return 0;
 	}
-    
-
-    //Load geometry parameters
-    double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
-    int periodicityNum = 0;
-    LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+	
+	//Load geometry parameters
+	double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+	int periodicityNum = 0;
+	LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
     
     ViewField* vf = new ViewField();
     vf->SetComponent(fm);
@@ -110,29 +81,33 @@ int main(int argc, char * argv[]) {
         //vf->SetArea(0, 0, width, 3*damp);
         //vf->SetArea(0, 0, width, 3*damp+0.2);
         vf->SetArea(0, 0, width, ddrift);
-        TCanvas* c1 = new TCanvas("cf", "Potential view", 1200, 600);
+        TCanvas* c1 = new TCanvas("c1", "Potential view", 1200, 600);
+		TCanvas* c2 = new TCanvas("c2", "Field view", 1200, 600);
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
         vf->PlotContour("v");
         c1->SaveAs(Form("Figures/potential-model%d.pdf", modelNum));
+		vf->SetCanvas(c2);
         vf->PlotContour("e");
-        c1->SaveAs(Form("Figures/field-model%d.pdf", modelNum));
+        c2->SaveAs(Form("Figures/field-model%d.pdf", modelNum));
     }
     
-    vf->SetVoltageRange(-hvDmDown, -hvDmUp);
+    vf->SetVoltageRange(-hvList[1], -hvList[2]);
     const bool zoom = true;
     if (zoom) {
         vf->SetArea(0, damp-4*pitch, 5*pitch, damp+pitch);
         vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
         //vf->SetNumberOfContours(40);
         //vf->SetNumberOfSamples2d(40, 40);
+		TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
         TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
         //TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
-        vf->SetCanvas(c2);
-        if (modelNum==1) vf->SetVoltageRange(-hvMesh*1.1, -hvMesh*0.78);
-        else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvGemUp*1.05, -hvGemDown/1.05);
+        vf->SetCanvas(c1);
+        if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
+        else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
         vf->PlotContour("v");
-        c2->SaveAs(Form("Figures/potentialZoom-model%d.pdf", modelNum));
+        c1->SaveAs(Form("Figures/potentialZoom-model%d.pdf", modelNum));
+		vf->SetCanvas(c2);
         vf->PlotContour("e");
         c2->SaveAs(Form("Figures/fieldZoom-model%d.pdf", modelNum));
     }

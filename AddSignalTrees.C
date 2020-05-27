@@ -18,30 +18,30 @@ int AddSignalTrees() {
     //______________________
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 14;
+    const int modelNum = 8;
     //____________________
     
     time_t t0 = time(NULL);
 
-	int hv1, hv2, hv3;
+	int hv1, hv2, hv3, hv4;
     TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	TString outputName;
 	
+	TString filename = "signal-350-430-530-650";
+	std::cout << "processing " << filename << " (model " << modelNum << ")" << std::endl;
+
     //const int numberOfFiles = 3;
 	int numberOfFiles;
 	if (modelNum == 1) {
 		hv1 = 340;
 		hv2 = hv1+200;
-		numberOfFiles = GetNumberOfFiles(path, Form("signal-%d-%d-", hv1, hv2));
-		outputName = path + Form("signal-%d-%d.root", hv1, hv2);
+		filename = Form("signal-%d-%d", hv1, hv2);
 	}
-	else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) {
-		hv1 = 300;
-		hv2 = 800;
-		hv3 = 900;
-		numberOfFiles = GetNumberOfFiles(path, Form("signal-%d-%d-%d-", hv1, hv2, hv3));
-		outputName = path + Form("signal-%d-%d-%d.root", hv1, hv2, hv3);
-	}
+	
+	numberOfFiles = GetNumberOfFiles(path, filename+"-");
+	std::cout << "number of files = " << numberOfFiles << std::endl;
+	outputName = path + filename+".root";
+	//return 0;
 	TFile* fOut = new TFile(outputName, "RECREATE");
     const int electrodeNum = GetElectrodeNum(modelNum);
 
@@ -56,9 +56,8 @@ int AddSignalTrees() {
     
     // On commence par remplir le TTree tAvalanche
     for (int i = 1; i<numberOfFiles+1; i++) {
-		TString inputName;
-		if (modelNum == 1) inputName = path + Form("signal-%d-%d-%d.root", hv1, hv2, i);
-		else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) inputName = path + Form("signal-%d-%d-%d-%d.root", hv1, hv2, hv3, i);
+	//for (int i = 2; i<3; i++) {
+		TString inputName = path + filename + Form("-%d.root", i);
         TFile* fIn = TFile::Open(inputName, "READ");
         TTree* tAvalancheIn = (TTree*)fIn->Get("tAvalanche");
         tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
@@ -69,6 +68,7 @@ int AddSignalTrees() {
         
         for (int l = 0; l<nIn; l++) {
             tAvalancheIn->GetEntry(l);
+			//if (ibfRatio > 1) {std::cout << "problem!" << std::endl; return 0;}
             tAvalanche->Fill();
         }
   
@@ -102,9 +102,7 @@ int AddSignalTrees() {
         Double_t tFin = 0;
         Double_t timeStep = 0;
         for (int i = 1; i<numberOfFiles+1; i++) {
-			TString inputName;
-			if (modelNum == 1) inputName= path + Form("signal-%d-%d-%d.root", hv1, hv2, i);
-			else if ( (modelNum >=2 && modelNum < 5) || modelNum == 14) inputName= path + Form("signal-%d-%d-%d-%d.root", hv1, hv2, hv3, i);
+			TString inputName = path + filename + Form("-%d.root", i);
             TFile* fIn = TFile::Open(inputName, "READ");
             TTree* tSignalIn = (TTree*)fIn->Get(Form("tSignal_%d",k+2));
             Double_t timeIn;

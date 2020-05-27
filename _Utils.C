@@ -61,7 +61,8 @@ int GetElectrodeNum(int modelNum) {
     if (modelNum == 1) return 3;
     else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) return 4;
     else if (modelNum >= 5 && modelNum < 10) return 5;
-    else if (modelNum >= 10 && modelNum < 12) return 6;
+    else if (modelNum >= 10 && modelNum < 14) return 6;
+	else if (modelNum == 15) return 7;
     else {std::cout << "no info for this model" << std::endl; return 0;}
 }
 
@@ -72,38 +73,47 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
         electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 2 && modelNum < 5) {   // check it's the same for models 2, 3, 4
-        electrodeMap["drift"] = 0;
-        electrodeMap["DM up"] = 0;
-        electrodeMap["DM down"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 5;
+        electrodeMap["DM up"] = 4;
+        electrodeMap["DM down"] = 3;
+        electrodeMap["pad"] = 2;
     }
     else if (modelNum >= 5 && modelNum < 8) {   // check it's the same for models 5, 6, 7
-        electrodeMap["drift"] = 0;
-        electrodeMap["DM up"] = 0;
-        electrodeMap["DM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 5;
+        electrodeMap["DM up"] = 4;
+        electrodeMap["DM down"] = 3;
+        electrodeMap["mesh"] = 6;
+        electrodeMap["pad"] = 2;
     }
     else if (modelNum >= 8 && modelNum < 10) {   // check it's the same for models 8, 9
-        electrodeMap["drift"] = 0;
-        electrodeMap["GEM up"] = 0;
-        electrodeMap["GEM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+        electrodeMap["drift"] = 3;
+        electrodeMap["GEM up"] = 6;
+        electrodeMap["GEM down"] = 5;
+        electrodeMap["mesh"] = 2;
+        electrodeMap["pad"] = 4;
     }
-    else if (modelNum >= 10 && modelNum < 12) {   // check it's the same for models 10, 11
-        electrodeMap["drift"] = 0;
-        electrodeMap["mesh top"] = 0;
-        electrodeMap["GEM up"] = 0;
-        electrodeMap["GEM down"] = 0;
-        electrodeMap["mesh"] = 0;
-        electrodeMap["pad"] = 0;
+    else if (modelNum >= 10 && modelNum < 14) {   // check it's the same for models 10, 11
+        electrodeMap["drift"] = 3;
+        electrodeMap["mesh top"] = 7;
+        electrodeMap["GEM up"] = 6;
+        electrodeMap["GEM down"] = 5;
+        electrodeMap["mesh"] = 2;
+        electrodeMap["pad"] = 4;
     }
 	else if (modelNum == 14) {
-		electrodeMap["drift"] = 0;
-		electrodeMap["DM up"] = 0;
-		electrodeMap["DM down"] = 0;
-		electrodeMap["pad"] = 0;
+		electrodeMap["drift"] = 5;
+		electrodeMap["DM up"] = 4;
+		electrodeMap["DM down"] = 3;
+		electrodeMap["pad"] = 2;
+	}
+	else if (modelNum == 15) {
+		electrodeMap["drift"] = 3;
+		electrodeMap["GEM2 up"] = 8;
+		electrodeMap["GEM2 down"] = 7;
+		electrodeMap["GEM1 up"] = 6;
+		electrodeMap["GEM1 down"] = 5;
+		electrodeMap["mesh"] = 2;
+		electrodeMap["pad"] = 4;
 	}
     else {std::cout << "no info for this model" << std::endl;}
 }
@@ -146,7 +156,8 @@ bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& comp
 			std::cout << std::endl;
 			std::cout << "#################################" << std::endl;
 			std::cout << "#\tmodelNum = " << modelNum << "\t\t#" << std::endl;
-			std::cout << "#\tgasName = " << gasName << "\t#" << std::endl;
+			if (gasName.length() < 5) std::cout << "#\tgasName = " << gasName << "\t\t#" << std::endl;
+			else std::cout << "#\tgasName = " << gasName << "\t#" << std::endl;
 			std::cout << "#\tnEvents = " << nEvents << "\t\t#" << std::endl;
 			std::cout << "#\tcomputeIBF = " << computeIBF << "\t\t#" << std::endl;
 			std::cout << "#################################" << std::endl;
@@ -158,4 +169,10 @@ bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& comp
 	else cout << "Error: not possible to open input.txt file in reading mode" << endl;
 	return false;
 	//return *element;
+}
+
+bool LoadVariables(int& modelNum, std::string& gasName) {
+	int nEvents = 0;
+	bool computeIBF = false;
+	return LoadVariables(modelNum, gasName, nEvents, computeIBF);
 }

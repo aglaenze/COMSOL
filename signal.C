@@ -53,7 +53,7 @@ void DriftAvalanche(int start, int end, int* nWinnersPointer, int* ionBackNumPoi
 
 int main(int argc, char * argv[]) {
 	
-	bool testMode = false;
+	bool testMode = true;
 	//______________________
 	// variables, to change in the file input.txt
 	int modelNum = 0;
@@ -62,106 +62,48 @@ int main(int argc, char * argv[]) {
 	int nEvents = 0;  // number of avalanches to simulate
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF)) {std::cout << "variables not loaded" << std::endl; return 0;}
 	//____________________
-	//gasName = "Ar-iC4H10";
-	//modelNum = 1;
-	//std::cout << "gasName " << gasName << std::endl;
-	//return 0;
+
 	
 	time_t t0 = time(NULL);
+	if (modelNum < 1 || modelNum > 15) {std::cout << "Wrong model number" << std::endl; return 0;}
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
 	
-	TString fOutputName;
+	int electrodeNum = 0;
+	electrodeNum = GetElectrodeNum(modelNum);
+	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
 	
+	TString errorMessage = "Please enter HVmesh like this: ./signal";
+	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
+	errorMessage += " $saveNum";
+	if (argc != electrodeNum+1) {
+		std::cout << errorMessage << std::endl;
+		return 0;
+	}
+	std::vector<int> hvList = {};
+	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
+	int saveNum = atoi(argv[electrodeNum]);
+
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
-	// Load field map
-	ComponentComsol* fm;
-	
-	int hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvMeshTop = 0, hvDrift = 0;
-	int saveNum;
-	if (modelNum == 1) {
-		if (argc != 4) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDrift $saveNum " << std::endl;
-			return 0;
-		}
-		hvMesh = atoi(argv[1]);
-		hvDrift = atoi(argv[2]);
-		saveNum = atoi(argv[3]);
-		fm = InitiateField(modelNum, hvMesh, hvDrift, gas);
-		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift, saveNum);
-	}
-	else if ((modelNum >= 2 && modelNum < 5) || modelNum == 14) {
-		if (argc != 5) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
-			return 0;
-		}
-		hvDmDown = atoi(argv[1]);
-		hvDmUp = atoi(argv[2]);
-		hvDrift = atoi(argv[3]);
-		saveNum = atoi(argv[4]);
-		fm = InitiateField(modelNum, hvDmDown, hvDmUp, hvDrift, gas);
-		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvDmDown, hvDmUp, hvDrift, saveNum);
-	}
-	else if (modelNum >= 5 && modelNum < 8) {
-		if (argc != 6) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvDmDown $hvDmUp $hvDrift $saveNum " << std::endl;
-			return 0;
-		}
-		hvMesh = atoi(argv[1]);
-		hvDmDown = atoi(argv[2]);
-		hvDmUp = atoi(argv[3]);
-		hvDrift = atoi(argv[4]);
-		saveNum = atoi(argv[5]);
-		fm = InitiateField(modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, gas);
-		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDmDown, hvDmUp, hvDrift, saveNum);
-	}
-	else if (modelNum >= 8 && modelNum < 10) {
-		if (argc != 6) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp $hvDrift $saveNum " << std::endl;
-			return 0;
-		}
-		hvMesh = atoi(argv[1]);
-		hvGemDown = atoi(argv[2]);
-		hvGemUp = atoi(argv[3]);
-		hvDrift = atoi(argv[4]);
-		saveNum = atoi(argv[5]);
-		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, gas);
-		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvDrift, saveNum);
-	}
-	else if (modelNum >= 10 && modelNum < 12) {
-		if (argc != 7) {
-			std::cout << "Please enter HVmesh like this: ./signal $hvMesh $hvGemDown $hvGemUp *hvMeshTop $hvDrift $saveNum " << std::endl;
-			return 0;
-		}
-		hvMesh = atoi(argv[1]);
-		hvGemDown = atoi(argv[2]);
-		hvGemUp = atoi(argv[3]);
-		hvMeshTop = atoi(argv[4]);
-		hvDrift = atoi(argv[5]);
-		saveNum = atoi(argv[6]);
-		fm = InitiateField(modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, gas);
-		fOutputName = Form("rootFiles/%s/model%d/signal-%d-%d-%d-%d-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvGemDown, hvGemUp, hvMeshTop, hvDrift, saveNum);
-	}
-	else {std::cout << "Wrong model number" << std::endl; return 0;}
-	
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
 		return 0;
 	}
-	
+
+	TString fOutputName = Form("rootFiles/%s/model%d/signal", gasName.c_str(), modelNum);
+	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
+	fOutputName += Form("-%d.root", saveNum);
+
 	if (testMode) fOutputName = Form("rootFiles/%s/model%d/signal-test.root", gasName.c_str(), modelNum);
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
 	int periodicityNum = 0;
 	LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
-	int electrodeNum = 0;
-	electrodeNum = GetElectrodeNum(modelNum);
-	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
-	//std::cout << damp << " " << width << " " << depth << " " << ddrift << std::endl;
-	//return 0;
+	
 	
 	// Make a sensor.
 	Sensor* sensor = new Sensor();
