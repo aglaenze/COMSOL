@@ -175,7 +175,10 @@ int main(int argc, char * argv[]) {
 			}
 		}
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-		if (computeIBF) ibfRatio = (double)ionBackNum/ni;
+		if (computeIBF) {
+			if (ni>0) ibfRatio = (double)ionBackNum/ni;
+			else ibfRatio = -1;
+		}
 		//std::cout << ibfRatio << std::endl;
 		tAvalanche->Fill();
 		//hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
