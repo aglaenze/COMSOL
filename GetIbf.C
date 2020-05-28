@@ -236,7 +236,7 @@ int GetIbf() {
 		c2->cd(k+1);
 		//ibfLine->Draw("same");
 	}
-	c2->SaveAs(Form("Figures/ibf_%s_model%d.pdf", gasName.c_str(), modelNum));
+	c2->SaveAs(Form("Figures/model%d/ibf_%s.pdf", modelNum, gasName.c_str()));
 	
 	
 	TCanvas* c5 = new TCanvas("c5", "c5", 200, 300);
@@ -358,7 +358,7 @@ int GetIbf() {
 	legendRatio->AddEntry(grSimRatio3, "Simulation (ratio of integrated currents)", "lp");
 	legendRatio->Draw();
 	
-	c5->SaveAs(Form("Figures/IBFCurve-%s-model%d.pdf", gasName.c_str(), modelNum));
+	c5->SaveAs(Form("Figures/model%d/IBFCurve-%s.pdf", modelNum, gasName.c_str()));
 	
 	
 	time_t t1 = time(NULL);

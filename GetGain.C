@@ -171,7 +171,7 @@ int GetGain() {
         txt4->Draw();
 
     }
-    c2->SaveAs(Form("Figures/gains_%s_model%d.pdf", gasName.c_str(), modelNum));
+    c2->SaveAs(Form("Figures/model%d/gains-%s.pdf", modelNum, gasName.c_str()));
 
 	// Load data
 	const Int_t dataNum = dataQuantity(gasName);
@@ -297,7 +297,7 @@ int GetGain() {
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
 	legendRatio->Draw();
         
-    c3->SaveAs(Form("Figures/GainCurve_%s_model%d.pdf", gasName.c_str(), modelNum));
+    c3->SaveAs(Form("Figures/model%d/GainCurve-%s.pdf", modelNum, gasName.c_str()));
 
      
     time_t t1 = time(NULL);

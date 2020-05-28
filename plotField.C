@@ -86,10 +86,10 @@ int main(int argc, char * argv[]) {
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
         vf->PlotContour("v");
-        c1->SaveAs(Form("Figures/potential-model%d.pdf", modelNum));
+        c1->SaveAs(Form("Figures/model%d/potential.pdf", modelNum));
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
-        c2->SaveAs(Form("Figures/field-model%d.pdf", modelNum));
+        c2->SaveAs(Form("Figures/model%d/field.pdf", modelNum));
     }
     
     vf->SetVoltageRange(-hvList[1], -hvList[2]);
@@ -99,17 +99,17 @@ int main(int argc, char * argv[]) {
         vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
         //vf->SetNumberOfContours(40);
         //vf->SetNumberOfSamples2d(40, 40);
-		TCanvas* c1 = new TCanvas("c1", "c1", 600, 600);
-        TCanvas* c2 = new TCanvas("c2", "c2", 600, 600);
+		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
+        TCanvas* c2 = new TCanvas("c22", "c22", 600, 600);
         //TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
         vf->SetCanvas(c1);
         if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
         else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
         vf->PlotContour("v");
-        c1->SaveAs(Form("Figures/potentialZoom-model%d.pdf", modelNum));
+        c1->SaveAs(Form("Figures/model%d/potentialZoom.pdf", modelNum));
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
-        c2->SaveAs(Form("Figures/fieldZoom-model%d.pdf", modelNum));
+        c2->SaveAs(Form("Figures/model%d/fieldZoom.pdf", modelNum));
     }
     
 
@@ -131,7 +131,7 @@ int main(int argc, char * argv[]) {
         meshView->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
         meshView->EnableAxes();
         meshView->Plot();
-        c3->SaveAs(Form("Figures/Mesh_model%d.pdf", modelNum));
+        c3->SaveAs(Form("Figures/model%d/Mesh.pdf", modelNum));
     }
     
 

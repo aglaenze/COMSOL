@@ -195,7 +195,7 @@ int main(int argc, char * argv[]) {
             hElectrons.SetXTitle("# primary electrons");
             hElectrons.SetYTitle("# counts");
             hElectrons.Draw();
-            c.SaveAs(Form("Figures/Fe55Spectrum_%s.pdf", gasName.c_str()));
+            c.SaveAs(Form("Figures/Fe55Spectrum-%s.pdf", gasName.c_str()));
             
             int nPrimary = hElectrons.GetMaximumBin();
             std::cout << "\nnPrimary = " << nPrimary << " in " << gasName << std::endl;
@@ -209,7 +209,7 @@ int main(int argc, char * argv[]) {
         const bool saveResults = false;
         if (saveResults) {
         // Write the histograms to the TFile.
-        const char* name = Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str());
+        const char* name = Form("rootFiles/%s/spectrum-Fe55.root", gasName.c_str());
         TFile* f = new TFile(name, "RECREATE");
         hElectrons.Write();
         f->Close();

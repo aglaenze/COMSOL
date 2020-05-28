@@ -61,9 +61,9 @@ int main(int argc, char * argv[]) {
 		return 0;
 	}
 	
-	TString fOutputName = Form("rootFiles/%s/model%d/avalanche2d", gasName.c_str(), modelNum);
+	TString fOutputName = Form("Figures/model%d/avalanche2d-%s", modelNum,  gasName.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
-	fOutputName += ".root";
+	fOutputName += ".pdf";
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;

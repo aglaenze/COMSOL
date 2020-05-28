@@ -22,8 +22,8 @@ int Convolute() {
     //______________________
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ne";
-    const int modelNum = 15;
+    std::string gasName = "Ar-CO2";
+    const int modelNum = 14;
     const bool drawConvoluteSpectrum = false;
     //____________________
     
@@ -48,7 +48,7 @@ int Convolute() {
 		fInputHV = Form("%d-%d.root", hv1, hv2);
 	}
 	else {
-		fInputHV = "350-395-690-830-910-1230.root";
+		fInputHV = "410-1110-1230.root";
 	}
 	TString fSignalName = path+ "signal-" + fInputHV;
 	TString fOutputName = path+ "fe-spectrum-convoluted-" + fInputHV;
@@ -127,7 +127,7 @@ int Convolute() {
         hFeAmplification->SetYTitle("# counts");
         hFeAmplification->Draw("hist");
         
-        c1->SaveAs(Form("Figures/Convolution_%d.pdf", modelNum));
+        c1->SaveAs(Form("Figures/model%d/Convolution.pdf", modelNum));
     }
         
     // Write convolution histogram in root files

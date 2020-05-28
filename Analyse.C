@@ -85,8 +85,8 @@ int Analyse() {
 	
 	//______________________
 	// variables
-	std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-	const int modelNum = 8;
+	std::string gasName = "Ne"; // Ar-iC4H10 or Ne or Ar-CO2
+	const int modelNum = 15;
 	//____________________
 	
 	time_t t0 = time(NULL);
@@ -102,7 +102,7 @@ int Analyse() {
 	gStyle->SetTextSize(0.05);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-	TString fileName = path + "fe-spectrum-convoluted-350-430-530-650.root";
+	TString fileName = path + "fe-spectrum-convoluted-360-405-690-830-910-1230.root";
 	
 	std::map <std::string, int> electrode;
 	LoadElectrodeMap(modelNum, electrode);
@@ -306,7 +306,7 @@ int Analyse() {
 	legend3->DeleteEntry();
 	legend3->Draw();
 	
-	TString outputName = Form("Figures/Results/analysis_%s_model%d", gasName.c_str(), modelNum);
+	TString outputName = Form("Figures/model%d/analysis-%s", modelNum, gasName.c_str());
 	for (int k = 0; k<hv.size(); k++) {outputName += Form("-%d", hv[k]);}
 	outputName+=".pdf";
 	cv->SaveAs(outputName);
