@@ -22,8 +22,8 @@ int Convolute() {
     //______________________
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-CO2";
-    const int modelNum = 14;
+    std::string gasName = "Ne";
+    const int modelNum = 15;
     const bool drawConvoluteSpectrum = false;
     //____________________
     
@@ -48,7 +48,7 @@ int Convolute() {
 		fInputHV = Form("%d-%d.root", hv1, hv2);
 	}
 	else {
-		fInputHV = "410-1110-1230.root";
+		fInputHV = "370-415-687-827-907-1227.root";
 	}
 	TString fSignalName = path+ "signal-" + fInputHV;
 	TString fOutputName = path+ "fe-spectrum-convoluted-" + fInputHV;
@@ -69,7 +69,7 @@ int Convolute() {
     
     Int_t nAmplification;
     tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
-    const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons")/4);
+    const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons"));
     
     // First convolute the trees of induced charges with Fe spectrum
     for (int k = 0; k<electrodeNum; k++) {
@@ -84,7 +84,7 @@ int Convolute() {
         std::cout << "Number of entries in tAvalanche = " << nAvalanche << std::endl;
         std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
         std::cout << "Number of entries in hFe = " << nFe << std::endl;
-        TH1F* hFeCharge = new TH1F(Form("hFeCharge_%d", k+2), "Number of induced charges with Fe source", nBins, 0, nBins*4 );
+        TH1F* hFeCharge = new TH1F(Form("hFeCharge_%d", k+2), "Number of induced charges with Fe source", nBins, 0, nBins );
         
         for (unsigned int i = 0; i < 10000; ++i) {
             Int_t nPrim = hFe->GetRandom();
@@ -93,6 +93,8 @@ int Convolute() {
             for (unsigned int j = 0; j < nPrim; ++j) {
                 int r = rand() % nCharge;
                 tCharge->GetEntry(r);
+				// the following line is a test
+				//if (abs(totalInducedCharge) == 0) {j--; continue;}
                 gtot += abs(totalInducedCharge);
             }
             hFeCharge->Fill(gtot/nPrimaryTh);
@@ -106,7 +108,7 @@ int Convolute() {
 
     //return 0;
     // Second convolute the trees of the avalanche size with Fe spectrum
-    TH1F* hFeAmplification = new TH1F("hFeAmplification", "Number of avalanche electrons with Fe source", nBins, 0, nBins*4 );
+    TH1F* hFeAmplification = new TH1F("hFeAmplification", "Number of avalanche electrons with Fe source", nBins, 0, nBins );
     for (unsigned int i = 0; i < 10000; ++i) {
         Int_t nPrim = hFe->GetRandom();
         //std::cout << "\nNprim = " << nPrim << std::endl;
@@ -114,6 +116,8 @@ int Convolute() {
         for (unsigned int j = 0; j < nPrim; ++j) {
             int r = rand() % nAvalanche;
             tAvalanche->GetEntry(r);
+			// the following line is a test
+			if (nAmplification < 1) {j--; continue;}
             gtot += nAmplification;
         }
         hFeAmplification->Fill(gtot/nPrimaryTh);

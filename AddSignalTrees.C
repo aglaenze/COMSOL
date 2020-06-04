@@ -17,8 +17,8 @@ int AddSignalTrees() {
     
     //______________________
     // variables
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 11;
+    std::string gasName = "Ne"; // Ar-iC4H10 or Ne or Ar-CO2
+    const int modelNum = 15;
     //____________________
     
     time_t t0 = time(NULL);
@@ -27,7 +27,7 @@ int AddSignalTrees() {
     TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	TString outputName;
 	
-	TString filename = "signal-350-570-770-1070-1190";
+	TString filename = "signal-400-445-680-820-900-1220";
 	std::cout << "processing " << filename << " (model " << modelNum << ")" << std::endl;
 
     //const int numberOfFiles = 3;

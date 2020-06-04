@@ -88,13 +88,13 @@ void LoadParameters(int modelNum, int& periodicityNum, double& damp, double& ddr
 	}
 	else if (modelNum == 14) {   // DM
 		damp = 0.0540;
-		radius = 0.0008;   // cm
+		radius = 0.0009;   // cm
 		ddrift = 0.35;  //cm
 		pitch = 0.0040;    // cm
 	}
 	else if (modelNum == 15) {   // MM + 2 GEMs
-		damp = 0.6125;
-		radius = 0.0008;   // cm
+		damp = 0.6125;	// cm
+		radius = 0.0009;   // cm
 		ddrift = 1.4125;  //cm
 		pitch = 0.0180;    // cm
 	}

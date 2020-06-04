@@ -141,7 +141,7 @@ int main(int argc, char * argv[]) {
 		double x0 = width/2. + RndmUniform() * pitch;
 		//double y0 = RndmUniform() * depth;
 		double y0 = depth/2. + RndmUniform() * pitch;
-		double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
+		double z0 = damp + 5*radius + (ddrift-damp-5*radius)*RndmUniform();
 		//double t0 = ( i + RndmUniform() )* timespace;
 		double t0 = i * timespace;
 		double e = 0;

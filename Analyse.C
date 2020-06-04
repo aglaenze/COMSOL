@@ -11,11 +11,6 @@
 #include "_Utils.C"
 #include "_Data.C"
 
-/*
- TO-DO:
- - draw gain as a function of field ratio
- */
-
 
 Double_t FitFunctionCrystalBall( Double_t* x, Double_t* par ) { //(x, alpha, n sigma, mu)
 	return par[0]*ROOT::Math::crystalball_pdf( x[0], par[1], par[2], par[3], par[4] ); }
@@ -85,8 +80,8 @@ int Analyse() {
 	
 	//______________________
 	// variables
-	std::string gasName = "Ne"; // Ar-iC4H10 or Ne or Ar-CO2
-	const int modelNum = 15;
+	std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+	const int modelNum = 14;
 	//____________________
 	
 	time_t t0 = time(NULL);
@@ -102,7 +97,7 @@ int Analyse() {
 	gStyle->SetTextSize(0.05);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-	TString fileName = path + "fe-spectrum-convoluted-360-405-690-830-910-1230.root";
+	TString fileName = path + "fe-spectrum-convoluted-430-1130-1250.root";
 	
 	std::map <std::string, int> electrode;
 	LoadElectrodeMap(modelNum, electrode);
