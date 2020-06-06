@@ -1,5 +1,7 @@
 #!/bin/bash
 
+maxModel=17
+
 # function that will display electic field configuration in na given rep
 display()
 {
@@ -28,11 +30,11 @@ then
         echo "Possible electric field configurations for all models"
         echo "(If you want to know for one specific model, write ./WhatPossibilities.sh \$modelNum)"
 else
-if [ 1 -le $1 ] && [ $1 -le 15 ]
+if [ 1 -le $1 ] && [ $1 -le $maxModel ]
 then
 echo "Possible electric field configurations for model $1"
 else
-echo "Model number has to be an integer between 1 and 15"
+echo "Model number has to be an integer between 1 and $maxModel"
 echo ""
 exit
 fi
@@ -41,7 +43,7 @@ fi
 # And then call the display function
 if [ -z $1 ]
 then
-for ((k=1;k<=15;k++)); do
+for ((k=1;k<=$maxModel;k++)); do
 echo ""
 echo "Model $k"
 num=$k

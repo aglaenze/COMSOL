@@ -22,8 +22,8 @@ int Convolute() {
     //______________________
     // variables
     //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ne";
-    const int modelNum = 15;
+    std::string gasName = "Ar-CO2";
+    const int modelNum = 14;
     const bool drawConvoluteSpectrum = false;
     //____________________
     
@@ -48,7 +48,7 @@ int Convolute() {
 		fInputHV = Form("%d-%d.root", hv1, hv2);
 	}
 	else {
-		fInputHV = "370-415-687-827-907-1227.root";
+		fInputHV = "430-1130-1250.root";
 	}
 	TString fSignalName = path+ "signal-" + fInputHV;
 	TString fOutputName = path+ "fe-spectrum-convoluted-" + fInputHV;

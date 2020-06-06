@@ -53,6 +53,7 @@ int GetIbf() {
 	
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
+	gStyle->SetTextSize(.05);
 	
 	gStyle->SetOptStat(0);
 	gStyle->SetTitleFontSize(.05);
@@ -60,6 +61,8 @@ int GetIbf() {
 	gStyle->SetTitleYSize(.05);
 	gStyle->SetLabelSize(.05, "XY");
 	gStyle->SetMarkerSize(0.3);
+	gStyle->SetPadLeftMargin(0.15);
+	gStyle->SetPadBottomMargin(0.15);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	
@@ -219,6 +222,7 @@ int GetIbf() {
 		f2->Draw("same");
 		
 		TLegend* legend = new TLegend(0.6,0.7,0.9,0.9);
+		legend->SetTextSize(0.03);
 		legend->AddEntry(hIbfCharge,"All induced charges","l");
 		legend->AddEntry(hIbfIonCharge,"Induced ion charges","l");
 		legend->Draw("same");
@@ -240,10 +244,12 @@ int GetIbf() {
 	
 	
 	TCanvas* c5 = new TCanvas("c5", "c5", 200, 300);
-	c5->SetGrid();
 	c5->Divide(1,2);
+	c5->SetGrid();
+	gPad->SetGrid();
 	
 	c5->cd(1);
+	gPad->SetGrid();
 	
 	TGraphErrors* grSim1 = new TGraphErrors(num, hvMeshList, ibfList, 0, ibfErrorList);
 	grSim1->SetTitle("IBF curve in the Micromegas");
@@ -280,7 +286,7 @@ int GetIbf() {
 	grData1->SetMarkerStyle(20);
 	grData1->SetMarkerSize(0.3);
 	grData1->SetMarkerColor(4);
-	grData1->Draw("LP same");
+	//grData1->Draw("LP same");
 	TGraphErrors* grData2 = new TGraphErrors(dataNum, hvMeshListIBF1, ionBackFlowCorrectedVect1_old, 0, ionBackFlowCorrectedErrorVect1_old );
 	grData2->SetMarkerStyle(20);
 	grData2->SetMarkerSize(0.3);
@@ -288,9 +294,12 @@ int GetIbf() {
 	grData2->Draw("LP same");
 	
 	TLegend* legend = new TLegend(0.5,0.65,0.9,0.9);
+	legend->SetTextSize(0.03);
 	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-	legend->AddEntry(grData1,"Data","lp");
+	/*legend->AddEntry(grData1,"Data","lp");
 	legend->AddEntry(grData2,"Data old","lp");
+	 */
+	legend->AddEntry(grData2,"Data","lp");
 	legend->AddEntry(grSim1,"Simulation (counting IBF)","lp");
 	legend->AddEntry(grSim2, "Simulation (induced charge)", "lp");
 	legend->AddEntry(grSim3, "Simulation (ratio of integrated currents)", "lp");
@@ -298,6 +307,7 @@ int GetIbf() {
 	
 	
 	c5->cd(2);
+	gPad->SetGrid();
 	TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfList, 0, ibfErrorList);
 	grSimRatio1->SetTitle("IBF = f(E ratio)");
 	grSimRatio1->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
@@ -342,7 +352,7 @@ int GetIbf() {
 	grDataRatio1->SetMarkerStyle(20);
 	grDataRatio1->SetMarkerSize(0.3);
 	grDataRatio1->SetMarkerColor(4);
-	grDataRatio1->Draw("LP same");
+	//grDataRatio1->Draw("LP same");
 	TGraphErrors* grDataRatio2 = new TGraphErrors(dataNum, ratioListData, ionBackFlowCorrectedVect1_old, 0, ionBackFlowCorrectedErrorVect1_old );
 	grDataRatio2->SetMarkerStyle(20);
 	grDataRatio2->SetMarkerSize(0.3);
@@ -350,9 +360,12 @@ int GetIbf() {
 	grDataRatio2->Draw("LP same");
 	
 	TLegend* legendRatio = new TLegend(0.5,0.65,0.9,0.9);
+	legendRatio->SetTextSize(0.03);
 	//legendRatio->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-	legendRatio->AddEntry(grDataRatio1, "Data", "lp");
+	/*legendRatio->AddEntry(grDataRatio1, "Data", "lp");
 	legendRatio->AddEntry(grDataRatio2, "Data old", "lp");
+	 */
+	legendRatio->AddEntry(grDataRatio2, "Data", "lp");
 	legendRatio->AddEntry(grSimRatio1,"Simulation (counting IBF)", "lp");
 	legendRatio->AddEntry(grSimRatio2, "Simulation (induced charge)", "lp");
 	legendRatio->AddEntry(grSimRatio3, "Simulation (ratio of integrated currents)", "lp");

@@ -35,7 +35,7 @@ int main(int argc, char * argv[]) {
     //____________________
     
 	//time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > 15) {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();

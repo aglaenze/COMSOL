@@ -241,8 +241,8 @@ int Analyse() {
 	}
 	int nCharge = nChargeDrift;
 	
-	TH1F* hIbfCharge = new TH1F("hIbfCharge", "hIbfCharge", 10000, 0, 100);
-	TH1F* hIbfIonCharge = new TH1F("hIbfIonCharge", "hIbfIonCharge", 10000, 0, 100);
+	TH1F* hIbfCharge = new TH1F("hIbfCharge", "hIbfCharge", 2000, 0, 100);
+	TH1F* hIbfIonCharge = new TH1F("hIbfIonCharge", "hIbfIonCharge", 2000, 0, 100);
 	for (int l = 0; l<nCharge; l++) {
 		tChargeReadout->GetEntry(l);
 		tChargeDrift->GetEntry(l);

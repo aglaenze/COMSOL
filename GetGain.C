@@ -213,7 +213,7 @@ int GetGain() {
         
     TGraphErrors* grData1 = new TGraphErrors(dataNum, hvMeshListData, gainListData, 0, gainErrorListData);
     grData1->SetMarkerStyle(20);
-    grData1->Draw("CP same");
+    //grData1->Draw("CP same");
     TGraphErrors* grData2 = new TGraphErrors(dataNum, hvMeshListData, gainListData_old, 0, gainErrorListData_old);
     grData2->SetMarkerStyle(20);
     grData2->Draw("CP same");
@@ -223,7 +223,7 @@ int GetGain() {
     fExp2->SetParName( 1, "slope" );
     fExp2->SetLineColor(3);
     grData1->Fit( fExp2, "0" );
-    fExp2->Draw("same");
+    //fExp2->Draw("same");
     PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExp2->GetParameter(0), fExp2->GetParameter(1) ) );
         
     TF1* fExp3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
@@ -236,8 +236,10 @@ int GetGain() {
     
     TLegend* legend = new TLegend(0.7,0.2,0.9,0.4);
     //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-    legend->AddEntry(fExp2,"Data", "l");
+    /*legend->AddEntry(fExp2,"Data", "l");
     legend->AddEntry(fExp3,"Data (old)", "l");
+	 */
+	legend->AddEntry(fExp3,"Data", "l");
     legend->AddEntry(fExp,"Simulation", "l");
     legend->Draw();
 
@@ -269,7 +271,7 @@ int GetGain() {
 	
 	TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, hvRatioListData, gainListData, 0, gainErrorListData);
 	grDataRatio1->SetMarkerStyle(20);
-	grDataRatio1->Draw("CP same");
+	//grDataRatio1->Draw("CP same");
 	TGraphErrors* grDataRatio2 = new TGraphErrors(dataNum, hvRatioListData, gainListData_old, 0, gainErrorListData_old);
 	grDataRatio2->SetMarkerStyle(20);
 	grDataRatio2->Draw("CP same");
@@ -279,7 +281,7 @@ int GetGain() {
 	fExpRatio2->SetParName( 1, "slope" );
 	fExpRatio2->SetLineColor(3);
 	grDataRatio1->Fit( fExpRatio2, "0" );
-	fExpRatio2->Draw("same");
+	//fExpRatio2->Draw("same");
 	PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExpRatio2->GetParameter(0), fExpRatio2->GetParameter(1) ) );
 	
 	TF1* fExpRatio3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvRatioListData[0]-2, hvRatioListData[dataNum-1]+2, 2 );
@@ -292,8 +294,10 @@ int GetGain() {
 	
 	TLegend* legendRatio = new TLegend(0.7,0.2,0.9,0.4);
 	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-	legendRatio->AddEntry(fExpRatio2,"Data", "l");
+	/*legendRatio->AddEntry(fExpRatio2,"Data", "l");
 	legendRatio->AddEntry(fExpRatio3,"Data (old)", "l");
+	 */
+	legendRatio->AddEntry(fExpRatio3,"Data", "l");
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
 	legendRatio->Draw();
         

@@ -58,7 +58,7 @@ Int_t GetPrimary(std::string gasName) {
 }
 
 int GetElectrodeNum(int modelNum) {
-    if (modelNum == 1) return 3;
+    if (modelNum == 1 || modelNum == 16 || modelNum == 17) return 3;
     else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) return 4;
     else if (modelNum >= 5 && modelNum < 10) return 5;
     else if (modelNum >= 10 && modelNum < 14) return 6;
@@ -67,7 +67,7 @@ int GetElectrodeNum(int modelNum) {
 }
 
 void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
-    if (modelNum == 1) {
+    if (modelNum == 1 || modelNum == 16 || modelNum == 17) {
         electrodeMap["mesh"] = 2;
         electrodeMap["drift"] = 3;
         electrodeMap["pad"] = 4;
@@ -176,3 +176,5 @@ bool LoadVariables(int& modelNum, std::string& gasName) {
 	bool computeIBF = false;
 	return LoadVariables(modelNum, gasName, nEvents, computeIBF);
 }
+
+int GetMaxModelNum() {return 17;}
