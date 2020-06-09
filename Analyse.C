@@ -76,14 +76,9 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 }
 
 
-int Analyse() {
+int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
-	//______________________
-	// variables
-	std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-	const int modelNum = 14;
-	//____________________
-	
+
 	time_t t0 = time(NULL);
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
@@ -96,8 +91,24 @@ int Analyse() {
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetTextSize(0.05);
 	
+	int electrodeNum = GetElectrodeNum(modelNum);
+	if (hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
+	
+	// input and output files
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-	TString fileName = path + "fe-spectrum-convoluted-430-1130-1250.root";
+	TString fileName = path + "fe-spectrum-convoluted";
+	TString fSignalName = path + "signal";
+	TString outputName = Form("Figures/model%d/analysis-%s", modelNum, gasName.c_str());
+	for (int k = 0; k< hvList.size(); k++) {
+		fileName += Form("-%d", hvList[k]);
+		fSignalName += Form("-%d", hvList[k]);
+		outputName += Form("-%d", hvList[k]);
+	}
+	fileName += ".root";
+	fSignalName += ".root";
+	outputName+=".pdf";
+	
+	std::cout << fSignalName << std::endl;
 	
 	std::map <std::string, int> electrode;
 	LoadElectrodeMap(modelNum, electrode);
@@ -105,22 +116,20 @@ int Analyse() {
 	int readoutElectrode = electrode["pad"]; // could be mesh, it depends on where you want to read
 	int driftElectrode = electrode["drift"];
 	
+	/*
 	std::vector <Int_t> hv = {};
 	TObjArray* matches = TPRegexp( "-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?\\.root$" ).MatchS( fileName );
 	for (int k = 0; k<matches->GetLast(); k++) {
 		hv.push_back( (static_cast<TObjString*>(matches->At(k+1)))->GetString().Atoi() );
 		std::cout << hv[k] << std::endl;
 	}
+	 */
 	
 	TCanvas* cv = new TCanvas("cv","cv", 1000, 800);
 	//cv->Divide(2);
 	cv->Divide(2, 2);
 	
 	// Start with drawing the transparency
-	TString fSignalName = path + "signal";
-	for (int k = 0; k<hv.size(); k++) {fSignalName += Form("-%d", hv[k]);}
-	fSignalName += ".root";
-	std::cout << fSignalName << std::endl;
 	
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
@@ -301,9 +310,7 @@ int Analyse() {
 	legend3->DeleteEntry();
 	legend3->Draw();
 	
-	TString outputName = Form("Figures/model%d/analysis-%s", modelNum, gasName.c_str());
-	for (int k = 0; k<hv.size(); k++) {outputName += Form("-%d", hv[k]);}
-	outputName+=".pdf";
+
 	cv->SaveAs(outputName);
 	time_t t1 = time(NULL);
 	PrintTime(t0, t1);

@@ -65,6 +65,9 @@ int GetGain() {
     gStyle->SetTitleYSize(.05);
     gStyle->SetLabelSize(.05, "XY");
 	gStyle->SetMarkerSize(0.3);
+	gStyle->SetTextSize(.05);
+	gStyle->SetPadLeftMargin(0.15);
+	gStyle->SetPadBottomMargin(0.15);
     
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     

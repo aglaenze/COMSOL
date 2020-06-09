@@ -5,9 +5,12 @@
 
 #include <TCanvas.h>
 #include <TROOT.h>
+#include <TMath.h>
+#include <TStyle.h>
 #include <TH1F.h>
 #include <TFile.h>
-#include <TMath.h>
+#include <TTree.h>
+#include <TBranch.h>
 
 #include "_Utils.C"
 
@@ -17,21 +20,18 @@
  */
 
 
-int Convolute() {
+int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
     
-    //______________________
-    // variables
-    //std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-CO2";
-    const int modelNum = 14;
+
     const bool drawConvoluteSpectrum = false;
-    //____________________
     
     
     time_t t0 = time(NULL);
     
     gStyle->SetOptStat(0);
 
+	int electrodeNum = GetElectrodeNum(modelNum);
+	if (hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
      
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     Int_t num = GetNumberOfFiles(path, "signal");
@@ -40,23 +40,16 @@ int Convolute() {
     Int_t nPrimaryTh = GetPrimary(gasName);
     
     TString fInputHV;
+	
+	for (int k = 0; k< hvList.size(); k++) fInputHV += Form("-%d", hvList[k]);
+	fInputHV += ".root";
     
-    Int_t hv1 = 0, hv2 = 0, hv3 = 0, hv4 = 0;
-	if (modelNum == 1) {
-		hv1 = 440;
-		hv2 = hv1+200;
-		fInputHV = Form("%d-%d.root", hv1, hv2);
-	}
-	else {
-		fInputHV = "430-1130-1250.root";
-	}
-	TString fSignalName = path+ "signal-" + fInputHV;
-	TString fOutputName = path+ "fe-spectrum-convoluted-" + fInputHV;
+	TString fSignalName = path+ "signal" + fInputHV;
+	TString fOutputName = path+ "fe-spectrum-convoluted" + fInputHV;
 
     TFile* f = new TFile(fOutputName, "RECREATE");
     
     //int readoutElectrode = electrode["mesh"];   // if readout electrode = pad, do not foget the - sign
-    int electrodeNum = GetElectrodeNum(modelNum);
     
     // open input files
     TFile* fFe = new TFile(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()), "read");
@@ -70,6 +63,13 @@ int Convolute() {
     Int_t nAmplification;
     tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
     const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons"));
+	
+	// New TTree
+
+	//tChargeConvoluted->Branch("test", ionCharge, "test/D");
+	//return 0;
+	
+	TTree *tChargeConvoluted = new TTree("tChargeConvoluted","Convoluted Charges");
     
     // First convolute the trees of induced charges with Fe spectrum
     for (int k = 0; k<electrodeNum; k++) {
@@ -86,6 +86,9 @@ int Convolute() {
         std::cout << "Number of entries in hFe = " << nFe << std::endl;
         TH1F* hFeCharge = new TH1F(Form("hFeCharge_%d", k+2), "Number of induced charges with Fe source", nBins, 0, nBins );
         
+		Double_t totalCharge;
+		TBranch* b = tChargeConvoluted->Branch(Form("totalInducedCharge_%d", k+2), &totalCharge, Form("totalInducedCharge_%d/D", k+2));
+		
         for (unsigned int i = 0; i < 10000; ++i) {
             Int_t nPrim = hFe->GetRandom();
             //std::cout << "\nNprim = " << nPrim << std::endl;
@@ -98,6 +101,9 @@ int Convolute() {
                 gtot += abs(totalInducedCharge);
             }
             hFeCharge->Fill(gtot/nPrimaryTh);
+			totalCharge = gtot/nPrimaryTh;
+			//b->Fill();
+			
         }
         hFeCharge->SetXTitle("# induced charges");
         hFeCharge->SetYTitle("# counts");
@@ -105,6 +111,7 @@ int Convolute() {
         f->cd();
         hFeCharge->Write();
     }
+	//tChargeConvoluted->Write();
 
     //return 0;
     // Second convolute the trees of the avalanche size with Fe spectrum

@@ -63,6 +63,7 @@ int GetIbf() {
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetPadLeftMargin(0.15);
 	gStyle->SetPadBottomMargin(0.15);
+	gStyle->SetTextSize(.05);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	

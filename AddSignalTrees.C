@@ -13,37 +13,27 @@
  I simulate root files with 100 events, and if I want to have them as one file, I have to add current
  */
 
-int AddSignalTrees() {
+int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
     
-    //______________________
-    // variables
-    std::string gasName = "Ne"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 15;
-    //____________________
-    
+
     time_t t0 = time(NULL);
 
-	int hv1, hv2, hv3, hv4;
+	const int electrodeNum = GetElectrodeNum(modelNum);
+	if (hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
+	
     TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
-	TString outputName;
 	
-	TString filename = "signal-400-445-680-820-900-1220";
+	TString filename = "signal";
+	for (int k = 0; k< hvList.size(); k++) filename += Form("-%d", hvList[k]);
 	std::cout << "processing " << filename << " (model " << modelNum << ")" << std::endl;
+	//return 0;
 
-    //const int numberOfFiles = 3;
-	int numberOfFiles;
-	if (modelNum == 1) {
-		hv1 = 340;
-		hv2 = hv1+200;
-		filename = Form("signal-%d-%d", hv1, hv2);
-	}
-	
-	numberOfFiles = GetNumberOfFiles(path, filename+"-");
+
+	int numberOfFiles = GetNumberOfFiles(path, filename+"-");
 	std::cout << "number of files = " << numberOfFiles << std::endl;
-	outputName = path + filename+".root";
+	TString outputName = path + filename+".root";
 	//return 0;
 	TFile* fOut = new TFile(outputName, "RECREATE");
-    const int electrodeNum = GetElectrodeNum(modelNum);
 
     
     // Initialisation of the new TTree tAvalanche
