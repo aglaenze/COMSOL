@@ -20,7 +20,7 @@ And then
 
 ## Description of macros in there
 
-- WhatPossibilities.sh: says which electric field configuration exist for one given model, or for all models
+- WhatPossibilities.sh: says which electric field configuration exist for one given model, or for all models, with the format: HV1 HV2 HV3 ... So that it can be copy-pasted in ```./signal HV1 HV2 HV3 ... savenum```
 To use: ```./WhatPossibilities.sh $modelNum ```(for one model only)
 or just ```./WhatPossibilities.sh``` for all models
 
