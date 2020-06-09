@@ -61,13 +61,13 @@ For model1 only:
 To compute gain and IBF by counting the electrons and ions:
 
 To draw the gain:
-1) ./gain
-2) root -l -q Convolute.C
-3) root -l -q Analyse.C
+1)``` ./gain```
+2) ```root -l -q Convolute.C```
+3) ```root -l -q Analyse.C```
 
 To compute the IBF:
-1) ./ibf
-2) root -l -q Analyse.C
+1) ```./ibf```
+2) ```root -l -q Analyse.C```
 
 - drawGeometry : draws a geometry of solid boxes (shape of the detector) in 3D, kind of useless
 
@@ -84,8 +84,10 @@ To compute the IBF:
 
 ## Example of input.txt
 
+```
 modelNum = 18
-gasName = Ar-iC4H10     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents = 500	        # number of events to simulate
-computeIBF = 1          # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)
+gasName = Ar-iC4H10     # Ar-iC4H10 or Ne or Ar-CO2  
+nEvents = 500	        # number of events to simulate  
+computeIBF = 1          # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)  
+```
 
