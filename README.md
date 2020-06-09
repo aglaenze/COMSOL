@@ -9,7 +9,7 @@ Don't forget to change in the source code the unit length (in ComponentComsol.cc
 
 ## How to use
 
-1) Create a file input.txt, that contains the variables: gas name, model number, ... (see further example of input.txt)  
+1) Create a file input.txt, that contains the variables: gas name, model number, ... (see further an example of input.txt)  
 And then
 ```./signal HV1 HV2 HV3 ... + saveNum```
 3) ```root -l -q "AddSignalTrees.C($modelNum, \"$gasName\", $hvList)"``` to add the signal root files
