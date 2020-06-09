@@ -60,8 +60,8 @@ For model1 only:
 
 To compute gain and IBF by counting the electrons and ions:
 
-To draw the gain:
-1)``` ./gain```
+To draw the gain:  
+1) ``` ./gain```
 2) ```root -l -q Convolute.C```
 3) ```root -l -q Analyse.C```
 
