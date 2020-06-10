@@ -67,9 +67,9 @@ int GetElectrodeNum(int modelNum) {
 }
 
 void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
-    if (modelNum == 1 || modelNum == 16 || modelNum == 17) {
+    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
+		electrodeMap["drift"] = 3;
         electrodeMap["mesh"] = 2;
-        electrodeMap["drift"] = 3;
         electrodeMap["pad"] = 4;
     }
     else if (modelNum >= 2 && modelNum < 5) {   // check it's the same for models 2, 3, 4
@@ -116,6 +116,10 @@ void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
 		electrodeMap["pad"] = 4;
 	}
     else {std::cout << "no info for this model" << std::endl;}
+}
+
+void DrawDetector(int modelNum, std::vector<int> hvList) {
+	// Draw geometry with voltages
 }
 
 bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& computeIBF)

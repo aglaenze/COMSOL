@@ -125,9 +125,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	 */
 	
-	TCanvas* cv = new TCanvas("cv","cv", 1000, 800);
+	TCanvas* cv = new TCanvas("cv","cv", 800, 1200);
 	//cv->Divide(2);
-	cv->Divide(2, 2);
+	cv->Divide(2, 3);
 	
 	// Start with drawing the transparency
 	
@@ -146,7 +146,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	// On récupère en même temps les fichiers d'IBF et de transparence
 	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
 	
-	TH1F* hIbf = new TH1F("ibf", "ibf", 1000, 0, 100);
+	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
 	for (int k = 0; k<nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
 		if (nAmplification>1) {
@@ -170,14 +170,15 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	txttr->Draw();
 	
 	// now draw the gain with the 2 different ways
-	
-	TFile* fGain = TFile::Open(fileName, "READ");
-	TH1F* hFeAmplification = (TH1F*)fGain->Get("hFeAmplification");
-	TH1F* hFeCharge = (TH1F*)fGain->Get(Form("hFeCharge_%d", readoutElectrode));
+	TFile* fConvoluted = TFile::Open(fileName, "READ");
+	TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification");
+	TH1F* hFeCharge = (TH1F*)fConvoluted->Get(Form("hFeCharge_%d", readoutElectrode));
+	while (hFeAmplification->GetMaximum() < 50) hFeAmplification->Rebin(2);
+	while (hFeCharge->GetMaximum() < 100) hFeCharge->Rebin(2);
+	//hFeAmplification->Rebin(8);
 	
 	hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
 	hFeAmplification->SetMaximum(1.3);
-	//hFeAmplification->Rebin(8);
 	//hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
 	hFeAmplification->SetLineColor(kBlue);
 	hFeAmplification->SetTitle("Gain with Fe source");
@@ -215,6 +216,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	legend->Draw("same");
 	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
+	
 	// And finally draw the IBF
 	
 	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
@@ -230,6 +232,12 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	Double_t xMax2 = hIbf->GetXaxis()->GetBinCenter( iBinMax2 );
 	//hIbf->GetXaxis()->SetRangeUser(0, xMax2 + 3*hIbf->GetRMS());
 	hIbf->GetXaxis()->SetRangeUser(0, 10.);
+	
+	// Nouvelle étape intermédiaire : récupérer les histos IBF convolués
+	TH1F* hFeIbfTotal = (TH1F*)fConvoluted->Get("hFeIbfTotal");
+	TH1F* hFeIbfIon = (TH1F*)fConvoluted->Get("hFeIbfIon");
+	hFeIbfTotal->Scale(1/hFeIbfTotal->GetMaximum());
+	hFeIbfIon->Scale(1/hFeIbfIon->GetMaximum());
 	
 	
 	// 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
@@ -250,14 +258,17 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	int nCharge = nChargeDrift;
 	
-	TH1F* hIbfCharge = new TH1F("hIbfCharge", "hIbfCharge", 2000, 0, 100);
-	TH1F* hIbfIonCharge = new TH1F("hIbfIonCharge", "hIbfIonCharge", 2000, 0, 100);
+	int nBins = 10000;
+	if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) nBins = 2000;
+	TH1F* hIbfCharge = new TH1F("hIbfCharge", "hIbfCharge", nBins, 0, 100);
+	TH1F* hIbfIonCharge = new TH1F("hIbfIonCharge", "hIbfIonCharge", nBins, 0, 100);
 	for (int l = 0; l<nCharge; l++) {
 		tChargeReadout->GetEntry(l);
 		tChargeDrift->GetEntry(l);
 		//tAvalanche->GetEntry(l);
 		//if (nAmplification>1) {
-		if (abs(chargeReadout)>2) {
+		if (abs(chargeReadout)>10) {	// there is signal! it won't be 0 divided by 0
+										// + if there's no signal, not relevant to compute an IBF
 			hIbfCharge->Fill(abs(chargeDrift/chargeReadout*100.));
 			hIbfIonCharge->Fill(abs(ionChargeDrift/ionChargeReadout*100.));
 		}
@@ -274,10 +285,13 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	fIbf->SetLineColor(kRed);
 	fIbf->Draw("same");
 	
+	hFeIbfTotal->Draw("hist same");
+	hFeIbfIon->Draw("hist same");
+	
 	hIbfCharge->SetLineColor(7);
 	hIbfCharge->Draw("hist same");
 	fIbf2->SetLineColor(7);
-	fIbf2->Draw("same");
+	fIbf2->Draw("hist same");
 	
 	hIbfIonCharge->SetLineColor(6);
 	hIbfIonCharge->Draw("hist same");
@@ -303,12 +317,22 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	hIbfCharge->Draw("hist");
 	fIbf2->Draw("same");
 	
+	hFeIbfTotal->Draw("hist same");
+	hFeIbfIon->Draw("hist same");
+	
 	hIbfIonCharge->Draw("hist same");
 	fIbf3->Draw("same");
 	
 	TLegend* legend3 = (TLegend*)legend2->Clone();
 	legend3->DeleteEntry();
 	legend3->Draw();
+	
+	cv->cd(5);
+	DrawDetector(modelNum, hvList);
+	
+	TText* txtGas = new TText(.5,.5,Form("Gas: %s", gasName.c_str()));
+	txtGas->Draw();
+	//txtGas->Draw("same");
 	
 
 	cv->SaveAs(outputName);
