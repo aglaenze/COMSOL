@@ -16,7 +16,7 @@ And then
 4) ```root -l -q "Convolute.C($modelNum, \"$gasName\", $hvList)"``` to convolute the gain obtained in signal root files with the spectrum of Fe (obtained with ./spectrumFe55, see Description of macros)
 5) ```root -l -q "Analyse.C($modelNum, \"$gasName\", $hvList)"```
 
-Alternatively, all these steps can be written in a Process.sh executable that would look like this:  
+Alternatively, steps 2 to 4 can be written in a Process.sh executable that would look like this:  
 ```
 #!/bin/bash
 
