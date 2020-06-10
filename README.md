@@ -16,9 +16,30 @@ And then
 4) ```root -l -q "Convolute.C($modelNum, \"$gasName\", $hvList)"``` to convolute the gain obtained in signal root files with the spectrum of Fe (obtained with ./spectrumFe55, see Description of macros)
 5) ```root -l -q "Analyse.C($modelNum, \"$gasName\", $hvList)"```
 
-OR alternatively, instead of all these steps (don't forget to change gas name and model number inside Process.sh):  
-```./Process.sh HV1 HV2 HV3 ... ```
+Alternatively, all these steps can be written in a Process.sh executable that would look like this:  
+```
+#!/bin/bash
 
+hvList={
+for var in "$@"
+do
+echo $var
+hvList=$hvList$var,
+done
+hvList=${hvList%?}}
+#echo $hvList
+
+gasName="Ar-iC4H10"
+modelNum=1
+
+root -l -q "AddSignalTrees.C($modelNum, \"$gasName\", $hvList)"
+root -l -q "Convolute.C($modelNum, \"$gasName\", $hvList)"
+root -l -q "Analyse.C($modelNum, \"$gasName\", $hvList)"
+```  
+
+And then: ```./Process.sh HV1 HV2 HV3 ... ```  
+
+Don't forget to change gas name and model number inside Process.sh.
 
 
 ## Description of macros in there
@@ -26,9 +47,6 @@ OR alternatively, instead of all these steps (don't forget to change gas name an
 - WhatPossibilities.sh: says which electric field configuration exist for one given model, or for all models, with the format: HV1 HV2 HV3 ... So that it can be copy-pasted in ```./signal HV1 HV2 HV3 ... savenum```
 To use: ```./WhatPossibilities.sh $modelNum ```(for one model only)
 or just ```./WhatPossibilities.sh``` for all models
-
-- Process.sh: allows me to do more easily AddSignalTrees.C, Convolute.C and Analyse.C (but one has to change inside model number + gas used)  
-To use: ```./Process.sh HV1 HV2 HV3 ... ```
 
 - ComputeSignal.sh: automatically starts ./signal for the different electric configurations of a model, by chunks of 4
 
