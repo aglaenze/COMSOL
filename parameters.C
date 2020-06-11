@@ -117,7 +117,7 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
     const std::string path = getenv("GARFIELD_HOME");
     if (gasName=="Ar-iC4H10") {
         gas->SetComposition("Ar", 95., "C4H10", 5.);
-        rPenning = 0.5;
+        rPenning = 0.472;
         gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
         gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
     }
@@ -130,7 +130,7 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
     else if (gasName=="Ar-CO2") {
         //gas->SetComposition("Ar", 93., "CO2", 7.);
         gas->SetComposition("Ar", 90., "CO2", 10.);
-        rPenning = 0.5;
+        rPenning = 0.55;
         //rPenning = 0.4;
         gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
         gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");

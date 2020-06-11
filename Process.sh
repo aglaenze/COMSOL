@@ -19,7 +19,7 @@ modelNum=1
 
 
 # boucle for uniquement pour modeles 1, 16 et 17
-for ((k=0;k<6;k++)); do
+for ((k=0;k<2;k++)); do
 hv1=$((340+$k*20))
 hv2=$((540+$k*20))
 hvList="{$hv1, $hv2}"

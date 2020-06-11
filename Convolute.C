@@ -65,7 +65,11 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
 	Int_t nAvalanche = tAvalanche->GetEntries();
 	Int_t nAmplification;
+	Int_t ni = 0, ionBackNum = 0;
 	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	tAvalanche->SetBranchAddress("ionNum", &ni);
+	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
+	
 	const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons"));
 	
 	// Initialise the trees of induced charges
@@ -88,32 +92,25 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 		hFeCharge[k]->SetXTitle("# induced charges");
 		hFeCharge[k]->SetYTitle("# counts");
 	}
-	
-	/*
-	 // New temporary TTree
-	 TTree *tChargeConvoluted = new TTree("tChargeConvoluted","Convoluted Charges");
-	 Double_t padIonCharge = 0, padTotalCharge = 0, driftIonCharge = 0, driftTotalCharge = 0;
-	 tChargeConvoluted->Branch("padIonCharge", &padIonCharge, "padIonCharge/D");
-	 tChargeConvoluted->Branch("padTotalCharge", &padTotalCharge, "padTotalCharge/D");
-	 tChargeConvoluted->Branch("driftIonCharge", &driftIonCharge, "driftIonCharge/D");
-	 tChargeConvoluted->Branch("driftTotalCharge", &driftTotalCharge, "driftTotalCharge/D");
-	 */
-	
+
 	
 	// Convolute the trees of the avalanche size and charges with Fe spectrum
 	TH1F* hFeAmplification = new TH1F("hFeAmplification", "Number of avalanche electrons with Fe source", nBins, 0, nBins );
-	TH1F* hFeIbfTotal = new TH1F("hFeIbfTotal", "Total induced charge IBF with Fe source", 10000, 0, 100 );
-	TH1F* hFeIbfIon = new TH1F("hFeIbfIon", "Induced ion charge IBF with Fe source", 10000, 0, 100 );
+	TH1F* hFeIbf = new TH1F("hFeIbf", "IBF with Fe source", 10000, 0, 100 );
+	TH1F* hFeIbfTotalCharge = new TH1F("hFeIbfTotalCharge", "Total induced charge IBF with Fe source", 10000, 0, 100 );
+	TH1F* hFeIbfIonCharge = new TH1F("hFeIbfIonCharge", "Induced ion charge IBF with Fe source", 10000, 0, 100 );
 	for (unsigned int i = 0; i < 10000; ++i) {
 		Int_t nPrim = hFe->GetRandom();
 		//std::cout << "\nNprim = " << nPrim << std::endl;
-		Double_t gtot = 0;
+		Double_t gtot = 0, itot = 0, ibntot = 0;
 		Double_t ctot[electrodeNum], ctotIon[electrodeNum];
 		for (int k = 0; k<electrodeNum; k++) {ctot[k] = 0; ctotIon[k] = 0;}
 		for (unsigned int j = 0; j < nPrim; ++j) {
 			int r = rand() % nAvalanche;
 			tAvalanche->GetEntry(r);
 			gtot += nAmplification;
+			itot += ni;
+			ibntot += ionBackNum;
 			for (int k = 0; k<electrodeNum; k++) {
 				tCharge[k]->GetEntry(r);
 				ctot[k] += abs(totalInducedCharge[k]);
@@ -121,10 +118,11 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 			}
 		}
 		hFeAmplification->Fill(gtot/nPrimaryTh);
+		if (itot > 10 ) hFeIbf->Fill((double)ibntot/itot * 100.);
 		for (int k = 0; k<electrodeNum; k++) {hFeCharge[k]->Fill(ctot[k]/nPrimaryTh);}
 		if (ctot[padElectrode-2]>10){
-			hFeIbfTotal->Fill(ctot[driftElectrode-2]/ctot[padElectrode-2]*100.);
-			hFeIbfIon->Fill(ctotIon[driftElectrode-2]/ctotIon[padElectrode-2]*100.);
+			hFeIbfTotalCharge->Fill(ctot[driftElectrode-2]/ctot[padElectrode-2]*100.);
+			hFeIbfIonCharge->Fill(ctotIon[driftElectrode-2]/ctotIon[padElectrode-2]*100.);
 		}
 	}
 	
@@ -142,9 +140,10 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	// Write convolution histogram in root files
 	f->cd();
 	hFeAmplification->Write();
-	for (int k = 0; k<electrodeNum; k++) {hFeCharge[k]->Write();}
-	hFeIbfTotal->Write();
-	hFeIbfIon->Write();
+	hFeIbf->Write();
+	for (int k = 0; k < electrodeNum; k++) {hFeCharge[k]->Write();}
+	hFeIbfTotalCharge->Write();
+	hFeIbfIonCharge->Write();
 	f->Close();
 	time_t t1 = time(NULL);
 	PrintTime(t0, t1);

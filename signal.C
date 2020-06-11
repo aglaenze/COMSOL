@@ -30,6 +30,7 @@ using namespace Garfield;
 int main(int argc, char * argv[]) {
 	
 	bool testMode = false;
+	bool keepSignal = false;
 	//______________________
 	// variables, to change in the file input.txt
 	int modelNum = 0;
@@ -38,7 +39,7 @@ int main(int argc, char * argv[]) {
 	int nEvents = 0;  // number of avalanches to simulate
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF)) {std::cout << "variables not loaded" << std::endl; return 0;}
 	//____________________
-
+	
 	
 	time_t t0 = time(NULL);
 	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
@@ -60,7 +61,7 @@ int main(int argc, char * argv[]) {
 	std::vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
 	int saveNum = atoi(argv[electrodeNum]);
-
+	
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
@@ -68,11 +69,11 @@ int main(int argc, char * argv[]) {
 		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
 		return 0;
 	}
-
+	
 	TString fOutputName = Form("rootFiles/%s/model%d/signal", gasName.c_str(), modelNum);
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
 	fOutputName += Form("-%d.root", saveNum);
-
+	
 	if (testMode) fOutputName = Form("rootFiles/%s/model%d/signal-test.root", gasName.c_str(), modelNum);
 	
 	//Load geometry parameters
@@ -98,14 +99,18 @@ int main(int argc, char * argv[]) {
 	int ne2 = 0, nWinners = 0;
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
-	Double_t ibfRatio = 0.;
-	if (computeIBF) tAvalanche->Branch("ibfRatio", &ibfRatio, "ibfRatio/D");
+	int ni = 0, ionBackNum = 0;
+	if (computeIBF) {
+		tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
+		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
+	}
 	
 	// Set the signal binning.
 	//const int nTimeBins = 10000;
-	const double tStep = 0.1;   //ns
+	const double tStep = 10;   //ns
 								//const double timespace = 1./rate*1.e9;    // in ns
-	const double timespace = 1000.;    // in ns // 1µs so that events don't overlap
+	const double timespace = 2.e6;    // in ns // 1ms so that events don't overlap (ion back flow super slow to collect)
+	//const double timespace = 1.e2;
 	const double tStart =  0.;
 	//const double tEnd = int(nEvents * timespace + ionDelay);
 	const double tEnd = int(nEvents * timespace);
@@ -147,7 +152,7 @@ int main(int argc, char * argv[]) {
 		double e = 0;
 		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
 		//int ne2 = 0, ni = 0;
-		int ni = 0;
+		ni = 0;
 		aval->GetAvalancheSize(ne2, ni);
 		std::cout << "\nAvalanche size = " << ne2 << std::endl;
 		//if (ne2 < 4) {i--; continue;}
@@ -163,22 +168,19 @@ int main(int argc, char * argv[]) {
 		double xi1, yi1, zi1, ti1;
 		double xi2, yi2, zi2, ti2;
 		int status;
-		int ionBackNum = 0;
+		ionBackNum = 0;
 		nWinners = 0;
 		for (int j = np; j--;) {
 			aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-			if (ze2 < 0.01) nWinners++;
+			if (ze2 < 0.008) nWinners++;
 			if (computeIBF) {
 				drift->DriftIon(xe1, ye1, ze1, te1);
 				drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-				if (zi2 > 1.2*damp) ionBackNum+=1;
+				if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
 			}
 		}
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-		if (computeIBF) {
-			if (ni>0) ibfRatio = (double)ionBackNum/ni;
-			else ibfRatio = -1;
-		}
+		
 		//std::cout << ibfRatio << std::endl;
 		tAvalanche->Fill();
 		//hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
@@ -192,13 +194,15 @@ int main(int argc, char * argv[]) {
 			TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
 			Double_t ft = 0., fct = 0., fce = 0., fci = 0.;
 			Double_t fctInt = 0, fceInt = 0, fciInt = 0;
-			tSignal->Branch("time", &ft, "time/D");
-			tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
-			tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
-			tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
-			tSignal->Branch("totalCurrentInt",&fctInt,"totalCurrentInt/D");     // Integral
-			tSignal->Branch("electronCurrentInt",&fceInt,"electronCurrentInt/D");
-			tSignal->Branch("ionCurrentInt",&fciInt,"ionCurrentInt/D");
+			if (keepSignal) {
+				tSignal->Branch("time", &ft, "time/D");
+				tSignal->Branch("totalCurrent", &fct, "totalCurrent/D");
+				tSignal->Branch("electronCurrent", &fce, "electronCurrent/D");
+				tSignal->Branch("ionCurrent", &fci, "ionCurrent/D");
+				tSignal->Branch("totalCurrentInt",&fctInt,"totalCurrentInt/D");     // Integral
+				tSignal->Branch("electronCurrentInt",&fceInt,"electronCurrentInt/D");
+				tSignal->Branch("ionCurrentInt",&fciInt,"ionCurrentInt/D");
+			}
 			
 			TTree *tCharge = new TTree(Form("tInducedCharge_%d",k+2),"InducedCharge");
 			Double_t tic = 0., eic = 0., iic = 0.;
@@ -217,7 +221,7 @@ int main(int argc, char * argv[]) {
 				fctInt+=fct*tStep;
 				fceInt+=fce*tStep;
 				fciInt+=fci*tStep;
-				tSignal->Fill();
+				if (keepSignal) tSignal->Fill();
 				
 				tic+=fct*tStep;
 				eic+=fce*tStep;
@@ -232,7 +236,7 @@ int main(int argc, char * argv[]) {
 					tic = 0; eic = 0; iic = 0;
 				}
 			}
-			tSignal->Write("", TObject::kOverwrite);
+			if (keepSignal) tSignal->Write("", TObject::kOverwrite);
 			tCharge->Write("", TObject::kOverwrite);
 			//std::cout << "induced charge for electrode " << k+2 << " = " << sensor->GetInducedCharge(Form("V%d", k+2)) << std::endl;
 		}
