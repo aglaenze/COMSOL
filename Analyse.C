@@ -125,9 +125,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	 */
 	
-	TCanvas* cv = new TCanvas("cv","cv", 700, 1200);
+	TCanvas* cv = new TCanvas("cv","cv", 800, 1000);
 	//cv->Divide(2);
-	cv->Divide(2, 3);
+	cv->Divide(2, 2);
 	
 	// Start with drawing the transparency
 	
@@ -174,12 +174,12 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TFile* fConvoluted = TFile::Open(fileName, "READ");
 	TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification");
 	TH1F* hFeCharge = (TH1F*)fConvoluted->Get(Form("hFeCharge_%d", readoutElectrode));
-	while (hFeAmplification->GetMaximum() < 20) hFeAmplification->Rebin(2);
-	while (hFeCharge->GetMaximum() < 20) hFeCharge->Rebin(2);
+	while (hFeAmplification->GetMaximum() < 100) hFeAmplification->Rebin(2);
+	while (hFeCharge->GetMaximum() < 100) hFeCharge->Rebin(2);
 	//hFeAmplification->Rebin(8);
 	
 	hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
-	hFeAmplification->SetMaximum(1.3);
+	hFeAmplification->SetMaximum(1.35);
 	//hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
 	hFeAmplification->SetLineColor(kBlue);
 	hFeAmplification->SetTitle("Gain with Fe source");
@@ -210,7 +210,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	f2->Draw("same");
 	TString txt2 = Form("Induced charge --> Gain = %.0f #pm %.3f", f2->GetParameter(0), f2->GetParError(0));
 	
-	TLegend* legend = new TLegend(0.2,0.75,0.9,0.9);
+	TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
 	legend->AddEntry(f,txt,"l");
 	legend->AddEntry(f2,txt2,"l");
 	legend->SetTextSize(0.04);
@@ -227,7 +227,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	hIbf->SetXTitle("IBF (%)");
 	hIbf->Scale(1/hIbf->GetMaximum());
-	hIbf->SetMaximum(1.3);
+	hIbf->SetMaximum(1.35);
 	TF1* fIbf = GetFitIbf(hIbf);
 	
 	Int_t iBinMax2 = hIbf->GetMaximumBin();
@@ -270,10 +270,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	hIbfCharge->Scale(1/hIbfCharge->GetMaximum());
 	hIbfIonCharge->Scale(1/hIbfIonCharge->GetMaximum());
-	TF1* fIbf2 = GetFitIbf(hIbfCharge, false);
-	TF1* fIbf3 = GetFitIbf(hIbfIonCharge, false);
+	TF1* fIbfCharge = GetFitIbf(hIbfCharge, false);
+	TF1* fIbfIonCharge = GetFitIbf(hIbfIonCharge, false);
 	
-	// 3e étape (nouvelle étape intermédiaire) : récupérer les histos IBF convolués
+	// 3e étape (nouvelle étape intermédiaire) : récupérer les histos IBF convolués, et les fitter
 	TH1F* hFeIbf = (TH1F*)fConvoluted->Get("hFeIbf");
 	TH1F* hFeIbfTotalCharge = (TH1F*)fConvoluted->Get("hFeIbfTotalCharge");
 	TH1F* hFeIbfIonCharge = (TH1F*)fConvoluted->Get("hFeIbfIonCharge");
@@ -281,31 +281,49 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	hFeIbfTotalCharge->Scale(1/hFeIbfTotalCharge->GetMaximum());
 	hFeIbfIonCharge->Scale(1/hFeIbfIonCharge->GetMaximum());
 	
+	TF1* fFeIbf = GetFitIbf(hFeIbf);
+	TF1* fFeIbfTotalCharge = GetFitIbf(hFeIbfTotalCharge);
+	TF1* fFeIbfIonCharge = GetFitIbf(hFeIbfIonCharge);
+	hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
+	
+	
 	// 4e étape : dessiner les histos d'ibf
 	cv->cd(3);
 	hIbf->SetTitle("IBF");
+	fIbf->SetLineColor(kBlue);
 	hIbf->Draw("hist");
-	fIbf->SetLineColor(kRed);
+	fIbf->SetLineColor(kBlue);
 	fIbf->Draw("same");
+
+	 // Draw convoluted IBF
+	hFeIbf->SetLineColor(12);
+	fFeIbf->SetLineColor(12);
+	 hFeIbf->Draw("hist same");
+	fFeIbf->Draw("same");
+	hFeIbfTotalCharge->SetLineColor(9);
+	fFeIbfTotalCharge->SetLineColor(9);
+	 hFeIbfTotalCharge->Draw("hist same");
+	fFeIbfTotalCharge->Draw("same");
+	hFeIbfIonCharge->SetLineColor(8);
+	fFeIbfIonCharge->SetLineColor(8);
+	 hFeIbfIonCharge->Draw("hist same");
+	fFeIbfIonCharge->Draw("same");
 	
-	hFeIbf->Draw("hist same");
-	hFeIbfTotalCharge->Draw("hist same");
-	hFeIbfIonCharge->Draw("hist same");
-	
+	// Draw not convoluted IBF histo with induced charge
 	hIbfCharge->SetLineColor(7);
+	fIbfCharge->SetLineColor(7);
 	hIbfCharge->Draw("hist same");
-	fIbf2->SetLineColor(7);
-	fIbf2->Draw("hist same");
+	fIbfCharge->Draw("same");
 	
 	hIbfIonCharge->SetLineColor(6);
+	fIbfIonCharge->SetLineColor(6);
 	hIbfIonCharge->Draw("hist same");
-	fIbf3->SetLineColor(6);
-	fIbf3->Draw("same");
+	fIbfIonCharge->Draw("same");
 	
 	TString txtIbf1 = Form("IBF = %.3g #pm %.3f %s", fIbf->GetParameter(0), fIbf->GetParError(0), "%");
-	TString txtIbf2 = Form("IBF = %.3g #pm %.3f %s", fIbf2->GetParameter(0), fIbf2->GetParError(0), "%");
-	TString txtIbf3 = Form("IBF = %.3g #pm %.3f %s", fIbf3->GetParameter(0), fIbf3->GetParError(0), "%");
-	TLegend* legend2 = new TLegend(0.2,0.7,0.9,0.9);
+	TString txtIbf2 = Form("IBF = %.3g #pm %.3f %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%");
+	TString txtIbf3 = Form("IBF = %.3g #pm %.3f %s", fIbfIonCharge->GetParameter(0), fIbfIonCharge->GetParError(0), "%");
+	TLegend* legend2 = new TLegend(0.1,0.7,0.9,0.9);
 	legend2->AddEntry(hIbf,"IBF ratio --> " + txtIbf1,"l");
 	legend2->AddEntry(hIbfCharge,"All induced charges --> " + txtIbf2,"l");
 	legend2->AddEntry(hIbfIonCharge,"Induced ion charges --> " + txtIbf3,"l");
@@ -313,25 +331,29 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	legend2->Draw("same");
 	
 	
+	/*
 	cv->cd(4);
 	hIbfCharge->SetTitle("IBF (zoom)");
 	hIbfCharge->SetXTitle("IBF (%)");
 	hIbfCharge->GetXaxis()->SetRangeUser(0,0.4);
 	hIbfCharge->SetMaximum(1.3);
 	hIbfCharge->Draw("hist");
-	fIbf2->Draw("same");
-	
-	hFeIbfTotalCharge->Draw("hist same");
-	hFeIbfIonCharge->Draw("hist same");
-	
+	fIbfCharge->Draw("same");
+	 // Draw convoluted IBF
+	 hFeIbf->Draw("hist same");
+	 hFeIbfTotalCharge->Draw("hist same");
+	 hFeIbfIonCharge->Draw("hist same");
+	 
 	hIbfIonCharge->Draw("hist same");
-	fIbf3->Draw("same");
+	fIbfIonCharge->Draw("same");
 	
 	TLegend* legend3 = (TLegend*)legend2->Clone();
 	legend3->DeleteEntry();
 	legend3->Draw();
+	  */
 	
-	cv->cd(5);
+	//cv->cd(5);
+	cv->cd(4);
 	DrawDetector(modelNum, hvList);
 	
 	TText* txtGas = new TText(.35,.7,Form("Gas: %s", gasName.c_str()));

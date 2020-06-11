@@ -40,10 +40,19 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
 	Int_t nWinners = 0, ne2 = 0;
 	Int_t ni = 0, ionBackNum = 0;
+	std::vector<double> electronStartPoints = {}, electronEndPoints = {};
+	std::vector<double> ionStartPoints = {}, ionEndPoints = {};
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
 	tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
+	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
+	tAvalanche->Branch("ionStartPoints", &ionStartPoints);
+	tAvalanche->Branch("ionEndPoints", &ionEndPoints);
+	
+	std::vector<double> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
+	std::vector<double> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
 	
 	// On commence par remplir le TTree tAvalanche
 	for (int i = 1; i<numberOfFiles+1; i++) {
@@ -56,11 +65,25 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 		tAvalancheIn->SetBranchAddress("ionNum", &ni);
 		tAvalancheIn->SetBranchAddress("ionBackNum", &ionBackNum);
 		
+		tAvalancheIn->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
+		tAvalancheIn->SetBranchAddress("electronEndPoints", &electronEndPointsInput);
+		tAvalancheIn->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
+		tAvalancheIn->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
+		
 		int nIn = tAvalancheIn->GetEntries();
 		
 		for (int l = 0; l<nIn; l++) {
 			tAvalancheIn->GetEntry(l);
+			electronStartPoints = *electronStartPointsInput;
+			electronEndPoints = *electronEndPointsInput;
+			ionStartPoints = *ionStartPointsInput;
+			ionEndPoints = *ionEndPointsInput;
+			
 			tAvalanche->Fill();
+			electronStartPoints.clear();
+			electronEndPoints.clear();
+			ionStartPoints.clear();
+			ionEndPoints.clear();
 		}
 		
 	}

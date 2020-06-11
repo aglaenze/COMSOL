@@ -100,9 +100,15 @@ int main(int argc, char * argv[]) {
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	int ni = 0, ionBackNum = 0;
+	std::vector<double> electronStartPoints = {}, electronEndPoints = {};
+	std::vector<double> ionStartPoints = {}, ionEndPoints = {};
+	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
 		tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
 		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
+		tAvalanche->Branch("ionStartPoints", &ionStartPoints);
+		tAvalanche->Branch("ionEndPoints", &ionEndPoints);
 	}
 	
 	// Set the signal binning.
@@ -172,18 +178,25 @@ int main(int argc, char * argv[]) {
 		nWinners = 0;
 		for (int j = np; j--;) {
 			aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+			electronStartPoints.push_back(ze1);
+			electronEndPoints.push_back(ze2);
 			if (ze2 < 0.008) nWinners++;
 			if (computeIBF) {
 				drift->DriftIon(xe1, ye1, ze1, te1);
 				drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
 				if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
+				ionStartPoints.push_back(zi1);
+				ionEndPoints.push_back(zi2);
 			}
 		}
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
 		
 		//std::cout << ibfRatio << std::endl;
 		tAvalanche->Fill();
-		//hTransparencySA->Fill(electronsBelowSA*1./electronsAboveSA);
+		electronStartPoints.clear();
+		electronEndPoints.clear();
+		ionStartPoints.clear();
+		ionEndPoints.clear();
 	}
 	tAvalanche->Write("", TObject::kOverwrite);
 	

@@ -13,13 +13,13 @@ N=4
 for ((k=0;k<=6;k++)); do
 V1=$((340+$k*20))
 V2=$((540+$k*20))
-#for ((i=1;i<=12;i++)); do
+for ((i=1;i<=5;i++)); do
 # chunks of 5
 ((j=j%N)); ((j++==0)) && wait
-task "$V1" "$V2" "1"&
+task "$V1" "$V2" "$i"&
 #task "340" "540" "$i"&
 #echo "$V $i"
-#done
+done
 done
 
 #hadd -a result.root avalanche_gain1.root avalanche_gain2.root avalanche_gain3.root

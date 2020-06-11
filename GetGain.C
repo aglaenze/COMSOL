@@ -88,8 +88,9 @@ int GetGain() {
     //c2->Divide(2);
     c2->Divide(2, num2);
 
+	num = 4;
     Double_t hvMeshList[num], hvDriftList[num], hvRatioList[num];
-    Double_t gainList[num], gainList2[num], gainErrorList[num], gainErrorList2[num];
+    Double_t gainList[num], gainFeChargeList[num], gainErrorList[num], gainFeChargeErrorList[num];
     for (unsigned int k = 0; k < num; ++k) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
         TString fileName;
@@ -130,10 +131,10 @@ int GetGain() {
         hFeCharge->Scale(1/hFeCharge->GetMaximum());
         hFeCharge->SetMaximum(1.2);
         hFeCharge->SetLineColor(kBlue + 2);
-        TF1* f2 = GetFitGain(hFeCharge);
+        TF1* fFeCharge = GetFitGain(hFeCharge);
         hFeCharge->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
-        gainList2[k] = f2->GetParameter(0);
-        gainErrorList2[k] = f2->GetParError(0);
+        gainFeChargeList[k] = fFeCharge->GetParameter(0);
+        gainFeChargeErrorList[k] = fFeCharge->GetParError(0);
         
         // Now draw both spectra
         c2->cd(k+1);
@@ -165,8 +166,8 @@ int GetGain() {
         pad2->Draw();
         pad2->cd();       // pad2 becomes the current pad
         hFeCharge->Draw("hist");
-        f2->Draw("same");
-        TLatex* txt3 = new TLatex(0.5*xMax,1,Form("Gain = %.3g #pm %.3f", f2->GetParameter(0), f2->GetParError(0)));
+        fFeCharge->Draw("same");
+        TLatex* txt3 = new TLatex(0.5*xMax,1,Form("Gain = %.3g #pm %.3f", fFeCharge->GetParameter(0), fFeCharge->GetParError(0)));
         TLatex* txt4 = new TLatex(0.5*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
         txt3->SetTextSize(0.05) ;
         txt4->SetTextSize(0.05) ;
@@ -191,7 +192,7 @@ int GetGain() {
     gPad->SetLogy();
 	gPad->SetGrid();
     TGraphErrors* grSim1 = new TGraphErrors(num, hvMeshList, gainList, 0, gainErrorList);
-    TGraphErrors* grSim2 = new TGraphErrors(num, hvMeshList, gainList2, 0, gainErrorList2);
+    TGraphErrors* grSim2 = new TGraphErrors(num, hvMeshList, gainFeChargeList, 0, gainFeChargeErrorList);
     grSim1->SetTitle("Gain curve in the Micromegas");
     grSim1->GetXaxis()->SetTitle( "V_{mesh}" );
     grSim1->GetYaxis()->SetTitle( "Gain" );
@@ -251,7 +252,7 @@ int GetGain() {
 	gPad->SetLogy();
 	gPad->SetGrid();
 	TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, gainList, 0, gainErrorList);
-	TGraphErrors* grSimRatio2 = new TGraphErrors(num, hvRatioList, gainList2, 0, gainErrorList2);
+	TGraphErrors* grSimRatio2 = new TGraphErrors(num, hvRatioList, gainFeChargeList, 0, gainFeChargeErrorList);
 	grSimRatio1->SetTitle("Gain curve in the Micromegas");
 	grSimRatio1->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
 	grSimRatio1->GetYaxis()->SetTitle( "Gain" );
