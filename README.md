@@ -99,14 +99,18 @@ To compute the IBF:
 
 - GetNumberOfCharges.C: takes in input the signal root files. It looks at the current = f(time); each time the current goes above a threshold, it'a a new event. For each event, it integrates the current above the thrshold to extract the number of charges (should correspond to the gain)
 
-- Analyse.C : uses the root files previously generated with gain.C and ib.C to analyse the data
+- Analyse.C : uses the root files previously generated with gain.C and ibf.C to analyse the data
 --> fit gain and ibf
 --> draw gain and ibf curve
 --> compare with real data
 
 - GetIbf.C: to get IBF by looking at 1D distribution of current --> gives an underestimated IBF
 
-## Example of input.txt
+
+
+# Appendix
+
+### Example of input.txt
 
 ```
 modelNum = 18
@@ -115,3 +119,28 @@ nEvents = 500	        # number of events to simulate
 computeIBF = 1          # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)  
 ```
 
+### Executable ComputeSignal.sh to locally parallelize jobs
+
+```
+#!/bin/bash
+
+task()
+{
+echo "Vmesh = $1, Vdrift = $2 and Index = $3"
+echo ./signal $1 $2 $3
+./signal $1 $2 $3
+}
+
+# run jobs in parallel, by packets of 5
+N=5
+for ((k=0;k<=6;k++)); do
+V1=$((340+$k*20))
+V2=$((540+$k*20))
+for ((i=1;i<=5;i++)); do
+# chunks of 5
+((j=j%N)); ((j++==0)) && wait
+task "$V1" "$V2" "$i"&
+#echo "$V $i"
+done
+done
+```  
