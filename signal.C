@@ -11,7 +11,8 @@
 #include <TBranch.h>
 
 #include "_Utils.C"
-#include "parameters.C"
+#include "_Geometry.C"
+#include "initiate.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
@@ -77,9 +78,8 @@ int main(int argc, char * argv[]) {
 	if (testMode) fOutputName = Form("rootFiles/%s/model%d/signal-test.root", gasName.c_str(), modelNum);
 	
 	//Load geometry parameters
-	double damp = 0., ddrift = 0., dmylar = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
-	int periodicityNum = 0;
-	LoadParameters(modelNum, periodicityNum, damp, ddrift, dmylar, radius, pitch, width, depth);
+	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
 	
 	
 	// Make a sensor.

@@ -8,8 +8,7 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "_Utils.C"
-#include "_Data.C"
+#include "Transparency.C"
 
 
 Double_t FitFunctionCrystalBall( Double_t* x, Double_t* par ) { //(x, alpha, n sigma, mu)
@@ -94,6 +93,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	int electrodeNum = GetElectrodeNum(modelNum);
 	if (hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
 	
+	//Load geometry parameters
+	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
+	
 	// input and output files
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	TString fileName = path + "fe-spectrum-convoluted";
@@ -125,52 +128,27 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	 */
 	
-	TCanvas* cv = new TCanvas("cv","cv", 800, 1000);
+	TCanvas* cv = new TCanvas("cv","cv", 1200, 1000);
 	//cv->Divide(2);
-	cv->Divide(2, 2);
+	cv->Divide(3, 2);
 	
+
 	// Start with drawing the transparency
+	cv->cd(1);
+	DrawTransparency(modelNum, fSignalName);
+	//return 0;
+	
+	// now draw the gain with the 2 different ways
 	
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
 	Int_t nAvalanche = tAvalanche->GetEntries();
-	
 	Int_t nAmplification;
 	Int_t ni = 0, ionBackNum = 0;
 	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 	
-	Int_t winners = 0;
-	TH1F* hTransparency = new TH1F("hTransparency", "hTransparency", 4, -1, 3);
-	
-	// On récupère en même temps les fichiers d'IBF et de transparence
-	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
-	
-	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
-	for (int k = 0; k<nAvalanche; k++) {
-		tAvalanche->GetEntry(k);
-		if (nAmplification>1) {
-			hIbf->Fill((double)ionBackNum/ni*100.);
-			hTransparency->Fill(1);
-			winners++;
-		}
-		else {hTransparency->Fill(0);}
-		//if (ibfRatio*100. > 100.) std::cout << "problem !" << std::endl;
-	}
-	
-	cv->cd(1);
-	hTransparency->SetTitle("Transparency");
-	hTransparency->Scale(1./nAvalanche);
-	hTransparency->SetMaximum(1.2);
-	hTransparency->Draw("hist");
-	// Write text with the value of transparency
-	Double_t transp = (double)winners/nAvalanche;
-	
-	TText* txttr = new TText(0.2,0.9*hTransparency->GetMaximum(),Form("Transparency = %.1f %s", transp*100, "%"));
-	txttr->Draw();
-	
-	// now draw the gain with the 2 different ways
 	TFile* fConvoluted = TFile::Open(fileName, "READ");
 	TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification");
 	TH1F* hFeCharge = (TH1F*)fConvoluted->Get(Form("hFeCharge_%d", readoutElectrode));
@@ -224,6 +202,14 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	// 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
 	// 3e étape : récupérer les ibf convolués
 	// 4e étape : dessiner la courbe ibf = f(field ratio)
+	
+	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
+	
+	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
+	for (int k = 0; k<nAvalanche; k++) {
+		tAvalanche->GetEntry(k);
+		if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+	}
 	
 	hIbf->SetXTitle("IBF (%)");
 	hIbf->Scale(1/hIbf->GetMaximum());
@@ -357,9 +343,31 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	DrawDetector(modelNum, hvList);
 	
 	TText* txtGas = new TText(.35,.7,Form("Gas: %s", gasName.c_str()));
-	//txtGas->Draw();
 	txtGas->Draw("same");
+	TLatex* txtAmp = new TLatex(.35,.2,Form("d_{amp} = %.4f cm", damp));
+	txtAmp->Draw("same");
+	TLatex* txtDrift = new TLatex(.45,.9,Form("d_{drift} = %.2f cm", ddrift));
+	txtDrift->Draw("same");
 	
+	// Draw distribution of where electrons are created
+	cv->cd(5);
+	std::vector<float> *electronStartPointsInput = {};
+	tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
+
+	std::vector<float> electronStartPoints = {};
+	TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, 0, damp);
+	for (int k = 0; k < nAvalanche; k++) {
+		tAvalanche->GetEntry(k);
+		electronStartPoints = *electronStartPointsInput;
+		for (int j = 0; j< electronStartPoints.size(); j++) {
+			zElDistribution->Fill(electronStartPoints[j]);
+		}
+		electronStartPoints.clear();
+	}
+	zElDistribution->Draw();
+	
+	cv->cd(6);
+	DrawDyingIons(modelNum, fSignalName);
 
 	cv->SaveAs(outputName);
 	time_t t1 = time(NULL);

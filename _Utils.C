@@ -118,54 +118,9 @@ int GetElectrodeNum(int modelNum) {
 	std::map <std::string, int> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	return electrodeMap.size();
-	/*
-	 if (modelNum == 1 || (modelNum >= 16 && modelNum <= 18)) return 3;
-	 else if ( (modelNum >= 2 && modelNum < 5) || modelNum == 14) return 4;
-	 else if (modelNum >= 5 && modelNum < 10) return 5;
-	 else if (modelNum >= 10 && modelNum < 14) return 6;
-	 else if (modelNum == 15) return 7;
-	 else {std::cout << "no info for this model" << std::endl; return 0;}
-	 */
 }
 
-void DrawDetector(int modelNum, std::vector<int> hvList) {
-	// Draw geometry with voltages
-	
-	gStyle->SetTextSize(0.06);
-	
-	std::map <std::string, int> electrodeMap;
-	LoadElectrodeMap(modelNum, electrodeMap);
-	int electrodeNum = GetElectrodeNum(modelNum);
-	
-	// insert pad voltage in HV list
-	hvList.insert(hvList.begin(),0);
-	
-	double yMax = 0.8; // coord of drift electrode
-	double space = yMax/(electrodeNum-1);
-	
-	TBox* detectorBox = new TBox(0,0,1,1);
-	detectorBox->Draw();
-	
-	int i = 0;	// i is the stage index
 
-	// draw the electrodes from top to bottom (as declared in the function LoadElectrodeMap)
-	
-	std::map<std::string, int>::iterator it = electrodeMap.begin();
-	// Iterate over the map using Iterator until end.
-	while (it != electrodeMap.end()) {
-		double yCoord = yMax-i*space;
-		TLine* electrodeLine = new TLine(0, yCoord, 1, yCoord);
-		electrodeLine->SetLineStyle(9);
-		if (i == 0 || i == electrodeNum-1) electrodeLine->SetLineStyle(1);
-		TLatex* electrodeText = new TLatex(0.1, yCoord+0.03, Form("V_{%s} = %d V", (it->first).c_str(), hvList[electrodeNum-1-i]));
-		electrodeLine->Draw("same");
-		electrodeText->Draw("same");
-		// Increment the Iterator to point to next entry
-		it++;
-		i++;
-	}
-	
-}
 
 bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& computeIBF)
 //T LoadVariable(string elementString)
