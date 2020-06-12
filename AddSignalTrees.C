@@ -31,6 +31,7 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	int numberOfFiles = GetNumberOfFiles(path, filename+"-");
 	std::cout << "number of files = " << numberOfFiles << std::endl;
+	if (numberOfFiles == 0) {std::cout << "no files to add, terminating" << std::endl; return 0;}
 	TString outputName = path + filename+".root";
 	//return 0;
 	TFile* fOut = new TFile(outputName, "RECREATE");
@@ -40,8 +41,8 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
 	Int_t nWinners = 0, ne2 = 0;
 	Int_t ni = 0, ionBackNum = 0;
-	std::vector<double> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<double> ionStartPoints = {}, ionEndPoints = {};
+	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
@@ -51,8 +52,8 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	tAvalanche->Branch("ionStartPoints", &ionStartPoints);
 	tAvalanche->Branch("ionEndPoints", &ionEndPoints);
 	
-	std::vector<double> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
-	std::vector<double> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
+	std::vector<float> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
+	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
 	
 	// On commence par remplir le TTree tAvalanche
 	for (int i = 1; i<numberOfFiles+1; i++) {

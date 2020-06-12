@@ -61,15 +61,21 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	TFile* fSignal = new TFile(fSignalName, "read");
 	
+	
 	// Initialise the tree of avalanche size
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
+	tAvalanche->SetBranchStatus("*",0);	// Select the branches to look at (do't include the vectors!!)
+	tAvalanche->SetBranchStatus("amplificationElectrons",1);
+	tAvalanche->SetBranchStatus("ionNum",1);
+	tAvalanche->SetBranchStatus("ionBackNum",1);
+	
 	Int_t nAvalanche = tAvalanche->GetEntries();
 	Int_t nAmplification;
 	Int_t ni = 0, ionBackNum = 0;
 	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
-	
+
 	const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons"));
 	
 	// Initialise the trees of induced charges
@@ -92,14 +98,17 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 		hFeCharge[k]->SetXTitle("# induced charges");
 		hFeCharge[k]->SetYTitle("# counts");
 	}
-
 	
+	//return 0;
 	// Convolute the trees of the avalanche size and charges with Fe spectrum
 	TH1F* hFeAmplification = new TH1F("hFeAmplification", "Number of avalanche electrons with Fe source", nBins, 0, nBins );
 	TH1F* hFeIbf = new TH1F("hFeIbf", "IBF with Fe source", 10000, 0, 100 );
 	TH1F* hFeIbfTotalCharge = new TH1F("hFeIbfTotalCharge", "Total induced charge IBF with Fe source", 10000, 0, 100 );
 	TH1F* hFeIbfIonCharge = new TH1F("hFeIbfIonCharge", "Induced ion charge IBF with Fe source", 10000, 0, 100 );
-	for (unsigned int i = 0; i < 10000; ++i) {
+	
+	const int numberOfPhotons = 5000;
+	for (unsigned int i = 0; i < numberOfPhotons; ++i) {
+		if (i % (int(numberOfPhotons/10)) == 0) std::cout << i << "/" << numberOfPhotons << " photons" << std::endl;
 		Int_t nPrim = hFe->GetRandom();
 		//std::cout << "\nNprim = " << nPrim << std::endl;
 		Double_t gtot = 0, itot = 0, ibntot = 0;
@@ -125,6 +134,7 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 			hFeIbfIonCharge->Fill(ctotIon[driftElectrode-2]/ctotIon[padElectrode-2]*100.);
 		}
 	}
+	//return 0;
 	
 	if (drawConvoluteSpectrum) {
 		TCanvas* c1 = new TCanvas();

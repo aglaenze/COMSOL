@@ -10,7 +10,7 @@ echo ./signal $1 $2 $3
 
 # run jobs in parallel, by packets of 5
 N=4
-for ((k=0;k<=6;k++)); do
+for ((k=0;k<=4;k++)); do
 V1=$((340+$k*20))
 V2=$((540+$k*20))
 for ((i=1;i<=5;i++)); do

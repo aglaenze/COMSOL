@@ -100,8 +100,8 @@ int main(int argc, char * argv[]) {
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	int ni = 0, ionBackNum = 0;
-	std::vector<double> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<double> ionStartPoints = {}, ionEndPoints = {};
+	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
 	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
 	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
@@ -115,7 +115,7 @@ int main(int argc, char * argv[]) {
 	//const int nTimeBins = 10000;
 	const double tStep = 10;   //ns
 								//const double timespace = 1./rate*1.e9;    // in ns
-	const double timespace = 2.e6;    // in ns // 1ms so that events don't overlap (ion back flow super slow to collect)
+	const double timespace = 2.e6;    // in ns // 2ms so that events don't overlap (ion back flow super slow to collect)
 	//const double timespace = 1.e2;
 	const double tStart =  0.;
 	//const double tEnd = int(nEvents * timespace + ionDelay);

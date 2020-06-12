@@ -19,14 +19,14 @@ modelNum=1
 
 
 # boucle for uniquement pour modeles 1, 16 et 17
-for ((k=0;k<1;k++)); do
+for ((k=0;k<6;k++)); do
 hv1=$((340+$k*20))
 hv2=$((540+$k*20))
 hvList="{$hv1, $hv2}"
 #echo $hvList
 #
-root -l -q "AddSignalTrees.C($modelNum, \"$gasName\", $hvList)"
-#root -l -q "Convolute.C($modelNum, \"$gasName\", $hvList)"
-#root -l -q "Analyse.C($modelNum, \"$gasName\", $hvList)"
+#root -l -q "AddSignalTrees.C($modelNum, \"$gasName\", $hvList)"
+root -l -q "Convolute.C($modelNum, \"$gasName\", $hvList)"
+root -l -q "Analyse.C($modelNum, \"$gasName\", $hvList)"
 done
 
