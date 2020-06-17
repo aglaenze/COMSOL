@@ -25,15 +25,15 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	TString filename = "signal";
 	for (int k = 0; k< hvList.size(); k++) filename += Form("-%d", hvList[k]);
-	std::cout << "processing " << filename << " (model " << modelNum << ")" << std::endl;
+	std::cout << "processing " << filename << "* (model " << modelNum << ")" << std::endl;
 	//return 0;
 	
 	
 	int numberOfFiles = GetNumberOfFiles(path, filename+"-");
 	std::cout << "number of files = " << numberOfFiles << std::endl;
 	if (numberOfFiles == 0) {std::cout << "no files to add, terminating" << std::endl; return 0;}
+	
 	TString outputName = path + filename+".root";
-	//return 0;
 	TFile* fOut = new TFile(outputName, "RECREATE");
 	
 	

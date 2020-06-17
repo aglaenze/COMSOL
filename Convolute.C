@@ -49,10 +49,18 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	TFile* f = new TFile(fOutputName, "RECREATE");
 	
-	std::map <std::string, int> electrode;
+	std::map <std::string, int, NoSorting> electrode;
 	LoadElectrodeMap(modelNum, electrode);
-	int padElectrode = electrode["pad"];
-	int driftElectrode = electrode["drift"];
+	int padElectrode = 0;
+	int driftElectrode = 0;
+	
+	std::map<std::string, int>::iterator it = electrode.begin();
+	for (it=electrode.begin(); it!=electrode.end(); ++it) {
+		//std::cout << it->first << " => " << it->second << '\n';
+		if (it->first == "pad") padElectrode = it->second;
+		else if (it->first == "drift") driftElectrode = it->second;
+	}
+	if (padElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return 0;}
 	
 	// open input files
 	TFile* fFe = new TFile(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()), "read");

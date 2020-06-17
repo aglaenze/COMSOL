@@ -16,77 +16,78 @@
 #include "TKey.h"
 #include "Riostream.h"
 
+
 // Set up detector geometry
 
 void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, double& pitch, double& width, double& depth, std::vector<double>& zElectrodes) {
-    int periodicityNum = 2000;
-    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
-        damp = 0.0128;
-        ddrift = 0.5;      // cm
-        radius = 0.0009;   // cm
-        pitch = 0.0063;    // cm
+	int periodicityNum = 2000;
+	if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
+		damp = 0.0128;
+		ddrift = 0.5;      // cm
+		radius = 0.0009;   // cm
+		pitch = 0.0063;    // cm
 		if (modelNum == 16) pitch = 0.0078;
 		else if (modelNum == 17) pitch = 0.0096;
 		else if (modelNum == 18) pitch = 0.0045;
 		zElectrodes = {ddrift, damp, 0};
-    }
-    else if (modelNum == 2 || modelNum == 3 || modelNum == 4) {
-        damp = 2*0.0128;
-        radius = 0.0009;   // cm
-        ddrift = 0.5;  //cm
-        if (modelNum == 2) pitch = 0.0045;    // cm
+	}
+	else if (modelNum == 2 || modelNum == 3 || modelNum == 4) {
+		damp = 2*0.0128;
+		radius = 0.0009;   // cm
+		ddrift = 0.5;  //cm
+		if (modelNum == 2) pitch = 0.0045;    // cm
 		else if (modelNum == 3) pitch = 0.0078;    // cm
 		else if (modelNum == 4) pitch = 0.0063;    // cm
 		zElectrodes = {ddrift, damp, 0.0128, 0};
-    }
-    else if (modelNum >= 5 && modelNum < 8) {
-        damp = 2*0.0128+0.2;
-        radius = 0.0009;   // cm
-        ddrift = 0.7;  //cm
-        pitch = 0.0063;    // cm
+	}
+	else if (modelNum >= 5 && modelNum < 8) {
+		damp = 2*0.0128+0.2;
+		radius = 0.0009;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0063;    // cm
 		zElectrodes = {ddrift, damp, 0.2+0.0128, 0.0128, 0};
-    }
-    else if (modelNum == 8) {  // MM + GEM
-        damp = 0.0128+0.2+0.0060;
-        radius = 0.0009;   // cm
-        ddrift = 0.5;  //cm
-        pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128, 0};
-    }
-    else if (modelNum == 9) {   // MM + GEM
-        damp = 0.0128+0.4+0.0060;
-        radius = 0.0009;   // cm
-        ddrift = 0.7;  //cm
-        pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128, 0};
-    }
-    else if (modelNum == 10) {  // MM + (GEM+MM) combined
-        damp = 0.0128+0.2+0.0060+0.0128;
-        radius = 0.0009;   // cm
-        ddrift = 0.5;  //cm
-        pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128+0.2+0.0060, 0.0128, 0};
-    }
-    else if (modelNum == 11) {   // MM + (GEM+MM) combined
-        damp = 0.0128+0.4+0.0060+0.0128;
-        radius = 0.0009;   // cm
-        ddrift = 0.7;  //cm
-        pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128, 0};
-    }
+	}
+	else if (modelNum == 8) {  // MM + GEM
+		damp = 0.0128+0.2+0.0060;
+		radius = 0.0009;   // cm
+		ddrift = 0.5;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.2, 0.0128, 0};
+	}
+	else if (modelNum == 9) {   // MM + GEM
+		damp = 0.0128+0.4+0.0060;
+		radius = 0.0009;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.4, 0.0128, 0};
+	}
+	else if (modelNum == 10) {  // MM + (GEM+MM) combined
+		damp = 0.0128+0.2+0.0060+0.0128;
+		radius = 0.0009;   // cm
+		ddrift = 0.5;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.2+0.0060, 0.0128+0.2, 0.0128, 0};
+	}
+	else if (modelNum == 11) {   // MM + (GEM+MM) combined
+		damp = 0.0128+0.4+0.0060+0.0128;
+		radius = 0.0009;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128+0.4, 0.0128, 0};
+	}
 	else if (modelNum == 12) {   // MM + (GEM+MM) combined
 		damp = 0.0128+0.2+0.0060+0.0256;
 		radius = 0.0009;   // cm
 		ddrift = 0.7;  //cm
 		pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128+0.2+0.0060, 0.0128, 0};
+		zElectrodes = {ddrift, damp, 0.0128+0.2+0.0060, 0.0128+0.2, 0.0128, 0};
 	}
 	else if (modelNum == 13) {   // MM + (GEM+MM) combined
 		damp = 0.0128+0.4+0.0060+0.0256;
 		radius = 0.0009;   // cm
 		ddrift = 0.7;  //cm
 		pitch = 0.0126;    // cm
-		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128, 0};
+		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128+0.4, 0.0128, 0};
 	}
 	else if (modelNum == 14) {   // DM
 		damp = 0.0540;
@@ -96,15 +97,15 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
 		zElectrodes = {ddrift, damp, 0.0220, 0};
 	}
 	else if (modelNum == 15) {   // MM + 2 GEMs
-		damp = 0.6125;	// cm
+		damp = 0.6125+2*0.0070;	// cm
 		radius = 0.0009;   // cm
 		ddrift = 1.4125;  //cm
 		pitch = 0.0180;    // cm
-		zElectrodes = {ddrift, damp, 0.0125+0.4, 0.0125, 0};
+		zElectrodes = {ddrift, damp, 0.6125+0.0070, 0.4125+0.0070, 0.0125+0.4, 0.0125, 0};
 	}
-    else {std::cout << "Model num?" << std::endl; return;}
-    width = periodicityNum * pitch;
-    depth = periodicityNum * pitch;
+	else {std::cout << "Model num?" << std::endl; return;}
+	width = periodicityNum * pitch;
+	depth = periodicityNum * pitch;
 }
 
 void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, double& pitch, double& width, double& depth) {
@@ -120,11 +121,14 @@ void LoadParameters(int modelNum, std::vector<double>& zElectrodes) {
 void DrawDetector(int modelNum, std::vector<int> hvList) {
 	// Draw geometry with voltages
 	
-	gStyle->SetTextSize(0.06);
+	gStyle->SetTextSize(0.05);
 	
-	std::map <std::string, int> electrodeMap;
+	std::map <std::string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	int electrodeNum = GetElectrodeNum(modelNum);
+	
+	std::vector<double> zElectrodes = {};
+	LoadParameters(modelNum, zElectrodes);
 	
 	// insert pad voltage in HV list
 	hvList.insert(hvList.begin(),0);
@@ -145,10 +149,22 @@ void DrawDetector(int modelNum, std::vector<int> hvList) {
 		double yCoord = yMax-i*space;
 		TLine* electrodeLine = new TLine(0, yCoord, 1, yCoord);
 		electrodeLine->SetLineStyle(9);
+		// 0 = drift
 		if (i == 0 || i == electrodeNum-1) electrodeLine->SetLineStyle(1);
-		TLatex* electrodeText = new TLatex(0.1, yCoord+0.03, Form("V_{%s} = %d V", (it->first).c_str(), hvList[electrodeNum-1-i]));
+		TLatex* electrodeText = new TLatex(0.05, yCoord+0.03, Form("V_{%s} = %d V", (it->first).c_str(), hvList[electrodeNum-1-i]));
+		TText* zElectrode = new TText(0.6, yCoord+0.03, Form("z = %.3f mm", zElectrodes[i]*10));
 		electrodeLine->Draw("same");
 		electrodeText->Draw("same");
+		zElectrode->Draw("same");
+		// Computation of electric field
+		if (i != electrodeNum-1) {
+			double electricField = (hvList[electrodeNum-1-i]-hvList[electrodeNum-1-(i+1)])/(zElectrodes[i]-zElectrodes[i+1]);
+			TString fieldtxt = Form("E = %.1f V/cm", electricField);
+			if (electricField>1000.) fieldtxt = Form("E = %.2f kV/cm", electricField/1000.);
+			TText* electricFieldtxt = new TText(0.05, yCoord-0.5*space, fieldtxt);
+			electricFieldtxt->SetTextColor(kBlue);
+			electricFieldtxt->Draw("same");
+		}
 		// Increment the Iterator to point to next entry
 		it++;
 		i++;

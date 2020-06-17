@@ -36,9 +36,9 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
         gas->LoadIonMobility(path + "/Data/IonMobility_Ne+_Ne.txt");
     }
     else if (gasName=="Ar-CO2") {
-        //gas->SetComposition("Ar", 93., "CO2", 7.);
-        gas->SetComposition("Ar", 90., "CO2", 10.);
-        rPenning = 0.55;
+        gas->SetComposition("Ar", 93., "CO2", 7.);
+        //gas->SetComposition("Ar", 90., "CO2", 10.);
+        rPenning = 0.6;
         //rPenning = 0.4;
         gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
         gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");

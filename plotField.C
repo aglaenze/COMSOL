@@ -34,7 +34,6 @@ int main(int argc, char * argv[]) {
 	std::string gasName = "";
 	if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
     //____________________
-    
 	//time_t t0 = time(NULL);
 	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
 	

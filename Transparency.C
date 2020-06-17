@@ -32,7 +32,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
 	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
 	
-	std::map <std::string, int> electrodeMap;
+	std::map <std::string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	std::vector<double> zElectrodes = {};
 	LoadParameters(modelNum, zElectrodes);
@@ -42,7 +42,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	int nElectrodes = electrodeMap.size()-2;	// on s'en fiche de la drift et des pads
 	std::cout << "There are " << nElectrodes << " electrodes to look at" << std::endl;
 	TH1F* hDyingIons[nElectrodes];
-	
+
 	// Initialisation des histos de tranparence
 	int i = 0;
 	std::string electrodeNames[nElectrodes];
@@ -51,12 +51,11 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	while (it != electrodeMap.end()) {
 		if (it->first != "pad") {
 			electrodeNames[i] = it->first;
-			hDyingIons[i] = new TH1F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), Form("Dying ions from below the %s", electrodeNames[i].c_str()), 1000, 0, ddrift*1.1);
+			hDyingIons[i] = new TH1F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), "Dying ions", 200, 0, ddrift*1.1);
 			i++;
 		}
 		it++;
 	}
-	
 
 	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
 	tAvalanche->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
@@ -79,18 +78,25 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 					hDyingIons[i-1]->Fill(zi2);
 					nIons[i-1]++;
 				}
-				i++;
 			}
 		}
 		ionStartPoints.clear();
 		ionEndPoints.clear();
 	}
 	
+	TLegend* lgd = new TLegend(0.2, 0.7, 0.9, 0.9);
 	for (int j = 0; j<nElectrodes; j++) {
+	//for (int j = 2; j<3; j++) {
 		hDyingIons[j]->Scale(1./nIons[j]);
+		hDyingIons[j]->SetMaximum(1.3);
+		hDyingIons[j]->GetXaxis()->SetTitle("z (cm)");
+		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
+		hDyingIons[j]->SetLineColor(j+2);
 		if (j==0) hDyingIons[j]->Draw("hist");
 		else hDyingIons[j]->Draw("hist same");
+		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "l");
 	}
+	lgd->Draw("same");
 }
 
 
@@ -111,7 +117,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	gStyle->SetTextSize(0.05);
 	
 	
-	std::map <std::string, int> electrodeMap;
+	std::map <std::string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	std::vector<double> zElectrodes = {};
 	LoadParameters(modelNum, zElectrodes);
@@ -177,6 +183,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
 	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
 
+	int nTotal = 0;
 	
 	int nElectrons[nElectrodes];
 	for (int i = 0; i<nElectrodes; i++) {nElectrons[i] = 0;}
@@ -192,17 +199,13 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		for (int j = 0; j< electronStartPoints.size(); j++) {
 			float ze1 = electronStartPoints[j];
 			float ze2 = electronEndPoints[j];
+			//if (ze1>0.2128 && ze2<0.2188 ) {nTotal++;continue;}
 			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
-				//std::cout << "zElectrodes[i]" << zElectrodes[i] << std::endl;
-				//std::cout << "zElectrodes[i-1]" << zElectrodes[i-1] << std::endl;
-				//continue;
-				if (ze1 > zElectrodes[i] && (ze2<zElectrodes[i-1])) { // il y a bien un électron au-dessus de l'électrode d'intérêt et il n'est pas mort au stade encore au-dessus
-					//std::cout << "ok" << std::endl;
+				if (ze1 > zElectrodes[i] && ze2 < (zElectrodes[i-1]- (zElectrodes[i-1]-zElectrodes[i])/3) ) { // il y a bien un électron au-dessus de l'électrode d'intérêt et il n'est pas mort au stade encore au-dessus
+					nElectrons[i-1]++;
 					if (ze2 < zElectrodes[i] - (zElectrodes[i]-zElectrodes[i+1])/2) hTransparency[i-1]->Fill(1);
 					else hTransparency[i-1]->Fill(0);
-					nElectrons[i-1]++;
 				}
-				i++;
 			}
 		}
 		electronStartPoints.clear();
@@ -211,14 +214,16 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		//ionEndPoints.clear();
 	}
 
+	std::cout << "nTotal = " << nTotal << std::endl;
 	double transp[nElectrodes];
 	for (int j = 0; j<nElectrodes; j++) {
 		int bin = hTransparency[j]->GetXaxis()->FindBin(1);
 		transp[j] = (double)hTransparency[j]->GetBinContent(bin)/nElectrons[j];
+		//std::cout << "nElectrons[j] between ze1>" << zElectrodes[j+1] << " and ze2 < " << zElectrodes[j] << " = " << nElectrons[j] << std::endl;
 		hTransparency[j]->Scale(1./nElectronsTotal);
 		hTransparency[j]->SetMaximum(1.2);
 		hTransparency[j]->Draw("hist same");
-		TText* txt = new TText(0.1,0.9-i*0.1,Form("%s transparency = %.1f %s", electrodeNames[j].c_str(), transp[j]*100, "%"));
+		TText* txt = new TText(-0.5,0.9-j*0.1,Form("%s transparency = %.1f %s", electrodeNames[j].c_str(), transp[j]*100, "%"));
 		txt->Draw("same");
 	}
 
@@ -230,20 +235,20 @@ int Transparency() {
 	// variables
 	std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
 	const int modelNum = 1;
-	std::vector <Int_t> hv = {340, 540};
+	std::vector <Int_t> hvList = {340, 540};
 	//____________________
 	time_t t0 = time(NULL);
 	
 
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	TString fSignalName = path + "signal";
-	for (int k = 0; k<hv.size(); k++) {fSignalName += Form("-%d", hv[k]);}
+	for (int k = 0; k<hvList.size(); k++) {fSignalName += Form("-%d", hvList[k]);}
 	fSignalName += ".root";
 	std::cout << fSignalName << std::endl;
 	
 
 	TString outputName = Form("Figures/model%d/transparency-%s", modelNum, gasName.c_str());
-	for (int k = 0; k<hv.size(); k++) {outputName += Form("-%d", hv[k]);}
+	for (int k = 0; k<hvList.size(); k++) {outputName += Form("-%d", hvList[k]);}
 	outputName+=".pdf";
 	
 	

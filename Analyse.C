@@ -52,7 +52,7 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 	Int_t fitRangeMin = 0;
 	Int_t fitRangeMax = xMax + h->GetRMS();
 	if (gauss) {
-		fitRangeMin = xMax - h->GetRMS();
+		//fitRangeMin = xMax - h->GetRMS();
 		fitRangeMax = xMax + 4*h->GetRMS();
 	}
 	TF1* f;
@@ -113,12 +113,20 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	std::cout << fSignalName << std::endl;
 	
-	std::map <std::string, int> electrode;
+	std::map <std::string, int, NoSorting> electrode;
 	LoadElectrodeMap(modelNum, electrode);
 	
-	int readoutElectrode = electrode["pad"]; // could be mesh, it depends on where you want to read
-	int driftElectrode = electrode["drift"];
+	int readoutElectrode = 0;
+	int driftElectrode = 0;
 	
+	std::map<std::string, int>::iterator it = electrode.begin();
+	for (it=electrode.begin(); it!=electrode.end(); ++it) {
+		//std::cout << it->first << " => " << it->second << '\n';
+		if (it->first == "pad") readoutElectrode = it->second;	// could be mesh, it depends on where you want to read
+		else if (it->first == "drift") driftElectrode = it->second;
+	}
+	if (readoutElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return 0;}
+
 	/*
 	std::vector <Int_t> hv = {};
 	TObjArray* matches = TPRegexp( "-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?-?(\\d+)?\\.root$" ).MatchS( fileName );
@@ -254,10 +262,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 			hIbfIonCharge->Fill(abs(ionChargeDrift/ionChargeReadout*100.));
 		}
 	}
-	hIbfCharge->Scale(1/hIbfCharge->GetMaximum());
-	hIbfIonCharge->Scale(1/hIbfIonCharge->GetMaximum());
-	TF1* fIbfCharge = GetFitIbf(hIbfCharge, false);
-	TF1* fIbfIonCharge = GetFitIbf(hIbfIonCharge, false);
+	hIbfCharge->Scale(1./hIbfCharge->GetMaximum());
+	hIbfIonCharge->Scale(1./hIbfIonCharge->GetMaximum());
+	TF1* fIbfCharge = GetFitIbf(hIbfCharge, true);
+	TF1* fIbfIonCharge = GetFitIbf(hIbfIonCharge, true);
 	
 	// 3e étape (nouvelle étape intermédiaire) : récupérer les histos IBF convolués, et les fitter
 	TH1F* hFeIbf = (TH1F*)fConvoluted->Get("hFeIbf");
@@ -342,20 +350,16 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	cv->cd(4);
 	DrawDetector(modelNum, hvList);
 	
-	TText* txtGas = new TText(.35,.7,Form("Gas: %s", gasName.c_str()));
+	TText* txtGas = new TText(.4,.95,Form("Gas: %s", gasName.c_str()));
 	txtGas->Draw("same");
-	TLatex* txtAmp = new TLatex(.35,.2,Form("d_{amp} = %.4f cm", damp));
-	txtAmp->Draw("same");
-	TLatex* txtDrift = new TLatex(.45,.9,Form("d_{drift} = %.2f cm", ddrift));
-	txtDrift->Draw("same");
-	
+
 	// Draw distribution of where electrons are created
 	cv->cd(5);
 	std::vector<float> *electronStartPointsInput = {};
 	tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
 
 	std::vector<float> electronStartPoints = {};
-	TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, 0, damp);
+	TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, 0, damp*1.2);
 	for (int k = 0; k < nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
 		electronStartPoints = *electronStartPointsInput;
@@ -364,7 +368,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 		}
 		electronStartPoints.clear();
 	}
-	zElDistribution->Draw();
+	zElDistribution->Scale(1/zElDistribution->GetMaximum());
+	if (modelNum>1 && modelNum < 16) zElDistribution->SetMaximum(0.05);
+	zElDistribution->GetXaxis()->SetTitle("z (cm)");
+	zElDistribution->Draw("hist");
 	
 	cv->cd(6);
 	DrawDyingIons(modelNum, fSignalName);

@@ -20,6 +20,10 @@
 
 using namespace std;
 
+struct NoSorting {
+	bool operator()(std::string const& lhsIn, std::string const& rhsIn) const {return true;}
+};
+
 //____________________________________________
 void PrintTime(time_t t0, time_t t1)
 {
@@ -61,66 +65,64 @@ Int_t GetPrimary(std::string gasName) {
 	return nPrimaryTh;
 }
 
-void LoadElectrodeMap(int modelNum, std::map <std::string, int>& electrodeMap) {
+void LoadElectrodeMap(int modelNum, std::map <std::string, int, NoSorting>& electrodeMap) {
 	electrodeMap = {};
 	if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
-		electrodeMap["drift"] = 3;
-		electrodeMap["mesh"] = 2;
 		electrodeMap["pad"] = 4;
+		electrodeMap["mesh"] = 2;
+		electrodeMap["drift"] = 3;
 	}
-	else if (modelNum >= 2 && modelNum < 5) {   // check it's the same for models 2, 3, 4
-		electrodeMap["drift"] = 5;
-		electrodeMap["DM up"] = 4;
-		electrodeMap["DM down"] = 3;
+	else if (modelNum >= 2 && modelNum < 5) {
 		electrodeMap["pad"] = 2;
-	}
-	else if (modelNum >= 5 && modelNum < 8) {   // check it's the same for models 5, 6, 7
-		electrodeMap["drift"] = 5;
-		electrodeMap["DM up"] = 4;
 		electrodeMap["DM down"] = 3;
+		electrodeMap["DM up"] = 4;
+		electrodeMap["drift"] = 5;
+	}
+	else if (modelNum >= 5 && modelNum < 8) {
+		electrodeMap["pad"] = 2;
 		electrodeMap["mesh"] = 6;
-		electrodeMap["pad"] = 2;
+		electrodeMap["DM down"] = 3;
+		electrodeMap["DM up"] = 4;
+		electrodeMap["drift"] = 5;
 	}
-	else if (modelNum >= 8 && modelNum < 10) {   // check it's the same for models 8, 9
-		electrodeMap["drift"] = 3;
-		electrodeMap["GEM up"] = 6;
-		electrodeMap["GEM down"] = 5;
-		electrodeMap["mesh"] = 2;
+	else if (modelNum >= 8 && modelNum < 10) {
 		electrodeMap["pad"] = 4;
-	}
-	else if (modelNum >= 10 && modelNum < 14) {   // check it's the same for models 10, 11
+		electrodeMap["mesh"] = 2;
+		electrodeMap["GEM down"] = 5;
+		electrodeMap["GEM up"] = 6;
 		electrodeMap["drift"] = 3;
+	}
+	else if (modelNum >= 10 && modelNum < 14) {
+		electrodeMap["pad"] = 4;
+		electrodeMap["mesh"] = 2;
+		electrodeMap["GEM down"] = 5;
+		electrodeMap["GEM up"] = 6;
 		electrodeMap["mesh top"] = 7;
-		electrodeMap["GEM up"] = 6;
-		electrodeMap["GEM down"] = 5;
-		electrodeMap["mesh"] = 2;
-		electrodeMap["pad"] = 4;
+		electrodeMap["drift"] = 3;
 	}
 	else if (modelNum == 14) {
-		electrodeMap["drift"] = 5;
-		electrodeMap["DM up"] = 4;
-		electrodeMap["DM down"] = 3;
 		electrodeMap["pad"] = 2;
+		electrodeMap["DM down"] = 3;
+		electrodeMap["DM up"] = 4;
+		electrodeMap["drift"] = 5;
 	}
 	else if (modelNum == 15) {
-		electrodeMap["drift"] = 3;
-		electrodeMap["GEM2 up"] = 8;
-		electrodeMap["GEM2 down"] = 7;
-		electrodeMap["GEM1 up"] = 6;
-		electrodeMap["GEM1 down"] = 5;
-		electrodeMap["mesh"] = 2;
 		electrodeMap["pad"] = 4;
+		electrodeMap["mesh"] = 2;
+		electrodeMap["GEM1 down"] = 5;
+		electrodeMap["GEM1 up"] = 6;
+		electrodeMap["GEM2 down"] = 7;
+		electrodeMap["GEM2 up"] = 8;
+		electrodeMap["drift"] = 3;
 	}
 	else {std::cout << "no info for this model" << std::endl;}
 }
 
 int GetElectrodeNum(int modelNum) {
-	std::map <std::string, int> electrodeMap;
+	std::map <std::string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	return electrodeMap.size();
 }
-
-
 
 bool LoadVariables(int& modelNum, std::string& gasName, int& nEvents, bool& computeIBF)
 //T LoadVariable(string elementString)
