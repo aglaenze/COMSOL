@@ -99,6 +99,95 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	lgd->Draw("same");
 }
 
+void DrawDyingIons2d(const int modelNum = 15, TString fSignalName=""){
+	
+	TFile* fSignal = TFile::Open(fSignalName, "READ");
+	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
+	
+	gStyle->SetTitleFontSize(.06);
+	gStyle->SetTitleSize(.06);
+	
+	gStyle->SetOptStat(0);
+	gStyle->SetTitleFontSize(.05);
+	gStyle->SetTitleXSize(.05);
+	gStyle->SetTitleYSize(.05);
+	gStyle->SetLabelSize(.05, "XY");
+	gStyle->SetMarkerStyle(20);
+	gStyle->SetMarkerSize(0.3);
+	gStyle->SetTextSize(0.05);
+	
+	gPad->SetLeftMargin(0.15);
+	gPad->SetBottomMargin(0.15);
+	
+	//Load geometry parameters
+	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
+	
+	std::map <std::string, int, NoSorting> electrodeMap;
+	LoadElectrodeMap(modelNum, electrodeMap);
+	std::vector<double> zElectrodes = {};
+	LoadParameters(modelNum, zElectrodes);
+	
+	int nAval = tAvalanche->GetEntries();
+	
+	int nElectrodes = electrodeMap.size()-2;	// on s'en fiche de la drift et des pads
+	std::cout << "There are " << nElectrodes << " electrodes to look at" << std::endl;
+	TH2F* hDyingIons[nElectrodes];
+	
+	// Initialisation des histos de tranparence
+	int i = 0;
+	std::string electrodeNames[nElectrodes];
+	std::map<std::string, int>::iterator it = electrodeMap.begin();
+	it++;	// ignore drift electrode
+	while (it != electrodeMap.end()) {
+		if (it->first != "pad") {
+			electrodeNames[i] = it->first;
+			hDyingIons[i] = new TH2F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), "Dying ions = f(Creation of ions)", 100, 0, damp*1.1, 100, 0, ddrift*1.5);
+			i++;
+		}
+		it++;
+	}
+	
+	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
+	tAvalanche->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
+	tAvalanche->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
+	
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
+	
+	int nIons[nElectrodes];
+	for (int k = 0; k < nElectrodes; k++) nIons[k] = 0;
+	for (int k = 0; k < nAval; k++) {
+		tAvalanche->GetEntry(k);
+		// Loop over electrodes
+		ionStartPoints = *ionStartPointsInput;
+		ionEndPoints = *ionEndPointsInput;
+		for (int j = 0; j< ionStartPoints.size(); j++) {
+			float zi1 = ionStartPoints[j];
+			float zi2 = ionEndPoints[j];
+			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
+				if (zi1 < zElectrodes[i] && (zi1>zElectrodes[i+1])) { // l'ion a démarré juste en-dessous de l'électrode d'intérêt
+					hDyingIons[i-1]->Fill(zi1, zi2);
+					nIons[i-1]++;
+				}
+			}
+		}
+		ionStartPoints.clear();
+		ionEndPoints.clear();
+	}
+	
+	TLegend* lgd = new TLegend(0.2, 0.7, 0.9, 0.9);
+	for (int j = nElectrodes-1; j>=0; j--) {
+		hDyingIons[j]->GetXaxis()->SetTitle("z_{Start} (cm)");
+		hDyingIons[j]->GetYaxis()->SetTitle("z_{End} (cm)");
+		hDyingIons[j]->SetMarkerColor(j+1);
+		hDyingIons[j]->SetFillColor(j+1);
+		if (j==nElectrodes-1) hDyingIons[j]->Draw("");
+		else hDyingIons[j]->Draw("same");
+		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "f");
+	}
+	lgd->Draw("same");
+}
+
 void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
@@ -184,24 +273,14 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	
 	TLegend* lgd = new TLegend(0.2, 0.77, 0.9, 0.9);
 	for (int j = nElectrodes-1; j>=0; j--) {
-		//hDyingIons[j]->Scale(1./nIons[j]);
-		//hDyingIons[j]->SetMaximum(1.3);
 		hDyingIons[j]->GetXaxis()->SetTitle("x (mm)");
 		hDyingIons[j]->GetYaxis()->SetTitle("y (mm)");
 		hDyingIons[j]->GetZaxis()->SetTitle("z (mm)");
-		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
 		hDyingIons[j]->SetMarkerColor(j+2);
 		hDyingIons[j]->SetFillColor(j+2);
 		if (j==nElectrodes-1) hDyingIons[j]->Draw("");
 		else hDyingIons[j]->Draw("same");
-		/*
-		hDyingIons[j]->SetLineColor(j+2);
-		if (j==0) hDyingIons[j]->Draw("hist");
-		else hDyingIons[j]->Draw("hist same");
-		 */
-		gStyle->SetMarkerSize(1.);
 		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "fP");
-		gStyle->SetMarkerSize(0.3);
 	}
 	lgd->Draw("same");
 }
@@ -355,14 +434,14 @@ int Transparency() {
 	std::cout << fSignalName << std::endl;
 	
 
-	TString outputName = Form("Figures/model%d/transparency-%s", modelNum, gasName.c_str());
+	TString outputName = Form("Figures/model%d/transparency-2d-%s", modelNum, gasName.c_str());
 	for (int k = 0; k<hvList.size(); k++) {outputName += Form("-%d", hvList[k]);}
 	outputName+=".pdf";
 	
 	
 	TCanvas* cv = new TCanvas("cv","cv", 1000, 800);
 	//DrawTransparency(modelNum, fSignalName);
-	DrawDyingIons3d(modelNum, fSignalName);
+	DrawDyingIons2d(modelNum, fSignalName);
 	cv->SaveAs(outputName);
 	
 	

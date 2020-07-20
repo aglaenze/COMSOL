@@ -31,9 +31,8 @@ int main(int argc, char * argv[]) {
 	// variables
 	int modelNum = 0;
 	std::string gasName = "";
-	if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
-	const bool plotDrift3D = false;
-	const bool plotDrift2D = true;
+	bool plotDrift2D = 0, plotDrift3D = 0;
+	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D)) {std::cout << "variables not loaded" << std::endl; return 0;}
 	//____________________
 	
 	time_t t0 = time(NULL);
@@ -134,7 +133,7 @@ int main(int argc, char * argv[]) {
 	
 	if (plotDrift3D) {
 		TCanvas* c1 = new TCanvas();
-		driftView->SetArea(-10*pitch, -10*pitch, 0, 10*pitch, 10*pitch, damp*5);
+		driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 		driftView->SetCanvas(c1);
 		driftView->Plot(false, true);
 		c1->SaveAs(fOutputName3d);
@@ -178,7 +177,7 @@ int main(int argc, char * argv[]) {
 	//std::cout << "\n" << nEvents << " events simulated" << std::endl;
 	PrintTime(t0, t1);
 	
-	//app.Run(true);
+	if (plotDrift3D) app.Run(true);
 	
 	return 0;
 }

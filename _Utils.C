@@ -128,14 +128,14 @@ int GetElectrodeNum(int modelNum) {
 	return electrodeMap.size();
 }
 
-bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF)
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& plotDrift2D, bool& plotDrift3D)
 //T LoadVariable(string elementString)
 {
 	//cout << "elementString = " << elementString << endl;
 	ifstream file("input.txt", ios::in);
 	//T* element = nullptr;
 	string a, b;
-	bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false;
+	bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false;
 	if(file) {
 		string line {};
 		getline(file, line);	//first line does not contains info
@@ -160,9 +160,19 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 				stream >> a >> b >> computeIBF;
 				computeInfoFound = true;
 			}
+			else if (line.find("plotDrift2D") != string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> plotDrift2D;
+				plot2dInfoFound = true;
+			}
+			else if (line.find("plotDrift3D") != string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> plotDrift3D;
+				plot3dInfoFound = true;
+			}
 		}
 		//cout << "Element " << elementString << " not found in input.txt";
-		if (modelFound && gasFound && nEventsFound && computeInfoFound) {
+		if (modelFound && gasFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound) {
 			cout << endl;
 			cout << "#################################" << endl;
 			cout << "#\tmodelNum = " << modelNum << "\t\t#" << endl;
@@ -170,6 +180,8 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 			else cout << "#\tgasName = " << gasName << "\t#" << endl;
 			cout << "#\tnEvents = " << nEvents << "\t\t#" << endl;
 			cout << "#\tcomputeIBF = " << computeIBF << "\t\t#" << endl;
+			cout << "#\tplotDrift2D = " << plotDrift2D << "\t\t#" << endl;
+			cout << "#\tplotDrift3D = " << plotDrift3D << "\t\t#" << endl;
 			cout << "#################################" << endl;
 			cout << endl;
 			return true;
@@ -184,7 +196,24 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 bool LoadVariables(int& modelNum, string& gasName) {
 	int nEvents = 0;
 	bool computeIBF = false;
-	return LoadVariables(modelNum, gasName, nEvents, computeIBF);
+	bool plotDrift2D = 0, plotDrift3D = 0;
+	return LoadVariables(modelNum, gasName, nEvents, computeIBF, plotDrift2D, plotDrift3D);
+}
+
+bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plotDrift3D) {
+	int nEvents = 0;
+	bool computeIBF = false;
+	return LoadVariables(modelNum, gasName, nEvents, computeIBF, plotDrift2D, plotDrift3D);
+}
+
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF) {
+	bool plotDrift2D = 0, plotDrift3D = 0;
+	return LoadVariables(modelNum, gasName, nEvents, computeIBF, plotDrift2D, plotDrift3D);
 }
 
 int GetMaxModelNum() {return 19;}
+
+
+Double_t Square( Double_t x ) { return x*x; }
+
+Double_t Sqrt( Double_t x ) { return TMath::Sqrt(x); }

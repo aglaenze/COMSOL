@@ -420,6 +420,15 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	time_t t1 = time(NULL);
 	PrintTime(t0, t1);
 	
+	std::cout << std::endl << std::endl << std::endl;
+	std::cout << "Mean Gain = " << fAmplification->GetParameter(0) << " pm " << fAmplification->GetParError(0) << std::endl;
+	std::cout << "Sigma Gain = " << fAmplification->GetParameter(1) << " pm " << fAmplification->GetParError(1) << std::endl;
+	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
+	Double_t resolutionError = resolution * Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
+	std::cout << "Resolution = " << resolution << " pm " << resolutionError << std::endl;
+	std::cout << "IBF = " << fIbfIonCharge->GetParameter(0) << " pm " << fIbfIonCharge->GetParError(0) << std::endl;
+	
+	
 	return 0;
 }
 

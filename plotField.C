@@ -74,7 +74,7 @@ int main(int argc, char * argv[]) {
     if (modelNum>=8 && modelNum<14) vf->SetPlane(0, -1, 0, pitch/2, pitch/2, 0);
     //vf->SetVoltageRange(-550, 0);
     
-    const bool plotField = true;
+    const bool plotField = false;
     if (plotField) {
         //vf->SetVoltageRange(-600., 0.);
         //vf->SetArea(0, 0, width, 3*damp);
@@ -82,18 +82,13 @@ int main(int argc, char * argv[]) {
         vf->SetArea(0, 0, width, ddrift);
         TCanvas* c1 = new TCanvas("c1", "Potential view", 1200, 600);
 		TCanvas* c2 = new TCanvas("c2", "Field view", 1200, 600);
-		TCanvas* c3 = new TCanvas("c3", "Field lines", 1200, 600);
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
-        vf->PlotContour("v");
+		vf->PlotContour("v");
         c1->SaveAs(Form("Figures/model%d/potential.pdf", modelNum));
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
         c2->SaveAs(Form("Figures/model%d/field.pdf", modelNum));
-		vf->SetCanvas(c3);
-		//vf->Plot("e", "lego");
-		vf->PlotSurface("e");
-		c3->SaveAs(Form("Figures/model%d/fieldlines.pdf", modelNum));
 		
     }
     
@@ -106,15 +101,21 @@ int main(int argc, char * argv[]) {
         //vf->SetNumberOfSamples2d(40, 40);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
         TCanvas* c2 = new TCanvas("c22", "c22", 600, 600);
+		TCanvas* c3 = new TCanvas("c3", "Field lines", 1200, 600);
         //TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
         vf->SetCanvas(c1);
         if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
-        else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
+        //else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
         vf->PlotContour("v");
         c1->SaveAs(Form("Figures/model%d/potentialZoom.pdf", modelNum));
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
         c2->SaveAs(Form("Figures/model%d/fieldZoom.pdf", modelNum));
+		vf->SetCanvas(c3);
+		//vf->SetNumberOfContours(2);
+		//vf->PlotProfile(0, 0, 0, width/2, width/2, damp*2, "v");
+		vf->PlotContour("ey");
+		c3->SaveAs(Form("Figures/model%d/ey.pdf", modelNum));
     }
     
 
