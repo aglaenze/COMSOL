@@ -82,6 +82,7 @@ int main(int argc, char * argv[]) {
         vf->SetArea(0, 0, width, ddrift);
         TCanvas* c1 = new TCanvas("c1", "Potential view", 1200, 600);
 		TCanvas* c2 = new TCanvas("c2", "Field view", 1200, 600);
+		TCanvas* c3 = new TCanvas("c3", "Field lines", 1200, 600);
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
         vf->PlotContour("v");
@@ -89,6 +90,11 @@ int main(int argc, char * argv[]) {
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
         c2->SaveAs(Form("Figures/model%d/field.pdf", modelNum));
+		vf->SetCanvas(c3);
+		//vf->Plot("e", "lego");
+		vf->PlotSurface("e");
+		c3->SaveAs(Form("Figures/model%d/fieldlines.pdf", modelNum));
+		
     }
     
     vf->SetVoltageRange(-hvList[1], -hvList[2]);

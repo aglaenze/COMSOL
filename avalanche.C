@@ -38,10 +38,7 @@ int main(int argc, char * argv[]) {
 	
 	time_t t0 = time(NULL);
 	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
-	
-	modelNum = 8;
-	gasName = "Ar-iC4H10";
-	
+
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
 	
@@ -115,7 +112,7 @@ int main(int argc, char * argv[]) {
 		aval->GetAvalancheSize(ne2, ni);
 		std::cout << "\nAvalanche size = " << ne2 << std::endl;
 		std::cout << "\nIon avalanche size = " << ni << std::endl;
-		if (ne2 < 100) {i--; continue;}
+		if (ne2 < 100) {i--; driftView->Clear(); continue;}
 		const int np = aval->GetNumberOfElectronEndpoints();
 		double xe1, ye1, ze1, te1, e1;
 		double xe2, ye2, ze2, te2, e2;

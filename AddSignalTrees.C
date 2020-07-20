@@ -42,7 +42,7 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	Int_t nWinners = 0, ne2 = 0;
 	Int_t ni = 0, ionBackNum = 0;
 	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
@@ -51,9 +51,11 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	tAvalanche->Branch("ionStartPoints", &ionStartPoints);
 	tAvalanche->Branch("ionEndPoints", &ionEndPoints);
+	tAvalanche->Branch("ionEndPointsX", &ionEndPointsX);
+	tAvalanche->Branch("ionEndPointsY", &ionEndPointsY);
 	
 	std::vector<float> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
-	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
+	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0, *ionEndPointsInputX = 0, *ionEndPointsInputY = 0;
 	
 	// On commence par remplir le TTree tAvalanche
 	for (int i = 1; i<numberOfFiles+1; i++) {
@@ -70,6 +72,8 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 		tAvalancheIn->SetBranchAddress("electronEndPoints", &electronEndPointsInput);
 		tAvalancheIn->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
 		tAvalancheIn->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
+		tAvalancheIn->SetBranchAddress("ionEndPointsX", &ionEndPointsInputX);
+		tAvalancheIn->SetBranchAddress("ionEndPointsY", &ionEndPointsInputY);
 		
 		int nIn = tAvalancheIn->GetEntries();
 		
@@ -79,12 +83,16 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList) {
 			electronEndPoints = *electronEndPointsInput;
 			ionStartPoints = *ionStartPointsInput;
 			ionEndPoints = *ionEndPointsInput;
+			ionEndPointsX = *ionEndPointsInputX;
+			ionEndPointsY = *ionEndPointsInputY;
 			
 			tAvalanche->Fill();
 			electronStartPoints.clear();
 			electronEndPoints.clear();
 			ionStartPoints.clear();
 			ionEndPoints.clear();
+			ionEndPointsX.clear();
+			ionEndPointsY.clear();
 		}
 		
 	}

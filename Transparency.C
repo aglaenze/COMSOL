@@ -85,16 +85,123 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	}
 	
 	TLegend* lgd = new TLegend(0.2, 0.7, 0.9, 0.9);
-	for (int j = 0; j<nElectrodes; j++) {
+	for (int j = nElectrodes-1; j>=0; j--) {
 	//for (int j = 2; j<3; j++) {
 		hDyingIons[j]->Scale(1./nIons[j]);
 		hDyingIons[j]->SetMaximum(1.3);
 		hDyingIons[j]->GetXaxis()->SetTitle("z (cm)");
 		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
 		hDyingIons[j]->SetLineColor(j+2);
-		if (j==0) hDyingIons[j]->Draw("hist");
+		if (j==nElectrodes-1) hDyingIons[j]->Draw("hist");
 		else hDyingIons[j]->Draw("hist same");
 		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "l");
+	}
+	lgd->Draw("same");
+}
+
+void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
+	
+	TFile* fSignal = TFile::Open(fSignalName, "READ");
+	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
+	
+	gStyle->SetTitleFontSize(.06);
+	gStyle->SetTitleSize(.06);
+	
+	gStyle->SetOptStat(0);
+	gStyle->SetTitleFontSize(.05);
+	gStyle->SetTitleXSize(.05);
+	gStyle->SetTitleYSize(.05);
+	gStyle->SetLabelSize(.05, "XY");
+	gStyle->SetMarkerSize(0.3);
+	gStyle->SetMarkerStyle(20);
+	gStyle->SetTextSize(0.05);
+	
+	const int unitConversion = 10;	// units go from cm to mm
+	
+	//Load geometry parameters
+	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
+	
+	std::map <std::string, int, NoSorting> electrodeMap;
+	LoadElectrodeMap(modelNum, electrodeMap);
+	std::vector<double> zElectrodes = {};
+	LoadParameters(modelNum, zElectrodes);
+	
+	int nAval = tAvalanche->GetEntries();
+	
+	int nElectrodes = electrodeMap.size()-2;	// on s'en fiche de la drift et des pads
+	std::cout << "There are " << nElectrodes << " electrodes to look at" << std::endl;
+	TH3F* hDyingIons[nElectrodes];
+	
+	// Initialisation des histos de tranparence
+	int i = 0;
+	std::string electrodeNames[nElectrodes];
+	std::map<std::string, int>::iterator it = electrodeMap.begin();
+	it++;	// ignore drift electrode
+	while (it != electrodeMap.end()) {
+		if (it->first != "pad") {
+			electrodeNames[i] = it->first;
+			hDyingIons[i] = new TH3F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), "Dying ions", 100, unitConversion*(width/2-pitch), unitConversion*(width/2+pitch), 100, unitConversion*(width/2-pitch), unitConversion*(width/2+pitch), 100, 0, unitConversion*(ddrift*1.1));
+			i++;
+		}
+		it++;
+	}
+	
+	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0, *ionEndPointsInputX = 0, *ionEndPointsInputY = 0;
+	tAvalanche->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
+	tAvalanche->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
+	tAvalanche->SetBranchAddress("ionEndPointsX", &ionEndPointsInputX);
+	tAvalanche->SetBranchAddress("ionEndPointsY", &ionEndPointsInputY);
+	
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
+	
+	int nIons[nElectrodes];
+	for (int k = 0; k < nElectrodes; k++) nIons[k] = 0;
+	for (int k = 0; k < nAval; k++) {
+		tAvalanche->GetEntry(k);
+		// Loop over electrodes
+		ionStartPoints = *ionStartPointsInput;
+		ionEndPoints = *ionEndPointsInput;
+		ionEndPointsX = *ionEndPointsInputX;
+		ionEndPointsY = *ionEndPointsInputY;
+		for (int j = 0; j< ionStartPoints.size(); j++) {
+			float zi1 = ionStartPoints[j];
+			float zi2 = ionEndPoints[j];
+			float xi2 = ionEndPointsX[j];
+			float yi2 = ionEndPointsY[j];
+			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
+				if (zi1 < zElectrodes[i] && (zi1>zElectrodes[i+1])) { // l'ion a démarré juste en-dessous de l'électrode d'intérêt
+					hDyingIons[i-1]->Fill(xi2*unitConversion, yi2*unitConversion, zi2*unitConversion);
+					nIons[i-1]++;
+				}
+			}
+		}
+		ionStartPoints.clear();
+		ionEndPoints.clear();
+		ionEndPointsX.clear();
+		ionEndPointsY.clear();
+	}
+	
+	TLegend* lgd = new TLegend(0.2, 0.77, 0.9, 0.9);
+	for (int j = nElectrodes-1; j>=0; j--) {
+		//hDyingIons[j]->Scale(1./nIons[j]);
+		//hDyingIons[j]->SetMaximum(1.3);
+		hDyingIons[j]->GetXaxis()->SetTitle("x (mm)");
+		hDyingIons[j]->GetYaxis()->SetTitle("y (mm)");
+		hDyingIons[j]->GetZaxis()->SetTitle("z (mm)");
+		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
+		hDyingIons[j]->SetMarkerColor(j+2);
+		hDyingIons[j]->SetFillColor(j+2);
+		if (j==nElectrodes-1) hDyingIons[j]->Draw("");
+		else hDyingIons[j]->Draw("same");
+		/*
+		hDyingIons[j]->SetLineColor(j+2);
+		if (j==0) hDyingIons[j]->Draw("hist");
+		else hDyingIons[j]->Draw("hist same");
+		 */
+		gStyle->SetMarkerSize(1.);
+		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "fP");
+		gStyle->SetMarkerSize(0.3);
 	}
 	lgd->Draw("same");
 }
@@ -115,6 +222,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	gStyle->SetLabelSize(.05, "XY");
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetTextSize(0.05);
+	gStyle->SetLabelOffset(0.01);
 	
 	
 	std::map <std::string, int, NoSorting> electrodeMap;
@@ -148,7 +256,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	// Write text with the value of transparency
 	Double_t totalTransp = (double)winners/nAval;
 	
-	TText* txttr = new TText(0.2,0.9*hTransparencyTotal->GetMaximum(),Form("Transparency = %.1f %s", totalTransp*100, "%"));
+	TText* txttr = new TText(-0.5,0.9*hTransparencyTotal->GetMaximum(),Form("Full detector transparency = %.1f %s", totalTransp*100, "%"));
 	txttr->Draw("same");
 	
 	// Now draw transparency of all electrodes
@@ -234,8 +342,8 @@ int Transparency() {
 	//______________________
 	// variables
 	std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-	const int modelNum = 1;
-	std::vector <Int_t> hvList = {340, 540};
+	const int modelNum = 10;
+	std::vector <Int_t> hvList = {330, 410, 530, 730, 850};
 	//____________________
 	time_t t0 = time(NULL);
 	
@@ -253,7 +361,8 @@ int Transparency() {
 	
 	
 	TCanvas* cv = new TCanvas("cv","cv", 1000, 800);
-	DrawTransparency(modelNum, fSignalName);
+	//DrawTransparency(modelNum, fSignalName);
+	DrawDyingIons3d(modelNum, fSignalName);
 	cv->SaveAs(outputName);
 	
 	

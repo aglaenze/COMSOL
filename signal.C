@@ -101,7 +101,7 @@ int main(int argc, char * argv[]) {
 	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	int ni = 0, ionBackNum = 0;
 	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
+	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
 	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
@@ -109,6 +109,8 @@ int main(int argc, char * argv[]) {
 		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
 		tAvalanche->Branch("ionStartPoints", &ionStartPoints);
 		tAvalanche->Branch("ionEndPoints", &ionEndPoints);
+		tAvalanche->Branch("ionEndPointsX", &ionEndPointsX);
+		tAvalanche->Branch("ionEndPointsY", &ionEndPointsY);
 	}
 	
 	// Set the signal binning.
@@ -187,6 +189,8 @@ int main(int argc, char * argv[]) {
 				if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
 				ionStartPoints.push_back(zi1);
 				ionEndPoints.push_back(zi2);
+				ionEndPointsX.push_back(xi2);
+				ionEndPointsY.push_back(yi2);
 			}
 		}
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
@@ -197,6 +201,8 @@ int main(int argc, char * argv[]) {
 		electronEndPoints.clear();
 		ionStartPoints.clear();
 		ionEndPoints.clear();
+		ionEndPointsX.clear();
+		ionEndPointsY.clear();
 	}
 	tAvalanche->Write("", TObject::kOverwrite);
 	
