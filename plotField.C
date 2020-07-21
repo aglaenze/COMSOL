@@ -89,7 +89,6 @@ int main(int argc, char * argv[]) {
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
         c2->SaveAs(Form("Figures/model%d/field.pdf", modelNum));
-
     }
     
     vf->SetVoltageRange(-hvList[1], -hvList[2]);
