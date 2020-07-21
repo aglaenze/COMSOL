@@ -53,6 +53,10 @@ int main(int argc, char * argv[]) {
 	std::vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
 	
+	TString suffix = "";
+	for (int k = 0; k< electrodeNum-1; k++) {suffix += Form("-%d", hvList[k]);}
+	suffix += ".pdf";
+	
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
@@ -85,10 +89,14 @@ int main(int argc, char * argv[]) {
         //TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
         vf->SetCanvas(c1);
 		vf->PlotContour("v");
-        c1->SaveAs(Form("Figures/model%d/potential.pdf", modelNum));
+        c1->SaveAs(Form("Figures/model%d/potential", modelNum)+suffix);
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
-        c2->SaveAs(Form("Figures/model%d/field.pdf", modelNum));
+        c2->SaveAs(Form("Figures/model%d/field", modelNum)+suffix);
+		vf->SetCanvas(c3);
+		//vf->Plot("e", "lego");
+		//vf->PlotSurface("e");
+		c3->SaveAs(Form("Figures/model%d/fieldlines.pdf", modelNum)+suffix);
     }
     
     vf->SetVoltageRange(-hvList[1], -hvList[2]);
@@ -106,15 +114,15 @@ int main(int argc, char * argv[]) {
         if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
         //else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
         vf->PlotContour("v");
-        c1->SaveAs(Form("Figures/model%d/potentialZoom.pdf", modelNum));
+        c1->SaveAs(Form("Figures/model%d/potentialZoom", modelNum)+suffix);
 		vf->SetCanvas(c2);
         vf->PlotContour("e");
-        c2->SaveAs(Form("Figures/model%d/fieldZoom.pdf", modelNum));
+        c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
 		vf->SetCanvas(c3);
 		//vf->SetNumberOfContours(2);
 		//vf->PlotProfile(0, 0, 0, width/2, width/2, damp*2, "v");
 		vf->PlotContour("ey");
-		c3->SaveAs(Form("Figures/model%d/ey.pdf", modelNum));
+		c3->SaveAs(Form("Figures/model%d/ey", modelNum)+suffix);
     }
     
 
@@ -136,7 +144,7 @@ int main(int argc, char * argv[]) {
         meshView->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
         meshView->EnableAxes();
         meshView->Plot();
-        c3->SaveAs(Form("Figures/model%d/Mesh.pdf", modelNum));
+        c3->SaveAs(Form("Figures/model%d/Mesh", modelNum)+suffix);
     }
     
 

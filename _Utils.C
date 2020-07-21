@@ -213,7 +213,4 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 
 int GetMaxModelNum() {return 19;}
 
-
 Double_t Square( Double_t x ) { return x*x; }
-
-Double_t Sqrt( Double_t x ) { return TMath::Sqrt(x); }
