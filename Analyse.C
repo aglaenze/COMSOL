@@ -24,25 +24,7 @@ Double_t FitFunctionExp( Double_t* x, Double_t* par ) {
 Double_t FitLandau( Double_t* x, Double_t* par ) { //Double_t TMath::Landau	(Double_t x, Double_t mu = 0, Double_t sigma = 1, Bool_t norm = kFALSE)
 	return  par[2]*TMath::Landau( x[0], par[0], par[1]); }
 
-TF1* GetFitGain(TH1F* h) {
-	Int_t iBinMax = h->GetMaximumBin();
-	Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
-	
-	std::cout << "xMax = " << xMax << std::endl;
-	std::cout << "maximum = " << h->GetMaximum() << std::endl;
-	
-	Int_t fitRangeMin = xMax - 1.1 * h->GetRMS();
-	Int_t fitRangeMax = xMax + 1.1 * h->GetRMS();
-	
-	TF1* f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
-	f->SetParNames("Mean", "Sigma", "Amplitude");
-	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-	
-	h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
-	return f;
-}
-
-TF1* GetFitIbf(TH1F* h, bool gauss = true) {
+TF1* GetFitCurve(TH1F* h, bool gauss = true) {
 	Int_t iBinMax = h->GetMaximumBin();
 	Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
 	
@@ -50,22 +32,25 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 	std::cout << "maximum = " << h->GetMaximum() << std::endl;
 	
 	Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + h->GetRMS();
+	Int_t fitRangeMax = xMax + 1.1 * h->GetRMS();
 	if (gauss) {
-		//fitRangeMin = xMax - h->GetRMS();
+		fitRangeMin = xMax - 1.1 * h->GetRMS();
 		fitRangeMax = xMax + 3*h->GetRMS();
 	}
+	
 	TF1* f;
 	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
 	else f = new TF1( "FitFunction", FitLandau, fitRangeMin, fitRangeMax, 3);
 	f->SetParNames("Mean", "Sigma", "Amplitude");
 	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-	std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
-	std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
+	
+	//std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
+	//std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
+	
 	if (!gauss) {
 		f->SetParLimits(0, 0.5*xMax, 2*xMax);
 		//f->SetParLimits(1,0, 0.1*h->GetRMS());
-		f->FixParameter(2, 1);
+		//f->FixParameter(2, 1);
 		//f->SetParLimits(2, 0.5*h->GetMaximum(), 5*h->GetMaximum());
 		//f->SetParameter(2,4*h->GetMaximum());
 	}
@@ -110,6 +95,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	fileName += ".root";
 	fSignalName += ".root";
 	outputName+=".pdf";
+	//outputName+=".root";
 	
 	std::cout << fSignalName << std::endl;
 	
@@ -166,9 +152,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	while (hAmplification->GetMaximum() < 20) hAmplification->Rebin(2);
 	hAmplification->Scale(1/hAmplification->GetMaximum());
-	hAmplification->SetMaximum(1.35);
+	//hAmplification->SetMaximum(1.35);
+	hAmplification->SetMaximum(1.15);
 	hAmplification->SetLineColor(kBlue);
-	TF1* fAmplification = GetFitGain(hAmplification);
+	TF1* fAmplification = GetFitCurve(hAmplification, false);
 	fAmplification->SetLineColor(kBlue);
 	
 	Int_t iBinMax = hAmplification->GetMaximumBin();
@@ -190,7 +177,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	hFeAmplification->SetLineColor(kBlue);
 	hFeAmplification->SetTitle("Gain with Fe source");
 	
-	TF1* f = GetFitGain(hFeAmplification);
+	TF1* f = GetFitCurve(hFeAmplification);
 	f->SetLineColor(kBlue);
 	
 	Int_t iBinMax = hFeAmplification->GetMaximumBin();
@@ -199,7 +186,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	hFeCharge->Scale(1/hFeCharge->GetMaximum());
 	hFeCharge->SetLineColor(kRed);
-	TF1* f2 = GetFitGain(hFeCharge);
+	TF1* f2 = GetFitCurve(hFeCharge);
 	f2->SetLineColor(kRed);
 	  */
 	
@@ -229,11 +216,22 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	fAmplification->Draw("same");
 	// Add text to frame
 	TString txt = Form("Number of electrons --> Gain = %.0f #pm %.3f", fAmplification->GetParameter(0), fAmplification->GetParError(0));
-
 	TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
 	legend->AddEntry(fAmplification,txt,"l");
 	legend->SetTextSize(0.04);
-	legend->Draw("same");
+	//legend->Draw("same");
+	
+	// Write gain, sigma and res = sigma/gain on the plot
+	double xPos = fAmplification->GetParameter(0) + 2.5*fAmplification->GetParameter(1);
+	TLatex* txtGain = new TLatex(xPos, 0.9, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 0.8, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
+	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
+	Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
+	std::string percent = "%";
+	TLatex* txtRes = new TLatex(xPos, 0.7, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	
+	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
+	
 	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
 	
@@ -255,13 +253,13 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	hIbf->SetXTitle("IBF (%)");
 	hIbf->Scale(1/hIbf->GetMaximum());
 	hIbf->SetMaximum(1.35);
-	TF1* fIbf = GetFitIbf(hIbf);
+	TF1* fIbf = GetFitCurve(hIbf);
 
 	hIbf->GetXaxis()->SetRangeUser(0, 10.);
 	if (fIbf->GetParameter(0) < 0.9) hIbf->GetXaxis()->SetRangeUser(0, 3.);
 	if (fIbf->GetParameter(0) < 0.5) hIbf->GetXaxis()->SetRangeUser(0, 1.);
 	bool gaussian = (fIbf->GetParameter(0)) > 0;
-	if (!gaussian) fIbf = GetFitIbf(hIbf,false);
+	if (!gaussian) fIbf = GetFitCurve(hIbf,false);
 
 	// 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
 	
@@ -298,8 +296,8 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	}
 	hIbfCharge->Scale(1./hIbfCharge->GetMaximum());
 	hIbfIonCharge->Scale(1./hIbfIonCharge->GetMaximum());
-	TF1* fIbfCharge = GetFitIbf(hIbfCharge, gaussian);
-	TF1* fIbfIonCharge = GetFitIbf(hIbfIonCharge, gaussian);
+	TF1* fIbfCharge = GetFitCurve(hIbfCharge, gaussian);
+	TF1* fIbfIonCharge = GetFitCurve(hIbfIonCharge, gaussian);
 	
 	/*
 	// 3e étape (nouvelle étape intermédiaire) : récupérer les histos IBF convolués, et les fitter
@@ -310,9 +308,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	hFeIbfTotalCharge->Scale(1/hFeIbfTotalCharge->GetMaximum());
 	hFeIbfIonCharge->Scale(1/hFeIbfIonCharge->GetMaximum());
 	
-	TF1* fFeIbf = GetFitIbf(hFeIbf);
-	TF1* fFeIbfTotalCharge = GetFitIbf(hFeIbfTotalCharge);
-	TF1* fFeIbfIonCharge = GetFitIbf(hFeIbfIonCharge);
+	TF1* fFeIbf = GetFitCurve(hFeIbf);
+	TF1* fFeIbfTotalCharge = GetFitCurve(hFeIbfTotalCharge);
+	TF1* fFeIbfIonCharge = GetFitCurve(hFeIbfIonCharge);
 	hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
 	 */
 	
@@ -416,17 +414,11 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	cv->cd(6);
 	DrawDyingIons(modelNum, fSignalName);
 
+	cv->cd(0);
+	cv->Update();
 	cv->SaveAs(outputName);
 	time_t t1 = time(NULL);
 	PrintTime(t0, t1);
-	
-	std::cout << std::endl << std::endl << std::endl;
-	std::cout << "Mean Gain = " << fAmplification->GetParameter(0) << " pm " << fAmplification->GetParError(0) << std::endl;
-	std::cout << "Sigma Gain = " << fAmplification->GetParameter(1) << " pm " << fAmplification->GetParError(1) << std::endl;
-	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
-	Double_t resolutionError = resolution * Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
-	std::cout << "Resolution = " << resolution << " pm " << resolutionError << std::endl;
-	std::cout << "IBF = " << fIbfIonCharge->GetParameter(0) << " pm " << fIbfIonCharge->GetParError(0) << std::endl;
 	
 	
 	return 0;

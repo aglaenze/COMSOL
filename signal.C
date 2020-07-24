@@ -17,6 +17,7 @@
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
 #include "Garfield/AvalancheMC.hh"
+#include "Garfield/TrackHeed.hh"
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/SolidTube.hh"
 #include "Garfield/ViewSignal.hh"
@@ -37,8 +38,9 @@ int main(int argc, char * argv[]) {
 	int modelNum = 0;
 	std::string gasName = "";
 	bool computeIBF = true;
+	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF)) {std::cout << "variables not loaded" << std::endl; return 0;}
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {std::cout << "variables not loaded" << std::endl; return 0;}
 	//____________________
 	
 	
@@ -54,8 +56,13 @@ int main(int argc, char * argv[]) {
 	
 	TString errorMessage = "Please enter HVmesh like this: ./signal";
 	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
-	errorMessage += " $saveNum";
-	if (argc != electrodeNum+1) {
+	if (testMode && argc != electrodeNum) {
+		errorMessage += " (test mode)";
+		std::cout << errorMessage << std::endl;
+		return 0;
+	}
+	if (!testMode && argc != electrodeNum+1) {
+		errorMessage += " $saveNum";
 		std::cout << errorMessage << std::endl;
 		return 0;
 	}
@@ -71,11 +78,13 @@ int main(int argc, char * argv[]) {
 		return 0;
 	}
 	
-	TString fOutputName = Form("rootFiles/%s/model%d/signal", gasName.c_str(), modelNum);
+	std::string type = "signal";
+	if (useFeSource) type = "fesignal";
+	if (!computeIBF) type += "-noIbf";
+	TString fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
-	fOutputName += Form("-%d.root", saveNum);
-	
-	if (testMode) fOutputName = Form("rootFiles/%s/model%d/signal-test.root", gasName.c_str(), modelNum);
+	if (testMode) fOutputName += "-test.root";
+	else fOutputName += Form("-%d.root", saveNum);
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -90,6 +99,12 @@ int main(int argc, char * argv[]) {
 	for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
 	//return 0;
 	
+	// Use Heed for simulating the photon absorption.
+	TrackHeed track;
+	if (useFeSource) {
+		track.SetSensor(sensor);
+		track.EnableElectricField();
+	}
 	
 	// Create ROOT histograms of the signal and a file in which to store them.
 	TFile* f = new TFile(fOutputName, "RECREATE");
@@ -102,11 +117,11 @@ int main(int argc, char * argv[]) {
 	int ni = 0, ionBackNum = 0;
 	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
 	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
-	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
-	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
-		tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
-		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
+		tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+		tAvalanche->Branch("electronEndPoints", &electronEndPoints);
+		tAvalanche->Branch("ionNum", &ni);
+		tAvalanche->Branch("ionBackNum", &ionBackNum);
 		tAvalanche->Branch("ionStartPoints", &ionStartPoints);
 		tAvalanche->Branch("ionEndPoints", &ionEndPoints);
 		tAvalanche->Branch("ionEndPointsX", &ionEndPointsX);
@@ -116,9 +131,9 @@ int main(int argc, char * argv[]) {
 	// Set the signal binning.
 	//const int nTimeBins = 10000;
 	const double tStep = 10;   //ns
-								//const double timespace = 1./rate*1.e9;    // in ns
+							   //const double timespace = 1./rate*1.e9;    // in ns
 	const double timespace = 2.e6;    // in ns // 2ms so that events don't overlap (ion back flow super slow to collect)
-	//const double timespace = 1.e2;
+									  //const double timespace = 1.e2;
 	const double tStart =  0.;
 	//const double tEnd = int(nEvents * timespace + ionDelay);
 	const double tEnd = int(nEvents * timespace);
@@ -140,7 +155,7 @@ int main(int argc, char * argv[]) {
 	}
 	
 	int division = int(nEvents/10);
-	if (nEvents < 10) division = 1;
+	if (nEvents < 10 || useFeSource) division = 1;
 	
 	//return 0;
 	for (int i = 0; i < nEvents; ++i) {
@@ -152,57 +167,69 @@ int main(int argc, char * argv[]) {
 		}
 		// Initial coordinates of the photon.
 		double x0 = width/2. + RndmUniform() * pitch;
-		//double y0 = RndmUniform() * depth;
 		double y0 = depth/2. + RndmUniform() * pitch;
 		double z0 = damp + 5*radius + (ddrift-damp-5*radius)*RndmUniform();
-		//double t0 = ( i + RndmUniform() )* timespace;
 		double t0 = i * timespace;
+		int ne = 1;	// number of primary electrons created by the photon, if no Fe source then one ionisation only is generated
+		if (useFeSource) {
+			// Sample the photon energy, using the relative intensities according to XDB.
+			const double r = 167. * RndmUniform();
+			const double egamma = r < 100. ? 5898.8 : r < 150. ? 5887.6 : 6490.4;
+			double dx0 = -1+RndmUniform()*2;	// angle aléatoire du photon
+			double dy0 = -1+RndmUniform()*2;
+			track.TransportPhoton(x0, y0, z0, t0, egamma, dx0, dy0, -1, ne);
+			if (ne < 1) {i--; continue;}	// the detector is quite thin so most of photons go through without converting into electrons, we are not interested in these events
+			std::cout << "number of primary electrons created by the photon = " << ne << std::endl;
+		}
 		double e = 0;
-		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
-		//int ne2 = 0, ni = 0;
-		ni = 0;
-		aval->GetAvalancheSize(ne2, ni);
-		std::cout << "\nAvalanche size = " << ne2 << std::endl;
-		//if (ne2 < 4) {i--; continue;}
-		/*
-		 if (modelNum == 1) { nWinners = ne2;
-		 //hElectrons->Fill(ne2);    // ok for modelNum < 4
-		 //continue;
-		 }
-		 */
-		const int np = aval->GetNumberOfElectronEndpoints();
-		double xe1, ye1, ze1, te1, e1;
-		double xe2, ye2, ze2, te2, e2;
-		double xi1, yi1, zi1, ti1;
-		double xi2, yi2, zi2, ti2;
-		int status;
 		ionBackNum = 0;
 		nWinners = 0;
-		for (int j = np; j--;) {
-			aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-			electronStartPoints.push_back(ze1);
-			electronEndPoints.push_back(ze2);
-			if (ze2 < 0.008) nWinners++;
-			if (computeIBF) {
-				drift->DriftIon(xe1, ye1, ze1, te1);
-				drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-				if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
-				ionStartPoints.push_back(zi1);
-				ionEndPoints.push_back(zi2);
-				ionEndPointsX.push_back(xi2);
-				ionEndPointsY.push_back(yi2);
+		ne2 = 0;
+		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
+		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
+			if (useFeSource) {
+				track.GetElectron(j, x, y, z, t, e, dx, dy, dz);
+				aval->AvalancheElectron(x, y, z, t, e, 0, 0, -1);
 			}
-		}
+			else aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
+			int neAmp = 0;
+			ni = 0;
+			aval->GetAvalancheSize(neAmp, ni);
+			std::cout << "\nAvalanche size = " << neAmp << std::endl;
+			ne2 += neAmp;
+			const int np = aval->GetNumberOfElectronEndpoints();
+			double xe1, ye1, ze1, te1, e1;
+			double xe2, ye2, ze2, te2, e2;
+			double xi1, yi1, zi1, ti1;
+			double xi2, yi2, zi2, ti2;
+			int status;
+			for (int j = np; j--;) {	// loop over amplification electrons
+				aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
+				if (ze2 < 0.008) nWinners++;
+				if (computeIBF) {
+					electronStartPoints.push_back(ze1);
+					electronEndPoints.push_back(ze2);
+					drift->DriftIon(xe1, ye1, ze1, te1);
+					drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
+					if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
+					ionStartPoints.push_back(zi1);
+					ionEndPoints.push_back(zi2);
+					ionEndPointsX.push_back(xi2);
+					ionEndPointsY.push_back(yi2);
+				}	// end of if (computeIBF)
+			} // end of for (int j = np; j--;) (loop over all amplification electrons)
+		}	// end of for (int j = 0; j < ne; j++) (loop over all primary electrons)
 		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-		
 		//std::cout << ibfRatio << std::endl;
 		tAvalanche->Fill();
-		electronStartPoints.clear();
-		electronEndPoints.clear();
-		ionStartPoints.clear();
-		ionEndPoints.clear();
-		ionEndPointsX.clear();
-		ionEndPointsY.clear();
+		if (computeIBF) {
+			electronStartPoints.clear();
+			electronEndPoints.clear();
+			ionStartPoints.clear();
+			ionEndPoints.clear();
+			ionEndPointsX.clear();
+			ionEndPointsY.clear();
+		}
 	}
 	tAvalanche->Write("", TObject::kOverwrite);
 	
