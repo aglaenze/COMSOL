@@ -26,7 +26,8 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 	std::cout << "maximum = " << h->GetMaximum() << std::endl;
 	
 	Int_t fitRangeMin = xMax - h->GetRMS();
-	Int_t fitRangeMax = xMax + h->GetRMS();
+	//Int_t fitRangeMin = 0;
+	Int_t fitRangeMax = xMax + 3*h->GetRMS();
 	
 	TF1* f;
 	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
@@ -63,11 +64,12 @@ int GetIbf() {
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetPadLeftMargin(0.15);
 	gStyle->SetPadBottomMargin(0.15);
+	gStyle->SetTextSize(.05);
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	
 	// Get number of files to look at
-	Int_t num = 6;
+	Int_t num = 4;
 	//Int_t num = GetNumberOfFiles(path, "signal");
 	Int_t num2 = int(num/2.);
 	if (num/2.> num2) num2+=1;
@@ -75,6 +77,7 @@ int GetIbf() {
 	c2->Divide(2, num2);
 	
 	Double_t ibfList[num], ibfErrorList[num], ibfList2[num], ibfErrorList2[num], ibfList3[num];
+	Double_t ibfConvolutedList[num], ibfConvolutedErrorList[num], ibfConvolutedList2[num], ibfConvolutedErrorList2[num], ibfConvolutedList3[num], ibfConvolutedErrorList3[num];
 	Double_t hvMeshList[num], hvDriftList[num], hvRatioList[num];
 	double damp = 0.0128, ddrift = 0.5;
 	
@@ -92,6 +95,7 @@ int GetIbf() {
 		hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
 		
 		TFile* fSignal = TFile::Open(Form("rootFiles/Ar-iC4H10/model1/signal-%d-%d.root", hvMesh, hvDrift), "READ");
+		TFile* fConvoluted = TFile::Open(Form("rootFiles/Ar-iC4H10/model1/fe-spectrum-convoluted-%d-%d.root", hvMesh, hvDrift), "READ");
 		
 		// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
 		// 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
@@ -100,15 +104,18 @@ int GetIbf() {
 		
 		// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
 		TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
-		Double_t ibfRatio;
-		tAvalanche->SetBranchAddress("ibfRatio", &ibfRatio);
+		Int_t nAmplification;
+		Int_t ni = 0, ionBackNum = 0;
+		tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+		tAvalanche->SetBranchAddress("ionNum", &ni);
+		tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 		int nAvalanche = tAvalanche->GetEntries();
 		
-		TH1F* hIbf = new TH1F("ibf", "ibf", 1000, 0, 100);
+		TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
 		hIbf->SetXTitle("IBF (%)");
 		for (int l = 0; l<nAvalanche; l++) {
 			tAvalanche->GetEntry(l);
-			hIbf->Fill(ibfRatio*100.);
+			if (nAmplification>1) hIbf->Fill((double)ionBackNum/ni*100.);
 		}
 		
 		hIbf->Scale(1/hIbf->GetMaximum());
@@ -155,8 +162,8 @@ int GetIbf() {
 		hIbfCharge->Scale(1/hIbfCharge->GetMaximum());
 		hIbfCharge->SetMaximum(1.2);
 		hIbfIonCharge->Scale(1/hIbfIonCharge->GetMaximum());
-		TF1* f2 = GetFitIbf(hIbfCharge, false);
-		TF1* f3 = GetFitIbf(hIbfIonCharge, false);
+		TF1* fIbfCharge = GetFitIbf(hIbfCharge);
+		TF1* fIbfIonCharge = GetFitIbf(hIbfIonCharge, true);
 		
 		
 		/*
@@ -166,25 +173,33 @@ int GetIbf() {
 		 */
 		
 		hIbfCharge->GetXaxis()->SetRangeUser(0, 10.);
-		ibfList2[k] = f2->GetParameter(0);
-		ibfErrorList2[k] = f2->GetParError(0);
+		ibfList2[k] = fIbfCharge->GetParameter(0);
+		ibfErrorList2[k] = fIbfCharge->GetParError(0);
 		
-		// 3e étape: dessiner une ligne verticale de l'estimation du ratio des intégrales
+		// 3e étape (nouvelle étape intermédiaire) : récupérer les histos IBF convolués, et les fitter
+		TH1F* hFeIbf = (TH1F*)fConvoluted->Get("hFeIbf");
+		TH1F* hFeIbfTotalCharge = (TH1F*)fConvoluted->Get("hFeIbfTotalCharge");
+		TH1F* hFeIbfIonCharge = (TH1F*)fConvoluted->Get("hFeIbfIonCharge");
+		hFeIbf->Scale(1/hFeIbf->GetMaximum());
+		hFeIbfTotalCharge->Scale(1/hFeIbfTotalCharge->GetMaximum());
+		hFeIbfIonCharge->Scale(1/hFeIbfIonCharge->GetMaximum());
 		
-		TTree* tSignalReadout = (TTree*)fSignal->Get(Form("tSignal_%d", readoutElectrode));
-		TTree* tSignalDrift = (TTree*)fSignal->Get(Form("tSignal_%d", driftElectrode));
-		Double_t currentDriftIntMax = tSignalDrift->GetMaximum("totalCurrentInt");
-		Double_t currentReadoutIntMax = tSignalReadout->GetMaximum("totalCurrentInt");
-		Double_t currentReadoutIntMin = tSignalReadout->GetMinimum("totalCurrentInt");
-		if (currentReadoutIntMin<-100) currentReadoutIntMax = -tSignalReadout->GetMinimum("totalCurrentInt");
+		TF1* fFeIbf = GetFitIbf(hFeIbf);
+		TF1* fFeIbfTotalCharge = GetFitIbf(hFeIbfTotalCharge);
+		TF1* fFeIbfIonCharge = GetFitIbf(hFeIbfIonCharge);
+		hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
 		
-		Double_t ibfEstimation = 100*currentDriftIntMax/currentReadoutIntMax;
-		ibfList3[k] = ibfEstimation;
-		Double_t yMax = 10;
-		TLine* ibfLine = new TLine(ibfEstimation, 0, ibfEstimation, yMax);
-		ibfLine->SetLineColor(2);
+		// Extract IBF values
+		ibfConvolutedList[k] = fFeIbf->GetParameter(0);
+		ibfConvolutedErrorList[k] = fFeIbf->GetParError(0);
 		
+		ibfConvolutedList2[k] = fFeIbfTotalCharge->GetParameter(0);
+		ibfConvolutedErrorList2[k] = fFeIbfTotalCharge->GetParError(0);
 		
+		ibfConvolutedList3[k] = fFeIbfIonCharge->GetParameter(0);
+		ibfConvolutedErrorList3[k] = fFeIbfIonCharge->GetParError(0);
+		
+
 		// 4e étape : dessiner les courbes ibf = f(field ratio)
 		c2->cd(k+1);
 		// Upper plot will be in pad1
@@ -219,7 +234,7 @@ int GetIbf() {
 		hIbfCharge->Draw("hist");
 		hIbfIonCharge->SetLineColor(6);
 		hIbfIonCharge->Draw("hist same");
-		f2->Draw("same");
+		fIbfCharge->Draw("same");
 		
 		TLegend* legend = new TLegend(0.6,0.7,0.9,0.9);
 		legend->SetTextSize(0.03);
@@ -227,14 +242,12 @@ int GetIbf() {
 		legend->AddEntry(hIbfIonCharge,"Induced ion charges","l");
 		legend->Draw("same");
 		
-		TLatex* txt3 = new TLatex(1.2*xMax,1,Form("IBF = %.3g #pm %.3f %s", f2->GetParameter(0), f2->GetParError(0), "%"));
+		TLatex* txt3 = new TLatex(1.2*xMax,1,Form("IBF = %.3g #pm %.3f %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%"));
 		TLatex* txt4 = new TLatex(1.2*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
-		TLatex* txtEstim = new TLatex(1.2*xMax,0.5,Form("IBF estimation = %.2f %s (current integration)", ibfEstimation, "%"));
 		txt3->SetTextSize(0.05) ;
 		txt4->SetTextSize(0.05) ;
 		txt3->Draw();
 		txt4->Draw();
-		txtEstim->Draw();
 		
 		
 		c2->cd(k+1);
@@ -257,7 +270,7 @@ int GetIbf() {
 	grSim1->GetYaxis()->SetTitle( "IBF (%)" );
 	//grSim1->GetXaxis()->SetLimits(0, 4);  // along X axis
 	grSim1->GetHistogram()->SetMinimum(0.);   // along Y axis
-	grSim1->GetHistogram()->SetMaximum(4.);   // along Y axis
+	grSim1->GetHistogram()->SetMaximum(5.);   // along Y axis
 	grSim1->SetMarkerStyle(20);
 	grSim1->SetMarkerColor(1);
 	//grSim1->GetXaxis()->SetLimits(hvMeshList[0]-5, hvMeshList[num]+5);
@@ -268,16 +281,25 @@ int GetIbf() {
 	grSim2->SetMarkerColor(2);
 	grSim2->Draw("LP same");
 	
-	TGraph* grSim3 = new TGraph(num, hvMeshList, ibfList3);
-	grSim3->SetMarkerStyle(20);
-	grSim3->SetMarkerColor(3);
-	grSim3->Draw("LP same");
+	TGraphErrors* grSimConvoluted = new TGraphErrors(num, hvMeshList, ibfConvolutedList, 0, ibfConvolutedErrorList);
+	grSimConvoluted->SetMarkerStyle(20);
+	grSimConvoluted->SetMarkerColor(4);
+	grSimConvoluted->Draw("LP same");
+	
+	TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, hvMeshList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
+	grSimConvoluted2->SetMarkerStyle(20);
+	grSimConvoluted2->SetMarkerColor(7);
+	grSimConvoluted2->Draw("LP same");
+	
+	TGraphErrors* grSimConvoluted3 = new TGraphErrors(num, hvMeshList, ibfConvolutedList3, 0, ibfConvolutedErrorList3);
+	grSimConvoluted3->SetMarkerStyle(20);
+	grSimConvoluted3->SetMarkerColor(6);
+	grSimConvoluted3->Draw("LP same");
 	
 	// Same with data
 	//const Int_t dataNum = dataQuantity(gasName);
 	Double_t hvMeshListIBF1[dataNum], hvDriftListIBF1[dataNum], ionBackFlowCorrectedVect1[dataNum], ionBackFlowCorrectedErrorVect1[dataNum], ionBackFlowCorrectedVect1_old[dataNum], ionBackFlowCorrectedErrorVect1_old[dataNum];
 	LoadIbfData(gasName, dataNum, hvMeshListIBF1, hvDriftListIBF1, ionBackFlowCorrectedVect1, ionBackFlowCorrectedErrorVect1, ionBackFlowCorrectedVect1_old, ionBackFlowCorrectedErrorVect1_old);
-	
 	
 	Double_t ratioListData[dataNum];
 	for (int i = 0; i < dataNum; i++) {ratioListData[i] = hvMeshListIBF1[i]/(hvDriftListIBF1[i]-hvMeshListIBF1[i]) * (ddrift-damp)/damp;}
@@ -302,7 +324,9 @@ int GetIbf() {
 	legend->AddEntry(grData2,"Data","lp");
 	legend->AddEntry(grSim1,"Simulation (counting IBF)","lp");
 	legend->AddEntry(grSim2, "Simulation (induced charge)", "lp");
-	legend->AddEntry(grSim3, "Simulation (ratio of integrated currents)", "lp");
+	legend->AddEntry(grSimConvoluted, "Convolution (counting IBF)", "lp");
+	legend->AddEntry(grSimConvoluted2, "Convolution (total induced charge)", "lp");
+	legend->AddEntry(grSimConvoluted3, "Convolution (induced ion charge)", "lp");
 	legend->Draw();
 	
 	
@@ -314,7 +338,7 @@ int GetIbf() {
 	grSimRatio1->GetYaxis()->SetTitle( "IBF (%)" );
 	//grSimRatio1->GetXaxis()->SetLimits(0, 4);  // along X axis
 	grSimRatio1->GetHistogram()->SetMinimum(0.);   // along Y axis
-	grSimRatio1->GetHistogram()->SetMaximum(4.);   // along Y axis
+	grSimRatio1->GetHistogram()->SetMaximum(5.);   // along Y axis
 	grSimRatio1->SetMarkerStyle(20);
 	grSimRatio1->SetMarkerSize(0.3);
 	grSimRatio1->SetMarkerColor(1);
@@ -333,19 +357,6 @@ int GetIbf() {
 	grSimRatio2->SetMarkerColor(2);
 	//grSimRatio2->GetXaxis()->SetLimits(hvRatioList[0]-5, hvRatioList[num]+5);
 	grSimRatio2->Draw("LP same");
-	
-	TGraph* grSimRatio3 = new TGraph(num, hvRatioList, ibfList3);
-	grSimRatio3->SetTitle("IBF = f(E ratio)");
-	grSimRatio3->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
-	grSimRatio3->GetYaxis()->SetTitle( "IBF (%)" );
-	//grSimRatio3->GetXaxis()->SetLimits(0, 4);  // along X axis
-	grSimRatio3->GetHistogram()->SetMinimum(0.);   // along Y axis
-	grSimRatio3->GetHistogram()->SetMaximum(4.);   // along Y axis
-	grSimRatio3->SetMarkerStyle(20);
-	grSimRatio3->SetMarkerSize(0.3);
-	grSimRatio3->SetMarkerColor(3);
-	//grSimRatio2->GetXaxis()->SetLimits(hvRatioList[0]-5, hvRatioList[num]+5);
-	grSimRatio3->Draw("LP same");
 	
 	
 	TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, ratioListData, ionBackFlowCorrectedVect1, 0, ionBackFlowCorrectedErrorVect1 );
@@ -368,7 +379,6 @@ int GetIbf() {
 	legendRatio->AddEntry(grDataRatio2, "Data", "lp");
 	legendRatio->AddEntry(grSimRatio1,"Simulation (counting IBF)", "lp");
 	legendRatio->AddEntry(grSimRatio2, "Simulation (induced charge)", "lp");
-	legendRatio->AddEntry(grSimRatio3, "Simulation (ratio of integrated currents)", "lp");
 	legendRatio->Draw();
 	
 	c5->SaveAs(Form("Figures/model%d/IBFCurve-%s.pdf", modelNum, gasName.c_str()));

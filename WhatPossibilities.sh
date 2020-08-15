@@ -1,6 +1,6 @@
 #!/bin/bash
 
-maxModel=17
+maxModel=19
 
 # function that will display electic field configuration in na given rep
 display()
