@@ -31,7 +31,7 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	gStyle->SetOptStat(0);
 	
 	const int electrodeNum = GetElectrodeNum(modelNum);
-	if (hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
+	if ((int)hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	Int_t num = GetNumberOfFiles(path, "signal");
@@ -41,7 +41,7 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	TString fInputHV;
 	
-	for (int k = 0; k< hvList.size(); k++) fInputHV += Form("-%d", hvList[k]);
+	for (int k = 0; k< (int)hvList.size(); k++) fInputHV += Form("-%d", hvList[k]);
 	fInputHV += ".root";
 	
 	TString fSignalName = path+ "signal" + fInputHV;
@@ -122,7 +122,7 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 		Double_t gtot = 0, itot = 0, ibntot = 0;
 		Double_t ctot[electrodeNum], ctotIon[electrodeNum];
 		for (int k = 0; k<electrodeNum; k++) {ctot[k] = 0; ctotIon[k] = 0;}
-		for (unsigned int j = 0; j < nPrim; ++j) {
+		for (Int_t j = 0; j < nPrim; ++j) {
 			int r = rand() % nAvalanche;
 			tAvalanche->GetEntry(r);
 			gtot += nAmplification;

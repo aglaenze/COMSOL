@@ -28,6 +28,7 @@
 #include "Garfield/Plotting.hh"
 
 using namespace Garfield;
+using namespace std;
 
 int main(int argc, char * argv[]) {
 	
@@ -36,37 +37,37 @@ int main(int argc, char * argv[]) {
 	//______________________
 	// variables, to change in the file input.txt
 	int modelNum = 0;
-	std::string gasName = "";
+	string gasName = "";
 	bool computeIBF = true;
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {std::cout << "variables not loaded" << std::endl; return 0;}
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {cout << "variables not loaded" << endl; return 0;}
 	//____________________
 	
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum()) {cout << "Wrong model number" << endl; return 0;}
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
 	
 	int electrodeNum = 0;
 	electrodeNum = GetElectrodeNum(modelNum);
-	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
+	if (electrodeNum == 0) {cout << "Warning! Number of electrodes = 0" << endl; return 0;}
 	
 	TString errorMessage = "Please enter HVmesh like this: ./signal";
 	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
 	if (testMode && argc != electrodeNum) {
 		errorMessage += " (test mode)";
-		std::cout << errorMessage << std::endl;
+		cout << errorMessage << endl;
 		return 0;
 	}
 	if (!testMode && argc != electrodeNum+1) {
 		errorMessage += " $saveNum";
-		std::cout << errorMessage << std::endl;
+		cout << errorMessage << endl;
 		return 0;
 	}
-	std::vector<int> hvList = {};
+	vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
 	int saveNum = atoi(argv[electrodeNum]);
 	
@@ -74,13 +75,13 @@ int main(int argc, char * argv[]) {
 	MediumMagboltz* gas = InitiateGas(gasName);
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
-		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return 0;
 	}
 	
-	std::string type = "signal";
-	if (useFeSource) type = "fesignal";
-	if (!computeIBF) type += "-noIbf";
+	string type = "signal";
+	if (useFeSource) type = "fe-signal";
+	if (!computeIBF) type += "-noibf";
 	TString fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
 	if (testMode) fOutputName += "-test.root";
@@ -111,12 +112,13 @@ int main(int argc, char * argv[]) {
 	//TFile* f = new TFile("rootFiles/test.root", "RECREATE");
 	
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
-	int ne2 = 0, nWinners = 0;
-	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
-	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
+	int nWinners = 0, neAmp = 0;
+	vector<int> neAmpVec = {}, nWinnersVec = {};
+	tAvalanche->Branch("amplificationElectrons", &nWinnersVec);
+	tAvalanche->Branch("avalancheSize", &neAmpVec);
 	int ni = 0, ionBackNum = 0;
-	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
+	vector<float> electronStartPoints = {}, electronEndPoints = {};
+	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	if (computeIBF) {
 		tAvalanche->Branch("electronStartPoints", &electronStartPoints);
 		tAvalanche->Branch("electronEndPoints", &electronEndPoints);
@@ -127,7 +129,7 @@ int main(int argc, char * argv[]) {
 		tAvalanche->Branch("ionEndPointsX", &ionEndPointsX);
 		tAvalanche->Branch("ionEndPointsY", &ionEndPointsY);
 	}
-	
+
 	// Set the signal binning.
 	//const int nTimeBins = 10000;
 	const double tStep = 10;   //ns
@@ -160,7 +162,7 @@ int main(int argc, char * argv[]) {
 	//return 0;
 	for (int i = 0; i < nEvents; ++i) {
 		if (i % division == 0) {
-			std::cout << "\n\n\n\n" << i << "/" << nEvents << std::endl;
+			cout << "\n\n\n\nStart computing event: " << i+1 << "/" << nEvents << endl;
 			time_t t = time(NULL);
 			PrintTime(t0, t);
 			tAvalanche->Write("", TObject::kOverwrite);
@@ -179,12 +181,12 @@ int main(int argc, char * argv[]) {
 			double dy0 = -1+RndmUniform()*2;
 			track.TransportPhoton(x0, y0, z0, t0, egamma, dx0, dy0, -1, ne);
 			if (ne < 1) {i--; continue;}	// the detector is quite thin so most of photons go through without converting into electrons, we are not interested in these events
-			std::cout << "number of primary electrons created by the photon = " << ne << std::endl;
+			cout << "number of primary electrons created by the photon = " << ne << endl;
 		}
 		double e = 0;
 		ionBackNum = 0;
 		nWinners = 0;
-		ne2 = 0;
+		neAmp = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
 			if (useFeSource) {
@@ -195,8 +197,7 @@ int main(int argc, char * argv[]) {
 			int neAmp = 0;
 			ni = 0;
 			aval->GetAvalancheSize(neAmp, ni);
-			std::cout << "\nAvalanche size = " << neAmp << std::endl;
-			ne2 += neAmp;
+			cout << "\nAvalanche size = " << neAmp << endl;
 			const int np = aval->GetNumberOfElectronEndpoints();
 			double xe1, ye1, ze1, te1, e1;
 			double xe2, ye2, ze2, te2, e2;
@@ -219,9 +220,13 @@ int main(int argc, char * argv[]) {
 				}	// end of if (computeIBF)
 			} // end of for (int j = np; j--;) (loop over all amplification electrons)
 		}	// end of for (int j = 0; j < ne; j++) (loop over all primary electrons)
-		std::cout << "nWinners = " << nWinners << " / " << ne2 << std::endl;
-		//std::cout << ibfRatio << std::endl;
+		cout << "nWinners = " << nWinners << " / " << neAmp << endl;
+		neAmpVec.push_back(neAmp);
+		nWinnersVec.push_back(nWinners);
+		//cout << ibfRatio << endl;
 		tAvalanche->Fill();
+		neAmpVec.clear();
+		nWinnersVec.clear();
 		if (computeIBF) {
 			electronStartPoints.clear();
 			electronEndPoints.clear();
@@ -233,7 +238,7 @@ int main(int argc, char * argv[]) {
 	}
 	tAvalanche->Write("", TObject::kOverwrite);
 	
-	//std::cout << "induced charge for electrode " << 2 << " = " << sensor->GetInducedCharge("V2") << std::endl;
+	//cout << "induced charge for electrode " << 2 << " = " << sensor->GetInducedCharge("V2") << endl;
 	
 	if (computeIBF) {
 		for (int k = 0; k < electrodeNum; k++) {
@@ -260,7 +265,7 @@ int main(int argc, char * argv[]) {
 			//int evNum = 0;
 			for (int j = 0; j < nTimeBins; j++) {
 				ft = j * tStep;
-				//std::cout << ft << std::endl;
+				//cout << ft << endl;
 				fct = sensor->GetSignal(Form("V%d", k+2), j) / ElementaryCharge;
 				fce = sensor->GetElectronSignal(Form("V%d", k+2), j) / ElementaryCharge;
 				fci = sensor->GetIonSignal(Form("V%d", k+2), j) / ElementaryCharge;
@@ -275,8 +280,8 @@ int main(int argc, char * argv[]) {
 				
 				if (int((j+1) * tStep/timespace) == (j+1) * tStep/timespace) {
 					//tAvalanche->GetEntry(evNum);
-					//std::cout << "number of amplification electrons = " << nWinners << std::endl;
-					//std::cout << "total charge induced = " << int(tic) << std::endl;
+					//cout << "number of amplification electrons = " << nWinners << endl;
+					//cout << "total charge induced = " << int(tic) << endl;
 					//evNum++;
 					tCharge->Fill();
 					tic = 0; eic = 0; iic = 0;
@@ -284,7 +289,7 @@ int main(int argc, char * argv[]) {
 			}
 			if (keepSignal) tSignal->Write("", TObject::kOverwrite);
 			tCharge->Write("", TObject::kOverwrite);
-			//std::cout << "induced charge for electrode " << k+2 << " = " << sensor->GetInducedCharge(Form("V%d", k+2)) << std::endl;
+			//cout << "induced charge for electrode " << k+2 << " = " << sensor->GetInducedCharge(Form("V%d", k+2)) << endl;
 		}
 	}
 	f->Close();
@@ -298,7 +303,7 @@ int main(int argc, char * argv[]) {
 		gPad->SetLeftMargin(0.15);
 		vSignal->SetSensor(sensor);
 		vSignal->SetCanvas(cSignal);
-		//void PlotSignal(const std::string& label, const bool total = true, const bool electron = false, const bool ion = false);
+		//void PlotSignal(const string& label, const bool total = true, const bool electron = false, const bool ion = false);
 		vSignal->SetRangeX(0, nEvents*timespace+1000);
 		vSignal->PlotSignal("V2", true, true, true);    // signal de la mesh
 		cSignal->SaveAs("Figures/Signal.pdf");
@@ -307,7 +312,7 @@ int main(int argc, char * argv[]) {
 	
 	time_t t1 = time(NULL);
 	
-	std::cout << "\n" << nEvents << " events simulated" << std::endl;
+	cout << "\n" << nEvents << " events simulated" << endl;
 	PrintTime(t0, t1);
 	
 	//app.Run(true);

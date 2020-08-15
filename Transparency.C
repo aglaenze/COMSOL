@@ -4,7 +4,10 @@
 
 #include <TCanvas.h>
 #include <TROOT.h>
-#include <TH1F.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TLegend.h>
 #include <TFile.h>
 #include <TMath.h>
 
@@ -36,13 +39,13 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	LoadElectrodeMap(modelNum, electrodeMap);
 	std::vector<double> zElectrodes = {};
 	LoadParameters(modelNum, zElectrodes);
-
+	
 	int nAval = tAvalanche->GetEntries();
-
+	
 	int nElectrodes = electrodeMap.size()-2;	// on s'en fiche de la drift et des pads
 	std::cout << "There are " << nElectrodes << " electrodes to look at" << std::endl;
 	TH1F* hDyingIons[nElectrodes];
-
+	
 	// Initialisation des histos de tranparence
 	int i = 0;
 	std::string electrodeNames[nElectrodes];
@@ -56,13 +59,13 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 		}
 		it++;
 	}
-
+	
 	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0;
 	tAvalanche->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
 	tAvalanche->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
 	
 	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
-
+	
 	int nIons[nElectrodes];
 	for (int k = 0; k < nElectrodes; k++) nIons[k] = 0;
 	for (int k = 0; k < nAval; k++) {
@@ -70,7 +73,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 		// Loop over electrodes
 		ionStartPoints = *ionStartPointsInput;
 		ionEndPoints = *ionEndPointsInput;
-		for (int j = 0; j< ionStartPoints.size(); j++) {
+		for (int j = 0; j< (int)ionStartPoints.size(); j++) {
 			float zi1 = ionStartPoints[j];
 			float zi2 = ionEndPoints[j];
 			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
@@ -86,7 +89,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	
 	TLegend* lgd = new TLegend(0.2, 0.7, 0.9, 0.9);
 	for (int j = nElectrodes-1; j>=0; j--) {
-	//for (int j = 0; j<nElectrodes; j++) {
+		//for (int j = 0; j<nElectrodes; j++) {
 		hDyingIons[j]->Scale(1./nIons[j]);
 		hDyingIons[j]->SetMaximum(1.3);
 		hDyingIons[j]->GetXaxis()->SetTitle("z (cm)");
@@ -162,7 +165,7 @@ void DrawDyingIons2d(const int modelNum = 15, TString fSignalName=""){
 		// Loop over electrodes
 		ionStartPoints = *ionStartPointsInput;
 		ionEndPoints = *ionEndPointsInput;
-		for (int j = 0; j< ionStartPoints.size(); j++) {
+		for (int j = 0; j< (int)ionStartPoints.size(); j++) {
 			float zi1 = ionStartPoints[j];
 			float zi2 = ionEndPoints[j];
 			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
@@ -202,9 +205,12 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	gStyle->SetTitleXSize(.05);
 	gStyle->SetTitleYSize(.05);
 	gStyle->SetLabelSize(.05, "XY");
-	gStyle->SetMarkerSize(0.3);
 	gStyle->SetMarkerStyle(20);
+	gStyle->SetMarkerSize(0.3);
 	gStyle->SetTextSize(0.05);
+	
+	gPad->SetLeftMargin(0.15);
+	gPad->SetBottomMargin(0.15);
 	
 	const int unitConversion = 10;	// units go from cm to mm
 	
@@ -254,7 +260,7 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 		ionEndPoints = *ionEndPointsInput;
 		ionEndPointsX = *ionEndPointsInputX;
 		ionEndPointsY = *ionEndPointsInputY;
-		for (int j = 0; j< ionStartPoints.size(); j++) {
+		for (int j = 0; j< (int)ionStartPoints.size(); j++) {
 			float zi1 = ionStartPoints[j];
 			float zi2 = ionEndPoints[j];
 			float xi2 = ionEndPointsX[j];
@@ -286,6 +292,40 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	lgd->Draw("same");
 }
 
+void DrawNionsInDriftRegion(TString fSignalName=""){
+	
+	gStyle->SetTitleFontSize(.06);
+	gStyle->SetTitleSize(.06);
+	
+	gStyle->SetOptStat(0);
+	gStyle->SetTitleFontSize(.05);
+	gStyle->SetTitleXSize(.05);
+	gStyle->SetTitleYSize(.05);
+	gStyle->SetLabelSize(.05, "XY");
+	gStyle->SetMarkerSize(0.3);
+	gStyle->SetMarkerStyle(20);
+	gStyle->SetTextSize(0.05);
+	
+	TFile* fSignal = TFile::Open(fSignalName, "READ");
+	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
+	int ionBackNum, amplificationElectrons;
+	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &amplificationElectrons);
+	int nMax = tAvalanche->GetMaximum("ionBackNum");
+	
+	
+	TH1F* hIonsNumber = new TH1F("hIonsNumber", "Number of ions in the drift region", nMax, 0, nMax);
+	int nAval = tAvalanche->GetEntries();
+	
+	for (int k = 0; k < nAval; k++) {
+		tAvalanche->GetEntry(k);
+		if (amplificationElectrons>1) hIonsNumber->Fill(ionBackNum);
+	}
+	hIonsNumber->GetXaxis()->SetTitle("Number of ions");
+	hIonsNumber->Draw("");
+	
+	
+}
 
 void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	
@@ -311,8 +351,8 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	LoadParameters(modelNum, zElectrodes);
 	
 	/*
-	for (int i = 0; i<zElectrodes.size(); i++) {std::cout << zElectrodes[i] << std::endl;}
-	return;
+	 for (int i = 0; i<zElectrodes.size(); i++) {std::cout << zElectrodes[i] << std::endl;}
+	 return;
 	 */
 	
 	int nAval = tAvalanche->GetEntries();
@@ -370,7 +410,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	
 	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
 	std::vector<float> ionStartPoints = {}, ionEndPoints = {};
-
+	
 	int nElectrons[nElectrodes];
 	for (int i = 0; i<nElectrodes; i++) {nElectrons[i] = 0;}
 	//int nElectronsTotal = 0;
@@ -382,7 +422,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		electronEndPoints = *electronEndPointsInput;
 		//ionStartPoints = *ionStartPointsInput;
 		//ionEndPoints = *ionEndPointsInput;
-		for (int j = 0; j< electronStartPoints.size(); j++) {
+		for (int j = 0; j< (int)electronStartPoints.size(); j++) {
 			float ze1 = electronStartPoints[j];
 			float ze2 = electronEndPoints[j];
 			for (int i = 1; i<nElectrodes+1; i++) { // drift electrode ignored
@@ -398,7 +438,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		//ionStartPoints.clear();
 		//ionEndPoints.clear();
 	}
-
+	
 	//std::cout << "nElectronsTotal = " << nElectronsTotal << std::endl;
 	double transp[nElectrodes];
 	for (int j = 0; j<nElectrodes; j++) {
@@ -415,7 +455,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		TText* txt = new TText(-0.5,0.9-j*0.1,Form("%s transparency = %.1f %s", electrodeNames[j].c_str(), transp[j]*100, "%"));
 		txt->Draw("same");
 	}
-
+	
 }
 
 int Transparency() {
@@ -428,16 +468,16 @@ int Transparency() {
 	//____________________
 	time_t t0 = time(NULL);
 	
-
+	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	TString fSignalName = path + "signal";
-	for (int k = 0; k<hvList.size(); k++) {fSignalName += Form("-%d", hvList[k]);}
+	for (int k = 0; k < (int)hvList.size(); k++) {fSignalName += Form("-%d", hvList[k]);}
 	fSignalName += ".root";
 	std::cout << fSignalName << std::endl;
 	
-
+	
 	TString outputName = Form("Figures/model%d/transparency-2d-%s", modelNum, gasName.c_str());
-	for (int k = 0; k<hvList.size(); k++) {outputName += Form("-%d", hvList[k]);}
+	for (int k = 0; k< (int)hvList.size(); k++) {outputName += Form("-%d", hvList[k]);}
 	outputName+=".pdf";
 	
 	
