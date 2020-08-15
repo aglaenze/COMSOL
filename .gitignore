@@ -15,3 +15,11 @@ input.txt
 *copie*
 
 .DS_Store
+
+output
+log
+error
+test
+
+*.root
+*.sub
