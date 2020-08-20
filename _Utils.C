@@ -177,7 +177,7 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 			}
 		}
 		//cout << "Element " << elementString << " not found in input.txt";
-		return (modelFound && gasFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound);
+		return (modelFound && gasFound && feInfoFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound);
 	}
 	else cout << "Error: not possible to open input.txt file in reading mode" << endl;
 	return false;

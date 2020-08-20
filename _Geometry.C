@@ -173,3 +173,23 @@ void DrawDetector(int modelNum, std::vector<int> hvList) {
 	
 }
 
+void DrawElectrodes(int modelNum, double zMin, double zMax) {
+	std::map <std::string, int, NoSorting> electrodeMap;
+	LoadElectrodeMap(modelNum, electrodeMap);
+	std::vector<double> zElectrodes = {};
+	LoadParameters(modelNum, zElectrodes);
+	
+	double zPadMin = gPad->GetUymin();
+	double zPadMax = gPad->GetUymax();
+	
+	double scale = (zPadMax-zPadMin)/(zMax-zMin);
+
+	for (int i = 0; i<(int)zElectrodes.size(); i++) {
+		double newZ = zPadMin+ (zElectrodes[i]-zMin)*scale;
+		TLine* electrodeLine = new TLine(gPad->GetUxmin(), newZ, gPad->GetUxmax(), newZ);
+		//std::cout << zElectrodes[i] << std::endl;
+		electrodeLine->SetLineStyle(9);
+		electrodeLine->Draw("same");
+	}
+	
+}

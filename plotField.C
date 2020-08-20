@@ -71,39 +71,41 @@ int main(int argc, char * argv[]) {
 	
 	ViewField* vf = new ViewField();
 	vf->SetComponent(fm);
-	//if (modelNum == 4) {vf->SetPlane(1, -1, 0, 0, 0, 0); vf->Rotate(TMath::Pi()*1.5);}
-	vf->SetPlane(0, -1, 0, 0, 0, 0);
 	vf->SetArea(0, 0, width, ddrift);
-	if (modelNum>=8 && modelNum<14) vf->SetPlane(0, -1, 0, pitch/4, pitch/4, 0);
-	//vf->SetVoltageRange(-550, 0);
-	
-	vf->SetNumberOfContours(10);
-	vf->SetNumberOfSamples2d(40, 40);
-
+	double yPlane = pitch/2;
+	vf->SetPlane(0, -1, 0, 0, yPlane, 0);
+	//vf->SetPlaneXZ();
+	/*
+	vf->SetPlane(1, -1, 0, pitch/4, pitch/4, 0);
+	vf->Rotate(TMath::Pi()*1.5);
+	 */
 	if (electrodeNum>3) vf->SetVoltageRange(-hvList[0], -hvList[electrodeNum-2]);
 	
 	const bool plotField = false;
 	if (plotField) {
-		//vf->SetVoltageRange(-600., 0.);
-		//vf->SetArea(0, 0, width, 3*damp);
-		//vf->SetArea(0, 0, width, 3*damp+0.2);
+		//vf->SetNumberOfContours(10);
+		//vf->SetNumberOfSamples2d(40, 40);
 		TCanvas* c1 = new TCanvas("c1", "Potential view", 1200, 600);
 		TCanvas* c2 = new TCanvas("c2", "Field view", 1200, 600);
 		//TCanvas* cf = new TCanvas("cf", "Potential view", 600, 600);
 		vf->SetCanvas(c1);
 		vf->Plot("v", "CONT4Z");
+		DrawElectrodes(modelNum, 0, ddrift);
 		c1->SaveAs(Form("Figures/model%d/potential", modelNum)+suffix);
 		vf->SetCanvas(c2);
 		vf->Plot("e", "CONT4Z");
+		gPad->Update();
+		DrawElectrodes(modelNum, 0, ddrift);
 		c2->SaveAs(Form("Figures/model%d/field", modelNum)+suffix);
 	}
 	
 	const bool zoom = true;
 	if (zoom) {
-		double size = 4*pitch;	// size of a side of the window to plot
+		double size = 2*pitch;	// size of a side of the window to plot
 		const double xmin = 0;
-		double zmin = damp-3*pitch;
-		if (modelNum < 5 || (modelNum> 15 && modelNum < 20)) {size = damp+pitch; zmin = 0;}
+		double zmin = damp-size;
+		if (zmin < 0) {zmin = 0;}
+		if (zmin+size > ddrift) {size = ddrift-zmin;}
 		const double xmax =  xmin+size;
 		const double zmax =  zmin+size;
 		vf->SetArea(xmin, zmin, xmax, zmax);
@@ -116,28 +118,34 @@ int main(int argc, char * argv[]) {
 		if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
 		//else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
 		vf->Plot("v", "CONT4Z");
+		DrawElectrodes(modelNum, zmin, zmax);
 		c1->SaveAs(Form("Figures/model%d/potentialZoom", modelNum)+suffix);
 		vf->SetCanvas(c2);
 		vf->Plot("e", "CONT4Z");
+		DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
 		// Field lines
 		vf->SetCanvas(c3);
 		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
-		
+		vf->Plot("v", "CONT1");
 		std::vector<double> xf;
 		std::vector<double> yf;
 		std::vector<double> zf;
-		vf->EqualFluxIntervals(xmin, 0, 0.99 * zmax, xmax, 0, 0.99 * zmax, xf, yf, zf, 200);
+		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
-		vf->PlotFieldLines(xf, yf, zf, true, true);	// last one should be false in you want to plot something else before (pltaxis = false)
+		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
+		DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(Form("Figures/model%d/fieldlines", modelNum)+suffix);
 		//vf->SetNumberOfContours(2);
 		//vf->PlotProfile(0, 0, 0, width/2, width/2, damp*2, "v");
+		/*
 		TCanvas* c4 = new TCanvas("c4", "Transverse field", 600, 600);
 		vf->SetCanvas(c4);
 		//vf->PlotContour("ey");
 		vf->Plot("ey", "CONT4Z");
+		DrawElectrodes(modelNum, zmin, zmax);
 		c4->SaveAs(Form("Figures/model%d/ey", modelNum)+suffix);
+		 */
 	}
 	
 	
