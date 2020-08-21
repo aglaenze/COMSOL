@@ -11,6 +11,7 @@
 #include "Riostream.h"
 
 #include "Garfield/MediumMagboltz.hh"
+#include "Garfield/MediumGas.hh"
 #include "Garfield/FundamentalConstants.hh"
 #include "Garfield/Random.hh"
 #include "Garfield/ComponentComsol.hh"
