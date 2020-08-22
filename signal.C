@@ -32,7 +32,7 @@ using namespace std;
 
 int main(int argc, char * argv[]) {
 	
-	bool testMode = false;
+	bool testMode = true;
 	bool keepSignal = false;
 	//______________________
 	// variables, to change in the file input.txt
@@ -112,10 +112,10 @@ int main(int argc, char * argv[]) {
 	//TFile* f = new TFile("rootFiles/test.root", "RECREATE");
 	
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
-	int nWinners = 0, neAmp = 0;
-	vector<int> neAmpVec = {}, nWinnersVec = {};
+	int nWinners = 0, neAval = 0;
+	vector<int> neAvalVec = {}, nWinnersVec = {};
 	tAvalanche->Branch("amplificationElectrons", &nWinnersVec);
-	tAvalanche->Branch("avalancheSize", &neAmpVec);
+	tAvalanche->Branch("avalancheSize", &neAvalVec);
 	int ni = 0, ionBackNum = 0;
 	vector<float> electronStartPoints = {}, electronEndPoints = {};
 	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
@@ -186,7 +186,6 @@ int main(int argc, char * argv[]) {
 		double e = 0;
 		ionBackNum = 0;
 		nWinners = 0;
-		neAmp = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
 			if (useFeSource) {
@@ -194,10 +193,10 @@ int main(int argc, char * argv[]) {
 				aval->AvalancheElectron(x, y, z, t, e, 0, 0, -1);
 			}
 			else aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
-			int neAmp = 0;
 			ni = 0;
-			aval->GetAvalancheSize(neAmp, ni);
-			cout << "\nAvalanche size = " << neAmp << endl;
+			neAval = 0;
+			aval->GetAvalancheSize(neAval, ni);
+			cout << "\nAvalanche size = " << neAval << endl;
 			const int np = aval->GetNumberOfElectronEndpoints();
 			double xe1, ye1, ze1, te1, e1;
 			double xe2, ye2, ze2, te2, e2;
@@ -219,13 +218,13 @@ int main(int argc, char * argv[]) {
 					ionEndPointsY.push_back(yi2);
 				}	// end of if (computeIBF)
 			} // end of for (int j = np; j--;) (loop over all amplification electrons)
+			if (!useFeSource) cout << "nWinners = " << nWinners << " / " << neAval << endl;
+			neAvalVec.push_back(neAval);
+			nWinnersVec.push_back(nWinners);
 		}	// end of for (int j = 0; j < ne; j++) (loop over all primary electrons)
-		cout << "nWinners = " << nWinners << " / " << neAmp << endl;
-		neAmpVec.push_back(neAmp);
-		nWinnersVec.push_back(nWinners);
 		//cout << ibfRatio << endl;
 		tAvalanche->Fill();
-		neAmpVec.clear();
+		neAvalVec.clear();
 		nWinnersVec.clear();
 		if (computeIBF) {
 			electronStartPoints.clear();
