@@ -82,7 +82,7 @@ int main(int argc, char * argv[]) {
 	string type = "signal";
 	if (useFeSource) type = "fe-signal";
 	if (!computeIBF) type += "-noibf";
-	TString fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
+	TString fOutputName = Form("rootFiles-%s-model%d-%s", gasName.c_str(), modelNum, type.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
 	if (testMode) fOutputName += "-test.root";
 	else fOutputName += Form("-%d.root", saveNum);

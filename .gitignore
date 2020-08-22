@@ -22,7 +22,7 @@ input.txt
 output
 log
 error
-test
+*test*
 
 *.root
 *.sub
