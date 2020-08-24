@@ -16,7 +16,7 @@ touch job.sub
 echo 'executable      = signal' >> job.sub
 echo 'arguments       = '$hv 0 >> job.sub
 echo 'output          = output/ex.$(ClusterId).$(ProcId).out' >> job.sub
-echo 'input          = input.txt' >> job.sub
+echo 'input          = input.txt, COMSOL_data/' >> job.sub
 echo 'error           = error/ex.$(ClusterId).$(ProcId).err' >> job.sub
 echo 'log             = log/ex.$(ClusterId).log' >> job.sub
 echo 'getenv=true' >> job.sub
