@@ -32,7 +32,7 @@ using namespace std;
 
 int main(int argc, char * argv[]) {
 	
-	bool testMode = true;
+	bool testMode = false;
 	bool keepSignal = false;
 	//______________________
 	// variables, to change in the file input.txt
