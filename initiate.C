@@ -54,9 +54,10 @@ Garfield::MediumMagboltz* InitiateGas(std::string gasName) {
 }
 
 
-Garfield::ComponentComsol* InitiateField(int modelNum, std::vector<int> hvList, Garfield::MediumMagboltz* gas) {
+Garfield::ComponentComsol* InitiateField(int modelNum, std::vector<int> hvList, Garfield::MediumMagboltz* gas, bool remote = false) {
 	// Load the field map.
 	std::string dataFolder = Form("COMSOL_data/model%d/", modelNum);
+	if (remote) dataFolder = "./";
 	std::string dataFile = dataFolder + "ewfield";
 	for (int k = 0; k < (int)hvList.size(); k++) dataFile += Form("-%d", hvList[k]);
 	dataFile += ".txt";
