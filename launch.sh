@@ -36,7 +36,7 @@ echo 'log             = log/ex.$(ClusterId).$(ProcId).log' >> job.sub
 echo 'getenv	      = true' >> job.sub
 #echo 'environment	= LD_LIBRARY_PATH=${GARFIELD_HOME}/Install/lib:$LD_LIBRARY_PATH' >> job.sub
 #echo 'transfer_output_files   =' "$phrase" >> job.sub
-echo 'transfer_output_remaps  = "'$phraseIn'"="'$phraseOut'" ' >> job.sub
+echo 'transfer_output_remaps  = "'$phraseIn'='$phraseOut'" ' >> job.sub
 echo 'queue' $numberOfJobs >> job.sub
 
 make

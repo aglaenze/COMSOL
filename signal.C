@@ -34,6 +34,7 @@ int main(int argc, char * argv[]) {
 	
 	bool testMode = false;
 	bool keepSignal = false;
+	bool remote = true;
 	//______________________
 	// variables, to change in the file input.txt
 	int modelNum = 0;
@@ -73,7 +74,7 @@ int main(int argc, char * argv[]) {
 	
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
-	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return 0;
@@ -188,7 +189,7 @@ int main(int argc, char * argv[]) {
 		nWinners = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
-			if (useFeSource) {
+ 			if (useFeSource) {
 				track.GetElectron(j, x, y, z, t, e, dx, dy, dz);
 				aval->AvalancheElectron(x, y, z, t, e, 0, 0, -1);
 			}
@@ -292,7 +293,6 @@ int main(int argc, char * argv[]) {
 		}
 	}
 	f->Close();
-	
 	
 	// Plot the signal.
 	const bool plotSignal = false;
