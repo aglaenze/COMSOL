@@ -42,14 +42,14 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
 	/*
 	Int_t nWinners = 0, ne2 = 0;
-	Int_t ni = 0, ionBackNum = 0;
 	 tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	 tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	 */
 	vector<int> neAvalVec = {}, nWinnersVec = {};
 	tAvalanche->Branch("amplificationElectrons", &nWinnersVec);
-	tAvalanche->Branch("avalancheSize", &eAvalVec);
+	tAvalanche->Branch("avalancheSize", &neAvalVec);
 	
+	Int_t ni = 0, ionBackNum = 0;
 	vector<float> electronStartPoints = {}, electronEndPoints = {};
 	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	if (computeIbf) {
