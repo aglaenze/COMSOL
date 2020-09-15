@@ -14,13 +14,12 @@
 
 #include "_Utils.C"
 
-#include <cmath>
 
 /* Creates histograms that are the convolution of Fe55 spectrum histogram (number of primaries created by 1 photon) and secondaries histogram (number of secondaries created by one primary in the drift region, after amplification)
  */
+using namespace std;
 
-
-int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
+int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	
 	
 	const bool drawConvoluteSpectrum = false;
@@ -31,7 +30,7 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	gStyle->SetOptStat(0);
 	
 	const int electrodeNum = GetElectrodeNum(modelNum);
-	if ((int)hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
+	if ((int)hvList.size() != electrodeNum-1) {cout << "Wrong hv input" << endl; return 0;}
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	Int_t num = GetNumberOfFiles(path, "signal");
@@ -49,18 +48,18 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	TFile* f = new TFile(fOutputName, "RECREATE");
 	
-	std::map <std::string, int, NoSorting> electrode;
+	map <string, int, NoSorting> electrode;
 	LoadElectrodeMap(modelNum, electrode);
 	int padElectrode = 0;
 	int driftElectrode = 0;
 	
-	std::map<std::string, int>::iterator it = electrode.begin();
+	map<string, int>::iterator it = electrode.begin();
 	for (it=electrode.begin(); it!=electrode.end(); ++it) {
-		//std::cout << it->first << " => " << it->second << '\n';
+		//cout << it->first << " => " << it->second << '\n';
 		if (it->first == "pad") padElectrode = it->second;
 		else if (it->first == "drift") driftElectrode = it->second;
 	}
-	if (padElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return 0;}
+	if (padElectrode == 0 || driftElectrode == 0) {cout << "Did not find drift or pad electrode" << endl; return 0;}
 	
 	// open input files
 	TFile* fFe = new TFile(Form("rootFiles/%s/spectrum_Fe55.root", gasName.c_str()), "read");
@@ -96,12 +95,12 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 		tCharge[k]->SetBranchAddress("ionInducedCharge", &ionInducedCharge[k]);
 		Int_t nCharge = tCharge[k]->GetEntries();
 		if (nAvalanche != nCharge) {
-			std::cout << "nAvalanche != nCharge" << std::endl;
+			cout << "nAvalanche != nCharge" << endl;
 			return 0;
 		}
-		std::cout << "Number of entries in tAvalanche = " << nAvalanche << std::endl;
-		std::cout << "Number of entries in tCharge = " << nCharge << std::endl;
-		std::cout << "Number of entries in hFe = " << nFe << std::endl;
+		cout << "Number of entries in tAvalanche = " << nAvalanche << endl;
+		cout << "Number of entries in tCharge = " << nCharge << endl;
+		cout << "Number of entries in hFe = " << nFe << endl;
 		hFeCharge[k] = new TH1F(Form("hFeCharge_%d", k+2), "Number of induced charges with Fe source", nBins, 0, nBins );
 		hFeCharge[k]->SetXTitle("# induced charges");
 		hFeCharge[k]->SetYTitle("# counts");
@@ -116,9 +115,9 @@ int Convolute(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	const int numberOfPhotons = 5000;
 	for (unsigned int i = 0; i < numberOfPhotons; ++i) {
-		if (i % (int(numberOfPhotons/10)) == 0) std::cout << i << "/" << numberOfPhotons << " photons" << std::endl;
+		if (i % (int(numberOfPhotons/10)) == 0) cout << i << "/" << numberOfPhotons << " photons" << endl;
 		Int_t nPrim = hFe->GetRandom();
-		//std::cout << "\nNprim = " << nPrim << std::endl;
+		//cout << "\nNprim = " << nPrim << endl;
 		Double_t gtot = 0, itot = 0, ibntot = 0;
 		Double_t ctot[electrodeNum], ctotIon[electrodeNum];
 		for (int k = 0; k<electrodeNum; k++) {ctot[k] = 0; ctotIon[k] = 0;}

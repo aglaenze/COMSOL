@@ -13,13 +13,15 @@
  I simulate root files with 100 events, and if I want to have them as one file, I have to add current
  */
 
-int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList, bool computeIbf, bool feSource) {
+using namespace std;
+
+int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool computeIbf, bool feSource) {
 	
 	
 	time_t t0 = time(NULL);
 	
 	const int electrodeNum = GetElectrodeNum(modelNum);
-	if ((int)hvList.size() != electrodeNum-1) {std::cout << "Wrong HV input" << std::endl; return 0;}
+	if ((int)hvList.size() != electrodeNum-1) {cout << "Wrong HV input" << endl; return 0;}
 	
 	TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
 	
@@ -27,23 +29,29 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList, b
 	if (feSource) filename = "fe-signal";
 	if (!computeIbf) filename += "-noibf";
 	for (int k = 0; k< (int)hvList.size(); k++) filename += Form("-%d", hvList[k]);
-	std::cout << "processing " << filename << "* (model " << modelNum << ")" << std::endl;
+	cout << "processing " << filename << "* (model " << modelNum << ")" << endl;
 	
 	int numberOfFiles = GetNumberOfFiles(path, filename+"-");
-	std::cout << "number of files = " << numberOfFiles << std::endl;
-	if (numberOfFiles == 0) {std::cout << "no files to add, terminating" << std::endl; return 0;}
+	cout << "number of files = " << numberOfFiles << endl;
+	if (numberOfFiles == 0) {cout << "no files to add, terminating" << endl; return 0;}
 	
 	TString outputName = path + filename+".root";
 	TFile* fOut = new TFile(outputName, "RECREATE");
 	
 	// Initialisation of the new TTree tAvalanche
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
+	/*
 	Int_t nWinners = 0, ne2 = 0;
 	Int_t ni = 0, ionBackNum = 0;
-	std::vector<float> electronStartPoints = {}, electronEndPoints = {};
-	std::vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
-	tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
-	tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
+	 tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
+	 tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
+	 */
+	vector<int> neAvalVec = {}, nWinnersVec = {};
+	tAvalanche->Branch("amplificationElectrons", &nWinnersVec);
+	tAvalanche->Branch("avalancheSize", &eAvalVec);
+	
+	vector<float> electronStartPoints = {}, electronEndPoints = {};
+	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	if (computeIbf) {
 		tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
 		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
@@ -55,18 +63,24 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList, b
 		tAvalanche->Branch("ionEndPointsY", &ionEndPointsY);
 	}
 	
-	std::vector<float> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
-	std::vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0, *ionEndPointsInputX = 0, *ionEndPointsInputY = 0;
+	vector<int> *neAvalVecInput = 0, *nWinnersVecInput = 0;
+	vector<float> *electronStartPointsInput = 0, *electronEndPointsInput = 0;
+	vector<float> *ionStartPointsInput = 0, *ionEndPointsInput = 0, *ionEndPointsInputX = 0, *ionEndPointsInputY = 0;
 	
 	// On commence par remplir le TTree tAvalanche
-	for (int i = 1; i<numberOfFiles+1; i++) {
+	for (int i = 1; i < numberOfFiles + 1; i++) {
 		//for (int i = 2; i<3; i++) {
 		TString inputName = path + filename + Form("-%d.root", i);
-		std::cout << "including " << inputName << std::endl;
+		cout << "including " << inputName << endl;
 		TFile* fIn = TFile::Open(inputName, "READ");
 		TTree* tAvalancheIn = (TTree*)fIn->Get("tAvalanche");
+		/*
 		tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
 		tAvalancheIn->SetBranchAddress("avalancheSize", &ne2);
+		 */
+		tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinnersVecInput);
+		tAvalancheIn->SetBranchAddress("avalancheSize", &neAvalVecInput);
+		
 		if (computeIbf) {
 			tAvalancheIn->SetBranchAddress("ionNum", &ni);
 			tAvalancheIn->SetBranchAddress("ionBackNum", &ionBackNum);
@@ -83,7 +97,14 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList, b
 		
 		for (int l = 0; l<nIn; l++) {
 			tAvalancheIn->GetEntry(l);
-			if (!computeIbf) {tAvalanche->Fill(); continue;}
+			if (!computeIbf) {
+				nWinnersVec = *nWinnersVecInput;
+				neAvalVec = *neAvalVecInput;
+				tAvalanche->Fill();
+				nWinnersVec.clear();
+				neAvalVec.clear();
+				continue;
+			}
 			
 			electronStartPoints = *electronStartPointsInput;
 			electronEndPoints = *electronEndPointsInput;
@@ -115,7 +136,7 @@ int AddSignalTrees(int modelNum, std::string gasName, std::vector<int> hvList, b
 	//return 0;
 	
 	for (int k = 0; k < electrodeNum; k++) {
-		std::cout << "looping over electrode " << k+2 << "..." << std::endl;
+		cout << "looping over electrode " << k+2 << "..." << endl;
 		// Initialisation des TTrees tCharge
 		
 		TTree *tCharge = new TTree(Form("tInducedCharge_%d",k+2),"InducedCharge");
