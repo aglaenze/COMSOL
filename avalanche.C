@@ -7,9 +7,9 @@
 #include <TApplication.h>
 #include <TH1F.h>
 
-#include "_Utils.C"
-#include "_Geometry.C"
-#include "initiate.C"
+#include "Include/Utils.C"
+#include "Include/Geometry.C"
+#include "Include/Initiate.C"
 
 #include "Garfield/AvalancheMicroscopic.hh"
 #include "Garfield/AvalancheMC.hh"
@@ -24,41 +24,42 @@
 #include "Garfield/Plotting.hh"
 
 using namespace Garfield;
+using namespace std;
 
 int main(int argc, char * argv[]) {
 	
 	//______________________
 	// variables
 	int modelNum = 0;
-	std::string gasName = "";
+	string gasName = "";
 	bool plotDrift2D = 0, plotDrift3D = 0;
-	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D)) {std::cout << "variables not loaded" << std::endl; return 0;}
+	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D)) {cout << "variables not loaded" << endl; return 0;}
 	//____________________
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum()) {cout << "Wrong model number" << endl; return 0;}
 
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
 	
 	int electrodeNum = 0;
 	electrodeNum = GetElectrodeNum(modelNum);
-	if (electrodeNum == 0) {std::cout << "Warning! Number of electrodes = 0" << std::endl; return 0;}
+	if (electrodeNum == 0) {cout << "Warning! Number of electrodes = 0" << endl; return 0;}
 	
 	TString errorMessage = "Please enter HVmesh like this: ./avalanche";
 	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
 	if (argc != electrodeNum) {
-		std::cout << errorMessage << std::endl;
+		cout << errorMessage << endl;
 		return 0;
 	}
-	std::vector<int> hvList = {};
+	vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
 	
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
-		std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
+		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return 0;
 	}
 	
@@ -98,7 +99,7 @@ int main(int argc, char * argv[]) {
 	for (unsigned int i = 0; i < nEvents; ++i) {
 		j++;
 		if (j==50) break;
-		//std::cout << "hello " << i << "\n\n" << std::endl;
+		//cout << "hello " << i << "\n\n" << endl;
 		// Initial coordinates of the electron.
 		double x0 = 0;
 		double y0 = 0;
@@ -109,8 +110,8 @@ int main(int argc, char * argv[]) {
 		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
 		int ne2 = 0, ni = 0;
 		aval->GetAvalancheSize(ne2, ni);
-		std::cout << "\nAvalanche size = " << ne2 << std::endl;
-		std::cout << "\nIon avalanche size = " << ni << std::endl;
+		cout << "\nAvalanche size = " << ne2 << endl;
+		cout << "\nIon avalanche size = " << ni << endl;
 		if (ne2 < 100) {i--; driftView->Clear(); continue;}
 		const int np = aval->GetNumberOfElectronEndpoints();
 		double xe1, ye1, ze1, te1, e1;
@@ -166,7 +167,7 @@ int main(int argc, char * argv[]) {
 		vFE->EnableAxes();
 		vFE->SetXaxisTitle("x (cm)");
 		vFE->SetYaxisTitle("z (cm)");
-		std::cout << "Plotting..." << std::endl;
+		cout << "Plotting..." << endl;
 		vFE->Plot();
 		c2->SaveAs(fOutputName2d);
 	}
@@ -174,7 +175,7 @@ int main(int argc, char * argv[]) {
 	
 	time_t t1 = time(NULL);
 	
-	//std::cout << "\n" << nEvents << " events simulated" << std::endl;
+	//cout << "\n" << nEvents << " events simulated" << endl;
 	PrintTime(t0, t1);
 	
 	if (plotDrift3D) app.Run(true);

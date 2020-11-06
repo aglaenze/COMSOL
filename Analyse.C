@@ -10,43 +10,8 @@
 #include <TLegend.h>
 #include <TMath.h>
 
-#include "_Functions.C"
-#include "Transparency.C"
-
-TF1* GetFitCurve(TH1F* h, bool gauss = true) {
-	Int_t iBinMax = h->GetMaximumBin();
-	Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
-	
-	std::cout << "xMax = " << xMax << std::endl;
-	std::cout << "maximum = " << h->GetMaximum() << std::endl;
-	
-	Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + 1.1 * h->GetRMS();
-	if (gauss) {
-		fitRangeMin = xMax - 1.1 * h->GetRMS();
-		fitRangeMax = xMax + 3*h->GetRMS();
-	}
-	
-	TF1* f;
-	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
-	else f = new TF1( "FitFunction", FitLandau, fitRangeMin, fitRangeMax, 3);
-	f->SetParNames("Mean", "Sigma", "Amplitude");
-	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-	
-	//std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
-	//std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
-	
-	if (!gauss) {
-		f->SetParLimits(0, 0.5*xMax, 2*xMax);
-		//f->SetParLimits(1,0, 0.1*h->GetRMS());
-		//f->FixParameter(2, 1);
-		//f->SetParLimits(2, 0.5*h->GetMaximum(), 5*h->GetMaximum());
-		//f->SetParameter(2,4*h->GetMaximum());
-	}
-	
-	h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
-	return f;
-}
+#include "Include/Functions.C"
+#include "Include/Transparency.C"
 
 
 int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
@@ -386,7 +351,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	// Draw distribution of where electrons are created
 	cv->cd(5);
-	std::vector<float> *electronStartPointsInput = {};
+	std::vector<float> *electronStartPointsInput = 0;
 	tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
 	
 	std::vector<float> electronStartPoints = {};

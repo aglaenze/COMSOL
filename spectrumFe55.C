@@ -12,9 +12,9 @@ Note that the spectrum shape only depends on the detector geometry
 #include <TApplication.h>
 #include <TH1F.h>
 
-#include "_Utils.C"
-#include "_Geometry.C"
-#include "initiate.C"
+#include "Include/Utils.C"
+#include "Include/Geometry.C"
+#include "Include/Initiate.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
@@ -31,13 +31,14 @@ Note that the spectrum shape only depends on the detector geometry
 #include "Garfield/Plotting.hh"
 
 using namespace Garfield;
+using namespace std;
 
 int main(int argc, char * argv[]) {
     
     //______________________
     // variables
-    //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    //string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
+    string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     const int modelNum = 1;
     const bool variableThickness = false;   // to see how many photons converted depending on the thickness of the detector
     //____________________
@@ -66,7 +67,7 @@ int main(int argc, char * argv[]) {
         for (int k = 0; k<nStep; k++) {
             ddrift = ddriftMin+k*zStep; // cm
 
-            std::cout << "\n\n\n" << nStep-k << " to go... " << std::endl;
+            cout << "\n\n\n" << nStep-k << " to go... " << endl;
             time_t t1 = time(NULL);
             PrintTime(t0, t1);
             
@@ -96,7 +97,7 @@ int main(int argc, char * argv[]) {
             int echecs = 0;
             int division = int(nEvents/10);
             for (unsigned int i = 0; i < nEvents; ++i) {
-                if (i % division == 0) std::cout << i << "/" << nEvents << "\n";
+                if (i % division == 0) cout << i << "/" << nEvents << "\n";
                 // Initial coordinates of the photon.
                 double x0 = width/2.;
                 double y0 = depth/2.;
@@ -116,8 +117,8 @@ int main(int argc, char * argv[]) {
                 if (ne < 3) echecs++;
             }
             hConversion->Fill(ddrift, 1-(double)echecs/nEvents);
-            std::cout << "\n" << nEvents << " events simulated" << std::endl;
-            std::cout << "\n" << echecs << " photons did not convert into electrons" << std::endl;
+            cout << "\n" << nEvents << " events simulated" << endl;
+            cout << "\n" << echecs << " photons did not convert into electrons" << endl;
         }
         hConversion->Write();
         fOut->Close();
@@ -161,7 +162,7 @@ int main(int argc, char * argv[]) {
         const int nEvents = 1000000;
         int division = int(nEvents/10);
         for (unsigned int i = 0; i < nEvents; ++i) {
-            if (i % division == 0) std::cout << i << "/" << nEvents << "\n";
+            if (i % division == 0) cout << i << "/" << nEvents << "\n";
             // Initial coordinates of the photon.
             double x0 = width/2.;
             double y0 = depth/2.;
@@ -198,12 +199,12 @@ int main(int argc, char * argv[]) {
             c.SaveAs(Form("Figures/Fe55Spectrum-%s.pdf", gasName.c_str()));
             
             int nPrimary = hElectrons.GetMaximumBin();
-            std::cout << "\nnPrimary = " << nPrimary << " in " << gasName << std::endl;
+            cout << "\nnPrimary = " << nPrimary << " in " << gasName << endl;
             
-            std::cout << "\nCalculations yield:" << std::endl;
-            std::cout << "nPrimary = 228 in Ar-iC4H10 (90/10)" << std::endl;
-            std::cout << "nPrimary = 222 in Ar-CO2 (93/7)" << std::endl;
-            std::cout << "nPrimary = 157 in Ne" << std::endl;
+            cout << "\nCalculations yield:" << endl;
+            cout << "nPrimary = 228 in Ar-iC4H10 (90/10)" << endl;
+            cout << "nPrimary = 222 in Ar-CO2 (93/7)" << endl;
+            cout << "nPrimary = 157 in Ne" << endl;
         }
     
         const bool saveResults = false;

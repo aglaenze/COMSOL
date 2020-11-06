@@ -11,8 +11,8 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "_Utils.C"
-#include "_Geometry.C"
+#include "Utils.C"
+#include "Geometry.C"
 
 
 void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
@@ -95,6 +95,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 		hDyingIons[j]->GetXaxis()->SetTitle("z (cm)");
 		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
 		hDyingIons[j]->SetLineColor(j+2);
+		hDyingIons[j]->SetLineWidth(j+1);
 		if (j==nElectrodes-1) hDyingIons[j]->Draw("hist");
 		//if (j==0) hDyingIons[j]->Draw("hist");
 		else hDyingIons[j]->Draw("hist same");
@@ -183,8 +184,8 @@ void DrawDyingIons2d(const int modelNum = 15, TString fSignalName=""){
 	for (int j = nElectrodes-1; j>=0; j--) {
 		hDyingIons[j]->GetXaxis()->SetTitle("z_{Start} (cm)");
 		hDyingIons[j]->GetYaxis()->SetTitle("z_{End} (cm)");
-		hDyingIons[j]->SetMarkerColor(j+1);
-		hDyingIons[j]->SetFillColor(j+1);
+		hDyingIons[j]->SetMarkerColor(j+2);
+		hDyingIons[j]->SetFillColor(j+2);
 		if (j==nElectrodes-1) hDyingIons[j]->Draw("");
 		else hDyingIons[j]->Draw("same");
 		lgd->AddEntry(hDyingIons[j], Form("created below %s", electrodeNames[j].c_str()), "f");
@@ -459,6 +460,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 }
 
 int Transparency() {
+	/* Main function, for testing */
 	
 	//______________________
 	// variables
