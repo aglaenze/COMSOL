@@ -16,6 +16,7 @@
 #include "Garfield/Random.hh"
 #include "Garfield/ComponentComsol.hh"
 
+using namespace std;
 
 // Make a gas medium.
 Garfield::MediumMagboltz* InitiateGas(std::string gasName) {

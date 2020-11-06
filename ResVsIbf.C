@@ -37,7 +37,7 @@ TGraphErrors* CreateTGraph( Int_t size, const Double_t* x, const Double_t* y, co
 TGraphErrors* CreateTGraph( const std::vector<Double_t>& x, const std::vector<Double_t>& y, const std::vector<Double_t>& xErr, const std::vector<Double_t>& yErr )
 { return CreateTGraph( x.size(), &x[0], &y[0], &xErr[0], &yErr[0] ); }
 
-int Resolution() {
+int ResVsIbf() {
 	//std::map <std::string, int, cicompare> electrodeMap;
 	
 	int modelNum = 10;

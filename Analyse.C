@@ -10,43 +10,8 @@
 #include <TLegend.h>
 #include <TMath.h>
 
-#include "_Functions.C"
-#include "Transparency.C"
-
-TF1* GetFitCurve(TH1F* h, bool gauss = true) {
-	Int_t iBinMax = h->GetMaximumBin();
-	Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
-	
-	std::cout << "xMax = " << xMax << std::endl;
-	std::cout << "maximum = " << h->GetMaximum() << std::endl;
-	
-	Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + 1.1 * h->GetRMS();
-	if (gauss) {
-		fitRangeMin = xMax - 1.1 * h->GetRMS();
-		fitRangeMax = xMax + 3*h->GetRMS();
-	}
-	
-	TF1* f;
-	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
-	else f = new TF1( "FitFunction", FitLandau, fitRangeMin, fitRangeMax, 3);
-	f->SetParNames("Mean", "Sigma", "Amplitude");
-	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-	
-	//std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
-	//std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
-	
-	if (!gauss) {
-		f->SetParLimits(0, 0.5*xMax, 2*xMax);
-		//f->SetParLimits(1,0, 0.1*h->GetRMS());
-		//f->FixParameter(2, 1);
-		//f->SetParLimits(2, 0.5*h->GetMaximum(), 5*h->GetMaximum());
-		//f->SetParameter(2,4*h->GetMaximum());
-	}
-	
-	h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
-	return f;
-}
+#include "Include/Functions.C"
+#include "Include/Transparency.C"
 
 
 int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
@@ -119,7 +84,6 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	//cv->Divide(2);
 	cv->Divide(3, 2);
 	
-	
 	// Start with drawing the transparency
 	cv->cd(1);
 	DrawTransparency(modelNum, fSignalName);
@@ -130,9 +94,12 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
 	Int_t nAvalanche = tAvalanche->GetEntries();
-	Int_t nAmplification;
+	//Int_t nAmplification;
+	vector <Int_t> *nWinnersVec = nullptr;
+	vector <Int_t> gainVec = {};
 	Int_t ni = 0, ionBackNum = 0;
-	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	//tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 	
@@ -141,7 +108,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, elMax);
 	for (int k = 0; k< tAvalanche->GetEntries(); k++) {
 		tAvalanche->GetEntry(k);
-		if (nAmplification>1) hAmplification->Fill(nAmplification);
+		gainVec = *nWinnersVec;
+		//if (nAmplification>1) hAmplification->Fill(nAmplification);
+		if (gainVec[0]>1) hAmplification->Fill(gainVec[0]);
 	}
 	while (hAmplification->GetMaximum() < 20) hAmplification->Rebin(2);
 	hAmplification->Scale(1/hAmplification->GetMaximum());
@@ -240,7 +209,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
 	for (int k = 0; k<nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
-		if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+		tAvalanche->GetEntry(k);
+		gainVec = *nWinnersVec;
+		//if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+		if (gainVec[0]>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
 	}
 	
 	hIbf->SetXTitle("IBF (%)");
@@ -386,7 +358,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	// Draw distribution of where electrons are created
 	cv->cd(5);
-	std::vector<float> *electronStartPointsInput = {};
+	std::vector<float> *electronStartPointsInput = 0;
 	tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
 	
 	std::vector<float> electronStartPoints = {};
@@ -423,7 +395,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	cv2->Divide(3, 2);
 	
 	cv2->cd(1);
-	DrawNionsInDriftRegion(modelNum, fSignalName);
+	DrawNionsInDriftRegion(fSignalName);
 	
 	cv2->cd(2);
 	DrawDyingIons(modelNum, fSignalName);

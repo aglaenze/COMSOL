@@ -8,25 +8,16 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "_Utils.C"
-#include "_Data.C"
+#include "Include/Utils.C"
+#include "Include/Data.C"
+#include "Include/Functions.C"
 
 /*
  TO-DO:
  - draw gain as a function of field ratio
  */
 
-
-Double_t FitFunctionCrystalBall( Double_t* x, Double_t* par ) { //(x, alpha, n sigma, mu)
-    return par[0]*ROOT::Math::crystalball_pdf( x[0], par[1], par[2], par[3], par[4] ); }
-
-Double_t FitGauss( Double_t* x, Double_t* par ) { //(Double_t x, Double_t mean = 0, Double_t sigma = 1, Bool_t norm = kFALSE)
-    return  par[2]*TMath::Gaus( x[0], par[0], par[1]); }
-
-//____________________________________________
-Double_t FitFunctionExp( Double_t* x, Double_t* par ) {
-    return TMath::Exp( par[0] + par[1]*x[0] ); }
-
+/*
 TF1* GetFitGain(TH1F* h) {
     Int_t iBinMax = h->GetMaximumBin();
     Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
@@ -44,6 +35,7 @@ TF1* GetFitGain(TH1F* h) {
     h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
     return f;
 }
+ */
 
 
 int GetGain() {

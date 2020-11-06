@@ -8,9 +8,9 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "initiate.C"
-#include "_Utils.C"
-#include "_Geometry.C"
+#include "Include/Initiate.C"
+#include "Include/Utils.C"
+#include "Include/Geometry.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/ComponentBase.hh"
@@ -26,6 +26,7 @@
 #include "Garfield/ViewSignal.hh"
 
 using namespace Garfield;
+using namespace std;
 
 int main(int argc, char * argv[]) {
 	
@@ -81,7 +82,7 @@ int main(int argc, char * argv[]) {
 	 */
 	if (electrodeNum>3) vf->SetVoltageRange(-hvList[0], -hvList[electrodeNum-2]);
 	
-	const bool plotField = false;
+	const bool plotField = true;
 	if (plotField) {
 		//vf->SetNumberOfContours(10);
 		//vf->SetNumberOfSamples2d(40, 40);

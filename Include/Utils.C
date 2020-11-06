@@ -96,7 +96,7 @@ void LoadElectrodeMap(int modelNum, map <string, int, NoSorting>& electrodeMap) 
 		electrodeMap["GEM up"] = 6;
 		electrodeMap["drift"] = 3;
 	}
-	else if ((modelNum >= 10 && modelNum < 14) || modelNum == 19) {
+	else if ((modelNum >= 10 && modelNum < 14) || (modelNum >= 19 && modelNum < 22)) {
 		electrodeMap["pad"] = 4;
 		electrodeMap["mesh"] = 2;
 		electrodeMap["GEM down"] = 5;
@@ -119,7 +119,7 @@ void LoadElectrodeMap(int modelNum, map <string, int, NoSorting>& electrodeMap) 
 		electrodeMap["GEM2 up"] = 8;
 		electrodeMap["drift"] = 3;
 	}
-	else {cout << "no info for this model" << endl;}
+	else {cout << "No info for this model in LoadElectrodeMap" << endl;}
 }
 
 int GetElectrodeNum(int modelNum) {
@@ -234,4 +234,16 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 	return true;
 }
 
-int GetMaxModelNum() {return 19;}
+int GetMaxModelNum() {
+	int num = 0;
+	bool loop = true;
+	while (loop) {
+		num ++;
+		string folder = "COMSOL_data/model" + to_string(num);
+		const char* path = &folder[0];
+		DIR* rep = NULL;
+		rep = opendir(path);
+		if (rep == NULL) {loop = false; break;}
+	}
+	return num-1;
+}

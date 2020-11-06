@@ -12,7 +12,7 @@
 #include <TTree.h>
 #include <TBranch.h>
 
-#include "_Utils.C"
+#include "Include/Utils.C"
 
 
 /* Creates histograms that are the convolution of Fe55 spectrum histogram (number of primaries created by 1 photon) and secondaries histogram (number of secondaries created by one primary in the drift region, after amplification)
@@ -77,9 +77,12 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	tAvalanche->SetBranchStatus("ionBackNum",1);
 	
 	Int_t nAvalanche = tAvalanche->GetEntries();
-	Int_t nAmplification;
+	//Int_t nAmplification;
+	vector <Int_t> *nWinnersVec = nullptr;
+	vector <Int_t> gainVec = {};
 	Int_t ni = 0, ionBackNum = 0;
-	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	//tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 
@@ -124,7 +127,9 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 		for (Int_t j = 0; j < nPrim; ++j) {
 			int r = rand() % nAvalanche;
 			tAvalanche->GetEntry(r);
-			gtot += nAmplification;
+			//gtot += nAmplification;
+			gainVec = *nWinnersVec;
+			gtot += gainVec[0];
 			itot += ni;
 			ibntot += ionBackNum;
 			for (int k = 0; k<electrodeNum; k++) {

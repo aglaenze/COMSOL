@@ -8,37 +8,9 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "_Utils.C"
-#include "_Data.C"
+#include "Include/Utils.C"
+#include "Include/Data.C"
 
-
-Double_t FitGauss( Double_t* x, Double_t* par ) { //(Double_t x, Double_t mean = 0, Double_t sigma = 1, Bool_t norm = kFALSE)
-	return  par[2]*TMath::Gaus( x[0], par[0], par[1]); }
-
-Double_t FitLandau( Double_t* x, Double_t* par ) { //Double_t TMath::Landau	(Double_t x, Double_t mu = 0, Double_t sigma = 1, Bool_t norm = kFALSE)
-	return  par[2]*TMath::Landau( x[0], par[0], par[1]); }
-
-TF1* GetFitIbf(TH1F* h, bool gauss = true) {
-	Int_t iBinMax = h->GetMaximumBin();
-	Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
-	
-	std::cout << "xMax = " << xMax << std::endl;
-	std::cout << "maximum = " << h->GetMaximum() << std::endl;
-	
-	Int_t fitRangeMin = xMax - h->GetRMS();
-	//Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + 3*h->GetRMS();
-	
-	TF1* f;
-	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
-	else f = new TF1( "FitFunction", FitLandau, fitRangeMin, fitRangeMax, 3);
-	f->SetParNames("Mean", "Sigma", "Amplitude");
-	f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-	f->SetParLimits(0,0,10);
-	
-	h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
-	return f;
-}
 
 
 int GetIbf() {

@@ -104,6 +104,20 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
 		pitch = 0.0180;    // cm
 		zElectrodes = {ddrift, damp, 0.6125+0.0070, 0.4125+0.0070, 0.0125+0.4, 0.0125, 0};
 	}
+	else if (modelNum == 20) {   // MGEM1
+		damp = 0.0128+0.4+0.0060+0.0660;
+		radius = 0.0009;   // cm
+		ddrift = 1.0;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128+0.4, 0.0128, 0};
+	}
+	else if (modelNum == 21) {   // MGEM3
+		damp = 0.0128+0.4+0.0060+0.0128;
+		radius = 0.0013;   // cm
+		ddrift = 0.7;  //cm
+		pitch = 0.0126;    // cm
+		zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128+0.4, 0.0128, 0};
+	}
 	else {std::cout << "Model num?" << std::endl; return;}
 	width = periodicityNum * pitch;
 	depth = periodicityNum * pitch;

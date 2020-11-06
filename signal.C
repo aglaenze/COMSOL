@@ -10,9 +10,9 @@
 #include <TTree.h>
 #include <TBranch.h>
 
-#include "_Utils.C"
-#include "_Geometry.C"
-#include "initiate.C"
+#include "Include/Utils.C"
+#include "Include/Geometry.C"
+#include "Include/Initiate.C"
 
 #include "Garfield/ComponentComsol.hh"
 #include "Garfield/AvalancheMicroscopic.hh"
@@ -47,7 +47,11 @@ int main(int argc, char * argv[]) {
 	
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {cout << "Wrong model number" << endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum()) {
+		cout << "Wrong model number" << endl;
+		cout << "Model Number is comprised between 1 and " << GetMaxModelNum() << endl;
+		return 0;
+	}
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();

@@ -7,7 +7,7 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "_Utils.C"
+#include "Include/Utils.C"
 
 /*
  I simulate root files with 100 events, and if I want to have them as one file, I have to add current
@@ -41,7 +41,7 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 	// Initialisation of the new TTree tAvalanche
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
 	/*
-	Int_t nWinners = 0, ne2 = 0;
+	 Int_t nWinners = 0, ne2 = 0;
 	 tAvalanche->Branch("amplificationElectrons", &nWinners, "amplificationElectrons/I");
 	 tAvalanche->Branch("avalancheSize", &ne2, "avalancheSize/I");
 	 */
@@ -75,8 +75,8 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 		TFile* fIn = TFile::Open(inputName, "READ");
 		TTree* tAvalancheIn = (TTree*)fIn->Get("tAvalanche");
 		/*
-		tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
-		tAvalancheIn->SetBranchAddress("avalancheSize", &ne2);
+		 tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinners);
+		 tAvalancheIn->SetBranchAddress("avalancheSize", &ne2);
 		 */
 		tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinnersVecInput);
 		tAvalancheIn->SetBranchAddress("avalancheSize", &neAvalVecInput);
@@ -97,9 +97,11 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 		
 		for (int l = 0; l<nIn; l++) {
 			tAvalancheIn->GetEntry(l);
+			
+			nWinnersVec = *nWinnersVecInput;
+			neAvalVec = *neAvalVecInput;
+			
 			if (!computeIbf) {
-				nWinnersVec = *nWinnersVecInput;
-				neAvalVec = *neAvalVecInput;
 				tAvalanche->Fill();
 				nWinnersVec.clear();
 				neAvalVec.clear();

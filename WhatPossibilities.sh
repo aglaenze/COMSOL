@@ -1,6 +1,17 @@
 #!/bin/bash
 
-maxModel=19
+maxModel=0
+
+for ((k=1;k<100;k++)); do
+dataFolder="COMSOL_data/model$k"
+if [ -d $dataFolder ]
+then
+maxModel=$k
+else
+break
+fi
+done
+
 
 # function that will display electic field configuration in na given rep
 display()
