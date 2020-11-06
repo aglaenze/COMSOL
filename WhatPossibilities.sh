@@ -17,10 +17,10 @@ done
 display()
 {
 echo ""
-echo "Possible electric field configurations for MODEL $num"
 repertoire="$COMSOL/COMSOL_data/model$num"
 if [ -d $repertoire ]
 then
+echo "Possible electric field configurations for MODEL $num"
 cd $repertoire
 #y=$(eval "ls ewfield*.txt | wc -l")
 #echo "$y possible electric field configuration"
