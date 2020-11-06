@@ -16,13 +16,11 @@ done
 # function that will display electic field configuration in na given rep
 display()
 {
+echo ""
+echo "Possible electric field configurations for MODEL $num"
 repertoire="$COMSOL/COMSOL_data/model$num"
-if [ ! -d $repertoire ]
+if [ -d $repertoire ]
 then
-echo "repository COMSOL_data/model$num does not exist (yet)"
-#echo ""
-#exit
-else
 cd $repertoire
 #y=$(eval "ls ewfield*.txt | wc -l")
 #echo "$y possible electric field configuration"
@@ -30,6 +28,10 @@ for entry in `ls ewfield*.txt`; do
     #echo $entry
     echo "$entry" | tr 'ewfield' ' ' | tr '-' ' ' | tr '.txt' ' '
 done
+#else
+#echo "repository COMSOL_data/model$num does not exist (yet)"
+#echo ""
+#exit
 fi
 }
 
@@ -41,10 +43,8 @@ then
         echo "Possible electric field configurations for all models"
         echo "(If you want to know for one specific model, write ./WhatPossibilities.sh \$modelNum)"
 else
-if [ 1 -le $1 ] && [ $1 -le $maxModel ]
+if [ $1 -le 1 ] && [ $maxModel -le $1 ]
 then
-echo "Possible electric field configurations for model $1"
-else
 echo "Model number has to be an integer between 1 and $maxModel"
 echo ""
 exit
@@ -55,14 +55,12 @@ fi
 if [ -z $1 ]
 then
 for ((k=1;k<=$maxModel;k++)); do
-echo ""
-echo "Model $k"
 num=$k
 display
 done
 else
 num=$1
-display $1
+display
 fi
 
 
