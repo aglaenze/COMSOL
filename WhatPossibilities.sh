@@ -7,8 +7,8 @@ dataFolder="COMSOL_data/model$k"
 if [ -d $dataFolder ]
 then
 maxModel=$k
-else
-break
+#else
+#break
 fi
 done
 
