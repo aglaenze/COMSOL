@@ -16,10 +16,10 @@ done
 # function that will display electic field configuration in na given rep
 display()
 {
-echo ""
 repertoire="$COMSOL/COMSOL_data/model$num"
 if [ -d $repertoire ]
 then
+echo ""
 echo "Possible electric field configurations for MODEL $num"
 cd $repertoire
 #y=$(eval "ls ewfield*.txt | wc -l")
