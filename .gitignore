@@ -8,6 +8,7 @@ spectrumFe55
 
 Process.sh
 ComputeSignal.sh
+clean.sh
 
 Figures
 COMSOL_data

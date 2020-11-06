@@ -1,14 +1,14 @@
 #!/bin/bash
 
-numberOfJobs=200
+numberOfJobs=400
 
 # variables
 modelNum=10
 hv='350 430 530 830 950'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents=10            # number of events to simulate
+nEvents=20            # number of events to simulate
 computeIBF=0
-useFeSource=1
+useFeSource=0
 
 delete() {
 for entry in $filesToDelete
@@ -104,7 +104,7 @@ echo 'log               = log/ex.$(ClusterId).$(ProcId).log' >> job.sub
 echo 'getenv            = true' >> job.sub
 #echo 'environment      = LD_LIBRARY_PATH=${GARFIELD_HOME}/Install/lib:$LD_LIBRARY_PATH' >> job.sub
 #echo 'transfer_output_files   =' "$phrase" >> job.sub
-echo '+MaxRuntime       = 260000' >> job.sub
+echo '+MaxRuntime       = 460000' >> job.sub
 echo 'request_cpus      = 2' >> job.sub
 #echo '++JobFlavour = "tomorrow"' >> job.sub # tomorrow for one day or testmatch for 3 days, nextweek for one week, workday for 8 hours, longlunch for 2 hours
 echo 'transfer_output_remaps  = "'$phraseIn'='$phraseOut'" ' >> job.sub

@@ -5,7 +5,7 @@ i=0
 
 filePrefix=rootFiles/Ar-iC4H10/model10/fe-signal-noibf-350-430-530-830-950
 
-for ((k=0;k<300;k++)); do
+for ((k=0;k<500;k++)); do
 fileIn=$filePrefix-$k.root
 if ! test -f $fileIn ;
  then
@@ -21,7 +21,7 @@ done
 
 echo $nNotExisting files did not exist
 
-if ! test -f $filePrefix-0.root ;
+if test -f $filePrefix-0.root ;
 then
 mv $filePrefix-0.root $filePrefix-$i.root
 fi
