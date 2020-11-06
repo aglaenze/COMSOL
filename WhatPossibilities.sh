@@ -43,7 +43,7 @@ then
         echo "Possible electric field configurations for all models"
         echo "(If you want to know for one specific model, write ./WhatPossibilities.sh \$modelNum)"
 else
-if [ $1 -le 1 ] && [ $maxModel -le $1 ]
+if [ $1 -le 1 ] || [ $maxModel -le $1 ]
 then
 echo "Model number has to be an integer between 1 and $maxModel"
 echo ""
