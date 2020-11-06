@@ -91,7 +91,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	for (int j = nElectrodes-1; j>=0; j--) {
 		//for (int j = 0; j<nElectrodes; j++) {
 		hDyingIons[j]->Scale(1./nIons[j]);
-		hDyingIons[j]->SetMaximum(1.3);
+		hDyingIons[j]->SetMaximum(1.4);
 		hDyingIons[j]->GetXaxis()->SetTitle("z (cm)");
 		//hDyingIons[j]->SetMaximum(hDyingIons[nElectrodes-1]->GetMaximum());
 		hDyingIons[j]->SetLineColor(j+2);
@@ -309,9 +309,13 @@ void DrawNionsInDriftRegion(TString fSignalName=""){
 	
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
-	int ionBackNum, amplificationElectrons;
+	int ionBackNum;
+	//int amplificationElectrons;
+	vector <Int_t> *nWinnersVec = nullptr;
+	vector <Int_t> gainVec = {};
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
-	tAvalanche->SetBranchAddress("amplificationElectrons", &amplificationElectrons);
+	//tAvalanche->SetBranchAddress("amplificationElectrons", &amplificationElectrons);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	int nMax = tAvalanche->GetMaximum("ionBackNum");
 	
 	
@@ -320,7 +324,9 @@ void DrawNionsInDriftRegion(TString fSignalName=""){
 	
 	for (int k = 0; k < nAval; k++) {
 		tAvalanche->GetEntry(k);
-		if (amplificationElectrons>1) hIonsNumber->Fill(ionBackNum);
+		gainVec = *nWinnersVec;
+		//if (amplificationElectrons>1) hIonsNumber->Fill(ionBackNum);
+		if (gainVec[0]>1) hIonsNumber->Fill(ionBackNum);
 	}
 	hIonsNumber->GetXaxis()->SetTitle("Number of ions");
 	hIonsNumber->Draw("");
@@ -359,13 +365,18 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	int nAval = tAvalanche->GetEntries();
 	
 	// First draw total transparency
-	Int_t nAmplification;
+	//Int_t nAmplification;
+	vector <Int_t> *nWinnersVec = nullptr;
+	vector <Int_t> gainVec = {};
 	int winners = 0;
-	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	//tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	TH1F* hTransparencyTotal = new TH1F("hTransparency", "Total transparency", 4, -1, 3);
 	for (int k = 0; k<nAval; k++) {
 		tAvalanche->GetEntry(k);
-		if (nAmplification>1) {
+		gainVec = *nWinnersVec;
+		if (gainVec[0] > 1) {
+		//if (nAmplification>1) {
 			hTransparencyTotal->Fill(1);
 			winners++;
 		}

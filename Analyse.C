@@ -84,7 +84,6 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	//cv->Divide(2);
 	cv->Divide(3, 2);
 	
-	
 	// Start with drawing the transparency
 	cv->cd(1);
 	DrawTransparency(modelNum, fSignalName);
@@ -95,9 +94,12 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
 	Int_t nAvalanche = tAvalanche->GetEntries();
-	Int_t nAmplification;
+	//Int_t nAmplification;
+	vector <Int_t> *nWinnersVec = nullptr;
+	vector <Int_t> gainVec = {};
 	Int_t ni = 0, ionBackNum = 0;
-	tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	//tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
+	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 	
@@ -106,7 +108,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, elMax);
 	for (int k = 0; k< tAvalanche->GetEntries(); k++) {
 		tAvalanche->GetEntry(k);
-		if (nAmplification>1) hAmplification->Fill(nAmplification);
+		gainVec = *nWinnersVec;
+		//if (nAmplification>1) hAmplification->Fill(nAmplification);
+		if (gainVec[0]>1) hAmplification->Fill(gainVec[0]);
 	}
 	while (hAmplification->GetMaximum() < 20) hAmplification->Rebin(2);
 	hAmplification->Scale(1/hAmplification->GetMaximum());
@@ -205,7 +209,10 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
 	for (int k = 0; k<nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
-		if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+		tAvalanche->GetEntry(k);
+		gainVec = *nWinnersVec;
+		//if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+		if (gainVec[0]>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
 	}
 	
 	hIbf->SetXTitle("IBF (%)");
@@ -388,7 +395,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	cv2->Divide(3, 2);
 	
 	cv2->cd(1);
-	DrawNionsInDriftRegion(modelNum, fSignalName);
+	DrawNionsInDriftRegion(fSignalName);
 	
 	cv2->cd(2);
 	DrawDyingIons(modelNum, fSignalName);
