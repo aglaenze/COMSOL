@@ -244,5 +244,5 @@ int GetMaxModelNum() {
 		if (rep == NULL) {continue;}
 		else {num = i;}
 	}
-	return num-1;
+	return num;
 }
