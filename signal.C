@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
 	bool computeIBF = true;
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {cout << "variables not loaded" << endl; return 0;}
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {cout << "variables not loaded" << endl; return -1;}
 	//____________________
 	
 	
@@ -49,27 +49,28 @@ int main(int argc, char * argv[]) {
 	if (modelNum < 1 || modelNum > GetMaxModelNum()) {
 		cout << "Wrong model number" << endl;
 		cout << "Model Number is comprised between 1 and " << GetMaxModelNum() << endl;
-		return 0;
+		return -1;
 	}
+	return 0;
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
 	
 	int electrodeNum = 0;
 	electrodeNum = GetElectrodeNum(modelNum);
-	if (electrodeNum == 0) {cout << "Warning! Number of electrodes = 0" << endl; return 0;}
+	if (electrodeNum == 0) {cout << "Warning! Number of electrodes = 0" << endl; return -1;}
 	
 	TString errorMessage = "Please enter HVmesh like this: ./signal";
 	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
 	if (testMode && argc != electrodeNum) {
 		errorMessage += " (test mode)";
 		cout << errorMessage << endl;
-		return 0;
+		return -1;
 	}
 	if (!testMode && argc != electrodeNum+1) {
 		errorMessage += " $saveNum";
 		cout << errorMessage << endl;
-		return 0;
+		return -1;
 	}
 	vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
@@ -80,7 +81,7 @@ int main(int argc, char * argv[]) {
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		cout << "Component COMSOL was not initialized, please fix this" << endl;
-		return 0;
+		return -1;
 	}
 	
 	string type = "signal";
