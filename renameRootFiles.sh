@@ -3,7 +3,8 @@
 nNotExisting=0
 i=0
 
-filePrefix=rootFiles/Ar-iC4H10/model10/fe-signal-noibf-350-430-530-830-950
+#filePrefix=rootFiles/Ar-iC4H10/model10/fe-signal-noibf-350-430-530-830-950
+filePrefix=rootFiles/Ar-iC4H10/model10/signal-noibf-350-430-530-830-950
 
 for ((k=0;k<500;k++)); do
 fileIn=$filePrefix-$k.root
