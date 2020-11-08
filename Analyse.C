@@ -10,8 +10,7 @@
 #include <TLegend.h>
 #include <TMath.h>
 
-#include "Include/Functions.C"
-#include "Include/Transparency.C"
+#include "Include/Spectrum.C"
 
 
 int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
@@ -103,6 +102,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 	
+
 	// Create histogram of amplification electrons
 	Int_t elMax = tAvalanche->GetMaximum("amplificationElectrons");
 	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, elMax);
@@ -123,7 +123,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	Int_t iBinMax = hAmplification->GetMaximumBin();
 	Double_t xMax = hAmplification->GetXaxis()->GetBinCenter( iBinMax );
 	hAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hAmplification->GetRMS());
-	
+
+	 
+	 
 	/*
 	 // Ignore convolution in the end
 	 TFile* fConvoluted = TFile::Open(fileName, "READ");
@@ -158,6 +160,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	/*
 	 // This is convolution
+	 
 	 hFeAmplification->Draw("hist");
 	 f->Draw("same");
 	 // Add text to frame
@@ -174,25 +177,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	 legend->Draw("same");
 	 */
 	
-	hAmplification->Draw("hist");
-	fAmplification->Draw("same");
-	// Add text to frame
-	TString txt = Form("Number of electrons --> Gain = %.0f #pm %.3f", fAmplification->GetParameter(0), fAmplification->GetParError(0));
-	TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
-	legend->AddEntry(fAmplification,txt,"l");
-	legend->SetTextSize(0.04);
-	//legend->Draw("same");
-	
-	// Write gain, sigma and res = sigma/gain on the plot
-	double xPos = fAmplification->GetParameter(0) + 2.5*fAmplification->GetParameter(1);
-	TLatex* txtGain = new TLatex(xPos, 0.9, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 0.8, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
-	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
-	Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
-	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 0.7, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
-	
-	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
+	//DrawAmplificationElectrons(gasName, fSignalName, false);
 	
 	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
