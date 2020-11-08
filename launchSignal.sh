@@ -4,13 +4,13 @@ numberOfJobs=400
 
 # variables
 
-modelNum=21
-hv='390 560 900 1240 1340'
+modelNum=1
+hv='340 540'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=20            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testmode=1
+testMode=1
 
 ## end of variables
 
@@ -26,8 +26,8 @@ fi
 done
 }
 
-filesToDelete="*.d *.so *.pcm job.sub log/* error/* output/* *.txt"
-clean
+filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm job.sub log/* error/* output/* *.txt"
+delete
 
 touch input.txt
 #echo Creating new input.txt
@@ -37,7 +37,7 @@ echo 'gasName =' $gasName'     # Ar-iC4H10 or Ne or Ar-CO2'  >> input.txt
 echo 'nEvents =' $nEvents'            # number of events to simulate'  >> input.txt
 echo 'computeIBF =' $computeIBF '         # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)'  >> input.txt
 echo 'useFeSource =' $useFeSource'        # in signal.C: in false, will only simulate one ionisation in the drift region / if true, it will simulate a photon that converts into electrons in the drift region'  >> input.txt
-echo 'testMode =' $testMode'		## in signal.C: tests the code on a reduced number of events'  >> input.txt
+echo 'testMode =' $testMode'		# in signal.C: tests the code on a reduced number of events'  >> input.txt
 echo '# to draw the avalanche'  >> input.txt
 echo 'plotDrift2D = 0'  >> input.txt
 echo 'plotDrift3D = 1'  >> input.txt
@@ -89,7 +89,7 @@ echo
 echo Computing signal root files for model $modelNum, gas = $gasName and HV = $hv
 echo
 
-if [ ! testmode == true ]
+if [ testMode == 0 ]
 then
 
 touch job.sub
@@ -122,6 +122,6 @@ make
 fi
 
 
-filesToDelete="*.d *.so *.pcm"
-clean
+filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm"
+delete
 
