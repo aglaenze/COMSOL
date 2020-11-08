@@ -32,18 +32,22 @@ using namespace std;
 
 int main(int argc, char * argv[]) {
 	
-	bool testMode = false;
 	bool keepSignal = false;
 	bool remote = true;
 	//______________________
 	// variables, to change in the file input.txt
+	bool testMode = false;
 	int modelNum = 0;
 	string gasName = "";
 	bool computeIBF = true;
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {cout << "variables not loaded" << endl; return -1;}
-	if (testMode) remote = false;
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode)) {cout << "variables not loaded" << endl; return -1;}
+	if (testMode) {
+		remote = false;
+		nEvents = 10;
+		if (useFeSource) nEvents = 1;
+	}
 	//____________________
 	
 	
@@ -62,7 +66,7 @@ int main(int argc, char * argv[]) {
 	if (electrodeNum == 0) {cout << "Warning! Number of electrodes = 0" << endl; return -1;}
 	
 	TString errorMessage = "Please enter HVmesh like this: ./signal";
-	for (int k = 0; k< electrodeNum; k++) errorMessage += Form(" $hv%d", k+1);
+	for (int k = 0; k< electrodeNum-1; k++) errorMessage += Form(" $hv%d", k+1);
 	if (testMode && argc != electrodeNum) {
 		errorMessage += " (test mode)";
 		cout << errorMessage << endl;
@@ -75,8 +79,9 @@ int main(int argc, char * argv[]) {
 	}
 	vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
-	int saveNum = atoi(argv[electrodeNum]);
-	
+	int saveNum = 0;
+	if (!testMode) saveNum = atoi(argv[electrodeNum]);
+
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
 	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote);
@@ -97,14 +102,12 @@ int main(int argc, char * argv[]) {
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
 	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
 	
-	
 	// Make a sensor.
 	Sensor* sensor = new Sensor();
 	sensor->AddComponent(fm);
 	sensor->SetArea(0, 0, 0, width, depth, ddrift);
 	//sensor->SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
 	for (int k = 0; k < electrodeNum; k++) sensor->AddElectrode(fm, Form("V%d", k+2));
-	//return 0;
 	
 	// Use Heed for simulating the photon absorption.
 	TrackHeed track;
@@ -148,7 +151,6 @@ int main(int argc, char * argv[]) {
 	//const double tStep = (tEnd - tStart) / nTimeBins;
 	const int nTimeBins = (tEnd - tStart)/tStep;
 	sensor->SetTimeWindow(tStart, tStep, nTimeBins);
-	//return 0;
 	
 	// Create an avalanche object
 	AvalancheMicroscopic* aval = new AvalancheMicroscopic();
