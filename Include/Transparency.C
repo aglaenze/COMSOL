@@ -11,9 +11,6 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "Utils.C"
-#include "Geometry.C"
-
 
 void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	
