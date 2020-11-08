@@ -43,6 +43,7 @@ int main(int argc, char * argv[]) {
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource)) {cout << "variables not loaded" << endl; return -1;}
+	if (testMode) remote = false;
 	//____________________
 	
 	
