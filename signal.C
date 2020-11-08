@@ -52,7 +52,6 @@ int main(int argc, char * argv[]) {
 		cout << "Model Number is comprised between 1 and " << GetMaxModelNum() << endl;
 		return -1;
 	}
-	return 0;
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
