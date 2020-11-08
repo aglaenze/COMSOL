@@ -44,7 +44,7 @@ int main(int argc, char * argv[]) {
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode)) {cout << "variables not loaded" << endl; return -1;}
 	if (testMode) {
 		nEvents = 10;
-		if (useFeSource) nEvents = 1;
+		if (useFeSource) nEvents = 3;
 	}
 	//____________________
 	

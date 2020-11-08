@@ -103,57 +103,6 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 	
 
-	// Create histogram of amplification electrons
-	Int_t elMax = tAvalanche->GetMaximum("amplificationElectrons");
-	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, elMax);
-	for (int k = 0; k< tAvalanche->GetEntries(); k++) {
-		tAvalanche->GetEntry(k);
-		gainVec = *nWinnersVec;
-		//if (nAmplification>1) hAmplification->Fill(nAmplification);
-		if (gainVec[0]>1) hAmplification->Fill(gainVec[0]);
-	}
-	while (hAmplification->GetMaximum() < 20) hAmplification->Rebin(2);
-	hAmplification->Scale(1/hAmplification->GetMaximum());
-	//hAmplification->SetMaximum(1.35);
-	hAmplification->SetMaximum(1.15);
-	hAmplification->SetLineColor(kBlue);
-	TF1* fAmplification = GetFitCurve(hAmplification, false);
-	fAmplification->SetLineColor(kBlue);
-	
-	Int_t iBinMax = hAmplification->GetMaximumBin();
-	Double_t xMax = hAmplification->GetXaxis()->GetBinCenter( iBinMax );
-	hAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hAmplification->GetRMS());
-
-	 
-	 
-	/*
-	 // Ignore convolution in the end
-	 TFile* fConvoluted = TFile::Open(fileName, "READ");
-	 TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification");
-	 TH1F* hFeCharge = (TH1F*)fConvoluted->Get(Form("hFeCharge_%d", readoutElectrode));
-	 while (hFeAmplification->GetMaximum() < 100) hFeAmplification->Rebin(2);
-	 while (hFeCharge->GetMaximum() < 100) hFeCharge->Rebin(2);
-	 //hFeAmplification->Rebin(8);
-	 
-	 hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
-	 hFeAmplification->SetMaximum(1.35);
-	 //hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
-	 hFeAmplification->SetLineColor(kBlue);
-	 hFeAmplification->SetTitle("Gain with Fe source");
-	 
-	 TF1* f = GetFitCurve(hFeAmplification);
-	 f->SetLineColor(kBlue);
-	 
-	 Int_t iBinMax = hFeAmplification->GetMaximumBin();
-	 Double_t xMax = hFeAmplification->GetXaxis()->GetBinCenter( iBinMax );
-	 hFeAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
-	 
-	 hFeCharge->Scale(1/hFeCharge->GetMaximum());
-	 hFeCharge->SetLineColor(kRed);
-	 TF1* f2 = GetFitCurve(hFeCharge);
-	 f2->SetLineColor(kRed);
-	 */
-	
 	
 	// Now draw both spectra
 	cv->cd(2);
@@ -177,7 +126,11 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	 legend->Draw("same");
 	 */
 	
-	//DrawAmplificationElectrons(gasName, fSignalName, false);
+	DrawAmplificationElectrons(gasName, fSignalName, false);
+	/*
+	// Ignore convolution in the end
+	DrawFeConvolution(fileName);
+	 */
 	
 	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
