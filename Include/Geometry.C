@@ -79,7 +79,7 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
 	else if (modelNum == 12) {   // MM + (GEM+MM) combined
 		damp = 0.0128+0.2+0.0060+0.0256;
 		radius = 0.0009;   // cm
-		ddrift = 0.7;  //cm
+		ddrift = 0.5;  //cm
 		pitch = 0.0126;    // cm
 		zElectrodes = {ddrift, damp, 0.0128+0.2+0.0060, 0.0128+0.2, 0.0128, 0};
 	}
