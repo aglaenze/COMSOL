@@ -46,7 +46,7 @@ int main(int argc, char * argv[]) {
 	if (testMode) {
 		remote = false;
 		nEvents = 10;
-		if (useFeSource) nEvents = 1;
+		if (useFeSource) nEvents = 3;
 	}
 	//____________________
 	

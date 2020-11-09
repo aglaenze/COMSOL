@@ -27,7 +27,7 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	
 	time_t t0 = time(NULL);
 	
-	gStyle->SetOptStat(0);
+	//gStyle->SetOptStat(0);
 	
 	const int electrodeNum = GetElectrodeNum(modelNum);
 	if ((int)hvList.size() != electrodeNum-1) {cout << "Wrong hv input" << endl; return 0;}
