@@ -52,9 +52,9 @@ int main(int argc, char * argv[]) {
 	
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {
 		cout << "Wrong model number" << endl;
-		cout << "Model Number is comprised between 1 and " << GetMaxModelNum() << endl;
+		cout << "Model Number is comprised between 1 and " << GetMaxModelNum(remote) << endl;
 		return -1;
 	}
 	

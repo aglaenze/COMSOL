@@ -4,13 +4,13 @@ numberOfJobs=400
 
 # variables
 
-modelNum=1
-hv='340 540'
+modelNum=21
+hv='390 560 900 1240 1340'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents=20            # number of events to simulate
+nEvents=10            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testMode=1
+testMode=0
 
 ## end of variables
 
@@ -89,7 +89,7 @@ echo
 echo Computing signal root files for model $modelNum, gas = $gasName and HV = $hv
 echo
 
-if [ testMode == 0 ]
+if [ $testMode == 0 ]
 then
 
 touch job.sub
