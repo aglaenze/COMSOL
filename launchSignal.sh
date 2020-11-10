@@ -1,6 +1,6 @@
 #!/bin/bash
 
-numberOfJobs=400
+numberOfJobs=10
 
 # variables
 
@@ -10,7 +10,7 @@ gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=10            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testMode=0
+testMode=1
 
 ## end of variables
 
@@ -26,9 +26,15 @@ fi
 done
 }
 
-filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm job.sub log/* error/* output/* *.txt"
+filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm job.sub log/* error/* output/*"
 delete
 
+writeExecutable() {
+echo "#!/bin/bash
+if [ test -f input.txt ]
+then
+rm input.txt
+fi
 touch input.txt
 #echo Creating new input.txt
 echo '# variables' >> input.txt
@@ -41,6 +47,9 @@ echo 'testMode =' $testMode'		# in signal.C: tests the code on a reduced number 
 echo '# to draw the avalanche'  >> input.txt
 echo 'plotDrift2D = 0'  >> input.txt
 echo 'plotDrift3D = 1'  >> input.txt
+" >> $inputExecutable
+chmod a+x $inputExecutable
+}
 
 
 ### Create the string hv with - between numbers
@@ -51,6 +60,7 @@ hvString="${hvString%?}"	# delete last -
 #echo $hvString
 
 ### Create filename depending on the variables
+filename=""
 if [ $useFeSource == 1 ]
 then
 filename=fe-
@@ -116,6 +126,11 @@ condor_submit job.sub
 
 else
 
+touch input.sh
+inputExecutable=input.sh
+writeExecutable
+./input.sh
+exit
 make
 ./signal $hv
 
