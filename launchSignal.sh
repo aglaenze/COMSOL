@@ -1,16 +1,16 @@
 #!/bin/bash
 
-numberOfJobs=10
+numberOfJobs=300
 
 # variables
 
 modelNum=21
 hv='390 560 900 1240 1340'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents=10            # number of events to simulate
+nEvents=50            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testMode=1
+testMode=0		# to run locally, of a reduced number of events
 
 ## end of variables
 
@@ -29,14 +29,23 @@ done
 filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm job.sub log/* error/* output/*"
 delete
 
+### will write the executable that writes input.txt
 writeExecutable() {
+if test -f $inputExecutable
+then
+rm $inputExecutable
+fi
+touch $inputExecutable
+
 echo "#!/bin/bash
-if [ test -f input.txt ]
+
+if test -f input.txt
 then
 rm input.txt
 fi
+
 touch input.txt
-#echo Creating new input.txt
+
 echo '# variables' >> input.txt
 echo 'modelNum ='  $modelNum >> input.txt
 echo 'gasName =' $gasName'     # Ar-iC4H10 or Ne or Ar-CO2'  >> input.txt
@@ -50,6 +59,7 @@ echo 'plotDrift3D = 1'  >> input.txt
 " >> $inputExecutable
 chmod a+x $inputExecutable
 }
+### end of WriteExecutable
 
 
 ### Create the string hv with - between numbers
@@ -101,6 +111,13 @@ echo
 
 if [ $testMode == 0 ]
 then
+num=0
+while test -f input/input-$num.sh
+do
+        ((num++))
+done
+inputExecutable=input/input-$num.sh
+writeExecutable
 
 touch job.sub
 #echo Creating new job.sub
@@ -109,7 +126,9 @@ echo 'arguments = '$hv 0 >> job.sub
 echo 'output            = output/ex.$(ClusterId).$(ProcId).out' >> job.sub
 #echo 'input          = input.txt' $inputMeshFile $inputMatFile $inputFieldFile >> job.sub
 echo 'input             = '$dataFolder/ >> job.sub
-echo 'transfer_input_files = input.txt' >> job.sub
+#echo 'transfer_input_files = input.txt' >> job.sub
+echo 'transfer_input_files = '$inputExecutable >> job.sub
+echo '+PreCmd			= "'input-$num.sh'"'  >> job.sub
 echo 'error             = error/ex.$(ClusterId).$(ProcId).err' >> job.sub
 echo 'log               = log/ex.$(ClusterId).$(ProcId).log' >> job.sub
 echo 'getenv            = true' >> job.sub
@@ -126,11 +145,9 @@ condor_submit job.sub
 
 else
 
-touch input.sh
 inputExecutable=input.sh
 writeExecutable
-./input.sh
-exit
+source input.sh
 make
 ./signal $hv
 
@@ -139,4 +156,6 @@ fi
 
 filesToDelete="Include/*.d Include/*.pcm Include/*.so *.d *.so *.pcm"
 delete
+
+
 
