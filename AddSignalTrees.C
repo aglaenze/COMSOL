@@ -52,11 +52,11 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 	Int_t ni = 0, ionBackNum = 0;
 	vector<float> electronStartPoints = {}, electronEndPoints = {};
 	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
+	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIbf) {
 		tAvalanche->Branch("ionNum", &ni, "ibfRatio/I");
 		tAvalanche->Branch("ionBackNum", &ionBackNum, "ionBackNum/I");
-		tAvalanche->Branch("electronStartPoints", &electronStartPoints);
-		tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 		tAvalanche->Branch("ionStartPoints", &ionStartPoints);
 		tAvalanche->Branch("ionEndPoints", &ionEndPoints);
 		tAvalanche->Branch("ionEndPointsX", &ionEndPointsX);
@@ -81,12 +81,13 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 		tAvalancheIn->SetBranchAddress("amplificationElectrons", &nWinnersVecInput);
 		tAvalancheIn->SetBranchAddress("avalancheSize", &neAvalVecInput);
 		
+		tAvalancheIn->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
+		tAvalancheIn->SetBranchAddress("electronEndPoints", &electronEndPointsInput);
+		
 		if (computeIbf) {
 			tAvalancheIn->SetBranchAddress("ionNum", &ni);
 			tAvalancheIn->SetBranchAddress("ionBackNum", &ionBackNum);
 			
-			tAvalancheIn->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
-			tAvalancheIn->SetBranchAddress("electronEndPoints", &electronEndPointsInput);
 			tAvalancheIn->SetBranchAddress("ionStartPoints", &ionStartPointsInput);
 			tAvalancheIn->SetBranchAddress("ionEndPoints", &ionEndPointsInput);
 			tAvalancheIn->SetBranchAddress("ionEndPointsX", &ionEndPointsInputX);
@@ -101,23 +102,24 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 			nWinnersVec = *nWinnersVecInput;
 			neAvalVec = *neAvalVecInput;
 			
+			electronStartPoints = *electronStartPointsInput;
+			electronEndPoints = *electronEndPointsInput;
+			
 			if (!computeIbf) {
 				tAvalanche->Fill();
 				nWinnersVec.clear();
 				neAvalVec.clear();
+				electronStartPoints.clear();
+				electronEndPoints.clear();
 				continue;
 			}
 			
-			electronStartPoints = *electronStartPointsInput;
-			electronEndPoints = *electronEndPointsInput;
 			ionStartPoints = *ionStartPointsInput;
 			ionEndPoints = *ionEndPointsInput;
 			ionEndPointsX = *ionEndPointsInputX;
 			ionEndPointsY = *ionEndPointsInputY;
 			
 			tAvalanche->Fill();
-			electronStartPoints.clear();
-			electronEndPoints.clear();
 			ionStartPoints.clear();
 			ionEndPoints.clear();
 			ionEndPointsX.clear();
