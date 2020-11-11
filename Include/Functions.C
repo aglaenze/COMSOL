@@ -62,7 +62,7 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
 	std::cout << "maximum = " << h->GetMaximum() << std::endl;
 	
 	Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + 1.1 * h->GetRMS();
+	Int_t fitRangeMax = xMax + 0.5 * h->GetRMS();
 	if (gauss) {
 		fitRangeMin = xMax - 1.1 * h->GetRMS();
 		fitRangeMax = xMax + 3*h->GetRMS();

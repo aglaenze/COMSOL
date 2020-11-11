@@ -55,7 +55,11 @@ int GetNumberOfFiles(TString path, TString name) {
 	Int_t n = scandir(path, &namelist, 0, alphasort);
 	if (n < 1) {cout << "empty folder" << endl; return 0;}
 	else {
-		while (n--) { if (strstr(namelist[n]->d_name, name) != NULL) num++;}
+		while (n--) {
+			//if (strstr(namelist[n]->d_name, name) != NULL) num++;
+			string filename = namelist[n]->d_name;
+			if ( filename.rfind(name, 0) == 0) num++;
+		}
 		return num;
 	}
 }
