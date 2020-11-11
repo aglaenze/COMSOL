@@ -83,6 +83,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	hAmplification->SetMaximum(1.2);
 	hAmplification->SetMinimum(0);
 	hAmplification->SetLineColor(kBlue);
+	hAmplification->GetXaxis()->SetMaxDigits(3);
 	
 	TF1* fAmplification = GetFitCurve(hAmplification, false);
 	fAmplification->SetLineColor(kBlue);
@@ -126,6 +127,7 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	//hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
 	hFeAmplification->SetLineColor(kBlue);
 	hFeAmplification->SetTitle("Gain convoluted with Fe source");
+	hFeAmplification->GetXaxis()->SetMaxDigits(3);
 	
 	TF1* f = GetFitCurve(hFeAmplification);
 	f->SetLineColor(kBlue);

@@ -129,9 +129,9 @@ int main(int argc, char * argv[]) {
 	int ni = 0, ionBackNum = 0;
 	vector<float> electronStartPoints = {}, electronEndPoints = {};
 	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
+	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
-		tAvalanche->Branch("electronStartPoints", &electronStartPoints);
-		tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 		tAvalanche->Branch("ionNum", &ni);
 		tAvalanche->Branch("ionBackNum", &ionBackNum);
 		tAvalanche->Branch("ionStartPoints", &ionStartPoints);
@@ -194,7 +194,6 @@ int main(int argc, char * argv[]) {
 		}
 		double e = 0;
 		ionBackNum = 0;
-		nWinners = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
  			if (useFeSource) {
@@ -204,6 +203,7 @@ int main(int argc, char * argv[]) {
 			else aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
 			ni = 0;
 			neAval = 0;
+			nWinners = 0;
 			aval->GetAvalancheSize(neAval, ni);
 			cout << "\nAvalanche size = " << neAval << endl;
 			const int np = aval->GetNumberOfElectronEndpoints();
@@ -215,9 +215,9 @@ int main(int argc, char * argv[]) {
 			for (int j = np; j--;) {	// loop over amplification electrons
 				aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
 				if (ze2 < 0.008) nWinners++;
+				electronStartPoints.push_back(ze1);
+				electronEndPoints.push_back(ze2);
 				if (computeIBF) {
-					electronStartPoints.push_back(ze1);
-					electronEndPoints.push_back(ze2);
 					drift->DriftIon(xe1, ye1, ze1, te1);
 					drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
 					if (zi2 > damp+ (ddrift-damp)*0.5) ionBackNum+=1;
@@ -235,9 +235,9 @@ int main(int argc, char * argv[]) {
 		tAvalanche->Fill();
 		neAvalVec.clear();
 		nWinnersVec.clear();
+		electronStartPoints.clear();
+		electronEndPoints.clear();
 		if (computeIBF) {
-			electronStartPoints.clear();
-			electronEndPoints.clear();
 			ionStartPoints.clear();
 			ionEndPoints.clear();
 			ionEndPointsX.clear();
