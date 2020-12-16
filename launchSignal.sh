@@ -1,16 +1,16 @@
 #!/bin/bash
 
-numberOfJobs=50
+numberOfJobs=20
 
 # variables
 
-modelNum=1
-hv='200 400'
+modelNum=8
+hv='330 430 650 760'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=50            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testMode=1		# to run locally, of a reduced number of events
+testMode=0		# to run locally, of a reduced number of events
 
 ## end of variables
 
