@@ -14,6 +14,7 @@
 #include <TString.h>
 #include "TChain.h"
 #include "TFile.h"
+#include "TGraphErrors.h"
 #include "TH1.h"
 #include "TTree.h"
 #include "TKey.h"
@@ -63,6 +64,24 @@ int GetNumberOfFiles(TString path, TString name) {
 		return num;
 	}
 }
+
+//____________________________________________
+TGraphErrors* CreateTGraph( Int_t size, const Double_t* x, const Double_t* y, const Double_t* xErr, const Double_t* yErr )
+{
+	TGraphErrors* tg = new TGraphErrors();
+	for( Int_t i = 0; i < size; ++i )
+	{
+		tg->SetPoint( i, x[i], y[i] );
+		tg->SetPointError( i, xErr[i], yErr[i] );
+	}
+	
+	return tg;
+}
+
+//____________________________________________
+TGraphErrors* CreateTGraph( const std::vector<Double_t>& x, const std::vector<Double_t>& y, const std::vector<Double_t>& xErr, const std::vector<Double_t>& yErr )
+{ return CreateTGraph( x.size(), &x[0], &y[0], &xErr[0], &yErr[0] ); }
+
 
 Int_t GetPrimary(string gasName) {
 	Int_t nPrimaryTh;
@@ -255,4 +274,20 @@ int GetMaxModelNum() {
 		else {num = i;}
 	}
 	return num;
+}
+
+int GetMaxAmp(TTree& tAvalanche) {
+	vector <Int_t> *nWinnersVecIn = {};
+	vector<Int_t> nWinnersVec = {};
+	tAvalanche.SetBranchAddress("amplificationElectrons", &nWinnersVecIn);
+	const int n = tAvalanche.GetEntries();
+	int max = 10;
+	for (int k = 0; k<n; k++) {
+		tAvalanche.GetEntry(k);
+		nWinnersVec = *nWinnersVecIn;
+		int nAmplification = 0;
+		for (int l = 0; l< (int)nWinnersVec.size(); l++) {nAmplification += nWinnersVec[l];}
+		if (max < nAmplification) max = nAmplification;
+	}
+	return max;
 }

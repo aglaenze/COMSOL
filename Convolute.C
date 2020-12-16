@@ -66,11 +66,12 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	TH1F* hFe = (TH1F*)fFe->Get("hElectrons");
 	Int_t nFe = hFe->GetEntries();
 	
-	TFile* fSignal = new TFile(fSignalName, "read");
+	TFile* fSignal = new TFile(fSignalName, "READ");
 	
 	
 	// Initialise the tree of avalanche size
 	TTree* tAvalanche = (TTree*) fSignal->Get("tAvalanche");
+	const Int_t nBins = GetMaxAmp(*tAvalanche);	// must be called before setting the addresses to the tree
 	tAvalanche->SetBranchStatus("*",0);	// Select the branches to look at (do't include the vectors!!)
 	tAvalanche->SetBranchStatus("amplificationElectrons",1);
 	tAvalanche->SetBranchStatus("ionNum",1);
@@ -86,8 +87,6 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
 
-	const Int_t nBins = int(tAvalanche->GetMaximum("amplificationElectrons"));
-	
 	// Initialise the trees of induced charges
 	TH1F* hFeCharge[electrodeNum];
 	TTree* tCharge[electrodeNum];
@@ -138,6 +137,7 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 				ctotIon[k] += abs(ionInducedCharge[k]);
 			}
 		}
+		//cout << gtot/nPrimaryTh << endl;
 		hFeAmplification->Fill(gtot/nPrimaryTh);
 		if (itot > 10 ) hFeIbf->Fill((double)ibntot/itot * 100.);
 		for (int k = 0; k<electrodeNum; k++) {hFeCharge[k]->Fill(ctot[k]/nPrimaryTh);}
@@ -145,6 +145,7 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 			hFeIbfTotalCharge->Fill(ctot[driftElectrode-2]/ctot[padElectrode-2]*100.);
 			hFeIbfIonCharge->Fill(ctotIon[driftElectrode-2]/ctotIon[padElectrode-2]*100.);
 		}
+		
 	}
 	//return 0;
 	

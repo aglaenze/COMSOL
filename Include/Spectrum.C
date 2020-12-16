@@ -18,22 +18,6 @@
 
 using namespace std;
 
-int GetMaxAmp(TTree& tAvalanche) {
-	vector <Int_t> *nWinnersVecIn = {};
-	vector<Int_t> nWinnersVec = {};
-	tAvalanche.SetBranchAddress("amplificationElectrons", &nWinnersVecIn);
-	const int n = tAvalanche.GetEntries();
-	int max = 10;
-	for (int k = 0; k<n; k++) {
-		tAvalanche.GetEntry(k);
-		nWinnersVec = *nWinnersVecIn;
-		int nAmplification = 0;
-		for (int l = 0; l< (int)nWinnersVec.size(); l++) {nAmplification += nWinnersVec[l];}
-		if (max < nAmplification) max = nAmplification;
-	}
-	return max;
-}
-
 void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalName="", bool useFeSource = false) {
 	/* Draw the gain */
 	
@@ -49,7 +33,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	
 	// Create histogram of amplification electrons
 	Int_t elMax = GetMaxAmp(*tAvalanche);	// must be called before setting the addresses to the tree
-	if (useFeSource) elMax = int ((double)elMax/nPrimaryTh)+1;
+	if (useFeSource) elMax = int((double)elMax/nPrimaryTh);
 	
 	/*
 	 Int_t nAmplification;
@@ -60,7 +44,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	tAvalanche->SetBranchAddress("avalancheSize", &neAvalVecIn);
 	
 	vector<Int_t> nWinnersVec = {}, neAvalVec = {};
-	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, elMax);
+	TH1F* hAmplification = new TH1F("hAmplification", "Number of amplification electrons", elMax, 0, 2*elMax);
 	const int nEntries = (int)tAvalanche->GetEntries();
 	for (int k = 0; k< (int)tAvalanche->GetEntries(); k++) {
 		tAvalanche->GetEntry(k);
@@ -76,21 +60,23 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 		nWinnersVec.clear();
 		neAvalVec.clear();
 	}
-	while (hAmplification->GetMaximum() < 20) hAmplification->Rebin(2);
-	if ( nEntries > 5000) {while (hAmplification->GetMaximum() < 200) hAmplification->Rebin(2);}
-	if ( nEntries > 10000) {while (hAmplification->GetMaximum() < 500) hAmplification->Rebin(2);}
+	while (hAmplification->GetMaximum() < 30) hAmplification->Rebin(2);
+	if ( nEntries > 1000) {while (hAmplification->GetMaximum() < 70) hAmplification->Rebin(2);}
+	if ( nEntries > 5000) {while (hAmplification->GetMaximum() < 120) hAmplification->Rebin(2);}
+	if ( nEntries > 10000) {while (hAmplification->GetMaximum() < 200) hAmplification->Rebin(2);}
 	hAmplification->Scale(1/hAmplification->GetMaximum());
-	hAmplification->SetMaximum(1.2);
+	hAmplification->SetMaximum(1.3);
 	hAmplification->SetMinimum(0);
 	hAmplification->SetLineColor(kBlue);
-	hAmplification->GetXaxis()->SetMaxDigits(3);
 	
-	TF1* fAmplification = GetFitCurve(hAmplification, false);
+	TF1* fAmplification = GetFitCurve(hAmplification, useFeSource);	// if Fe source, fit = gauss; else fit = landau
 	fAmplification->SetLineColor(kBlue);
 	
 	Int_t iBinMax = hAmplification->GetMaximumBin();
 	Double_t xMax = hAmplification->GetXaxis()->GetBinCenter( iBinMax );
 	hAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hAmplification->GetRMS());
+	
+	if (xMax > 8000) hAmplification->GetXaxis()->SetMaxDigits(3);
 	
 	hAmplification->Draw("hist");
 	fAmplification->Draw("same");
@@ -103,13 +89,13 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	//legend->Draw("same");
 	
 	// Write gain, sigma and res = sigma/gain on the plot
-	double xPos = fAmplification->GetParameter(0) + 2.5*fAmplification->GetParameter(1);
-	TLatex* txtGain = new TLatex(xPos, 0.9, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 0.8, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
+	double xPos = fAmplification->GetParameter(0)*0.2;
+	TLatex* txtGain = new TLatex(xPos, 1.1, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 1.0, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
 	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
 	Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
 	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 0.7, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtRes = new TLatex(xPos, 0.9, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
 	
 	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
 }
@@ -123,11 +109,10 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	while (hFeAmplification->GetMaximum() < 100) hFeAmplification->Rebin(2);
 	
 	hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
-	hFeAmplification->SetMaximum(1.2);
+	hFeAmplification->SetMaximum(1.3);
 	//hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
 	hFeAmplification->SetLineColor(kBlue);
 	hFeAmplification->SetTitle("Gain convoluted with Fe source");
-	hFeAmplification->GetXaxis()->SetMaxDigits(3);
 	
 	TF1* f = GetFitCurve(hFeAmplification);
 	f->SetLineColor(kBlue);
@@ -136,11 +121,13 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	Double_t xMax = hFeAmplification->GetXaxis()->GetBinCenter( iBinMax );
 	hFeAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
 	
+	if (xMax > 8000) hFeAmplification->GetXaxis()->SetMaxDigits(3);
+	
 	hFeAmplification->Draw("hist");
 	f->Draw("same");
 	
 	// Write gain, sigma and res = sigma/gain on the plot
-	double xPos = f->GetParameter(0) - 8*f->GetParameter(1);
+	double xPos = f->GetParameter(0)*0.2;
 	TLatex* txtGain = new TLatex(xPos, 1.1, Form("Gain = %.1f #pm %.1f ", f->GetParameter(0), f->GetParError(0)));
 	TLatex* txtSigma = new TLatex(xPos, 1.0, Form("Sigma = %.1f #pm %.1f ", f->GetParameter(1), f->GetParError(1)));
 	Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
@@ -190,7 +177,7 @@ int Spectrum(int modelNum, std::string gasName, std::vector<int> hvList, bool us
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
-	//gStyle->SetOptStat(0);
+	gStyle->SetOptStat(0);
 	gStyle->SetTitleFontSize(.05);
 	gStyle->SetTitleXSize(.05);
 	gStyle->SetTitleYSize(.05);

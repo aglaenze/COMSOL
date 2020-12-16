@@ -17,26 +17,6 @@
  - draw gain as a function of field ratio
  */
 
-/*
-TF1* GetFitGain(TH1F* h) {
-    Int_t iBinMax = h->GetMaximumBin();
-    Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
-    
-    std::cout << "xMax = " << xMax << std::endl;
-    std::cout << "maximum = " << h->GetMaximum() << std::endl;
-    
-    Int_t fitRangeMin = xMax - 0.6 * h->GetRMS();
-    Int_t fitRangeMax = xMax + 0.6 * h->GetRMS();
-
-    TF1* f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
-    f->SetParNames("Mean", "Sigma", "Amplitude");
-    f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
-    
-    h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
-    return f;
-}
- */
-
 
 int GetGain() {
     

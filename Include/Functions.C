@@ -65,7 +65,7 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
 	Int_t fitRangeMax = xMax + 0.5 * h->GetRMS();
 	if (gauss) {
 		fitRangeMin = xMax - 1.1 * h->GetRMS();
-		fitRangeMax = xMax + 3*h->GetRMS();
+		fitRangeMax = xMax + 1.1*h->GetRMS();
 	}
 	
 	TF1* f;
@@ -98,7 +98,7 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
 	
 	Int_t fitRangeMin = xMax - h->GetRMS();
 	//Int_t fitRangeMin = 0;
-	Int_t fitRangeMax = xMax + 3*h->GetRMS();
+	Int_t fitRangeMax = xMax + 1*h->GetRMS();
 	
 	TF1* f;
 	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);

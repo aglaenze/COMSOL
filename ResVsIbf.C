@@ -18,24 +18,10 @@
 #include "TKey.h"
 #include "Riostream.h"
 
+#include "Include/Utils.C"
+
 using namespace std;
 
-//____________________________________________
-TGraphErrors* CreateTGraph( Int_t size, const Double_t* x, const Double_t* y, const Double_t* xErr, const Double_t* yErr )
-{
-	TGraphErrors* tg = new TGraphErrors();
-	for( Int_t i = 0; i < size; ++i )
-	{
-		tg->SetPoint( i, x[i], y[i] );
-		tg->SetPointError( i, xErr[i], yErr[i] );
-	}
-	
-	return tg;
-}
-
-//____________________________________________
-TGraphErrors* CreateTGraph( const std::vector<Double_t>& x, const std::vector<Double_t>& y, const std::vector<Double_t>& xErr, const std::vector<Double_t>& yErr )
-{ return CreateTGraph( x.size(), &x[0], &y[0], &xErr[0], &yErr[0] ); }
 
 int ResVsIbf() {
 	//std::map <std::string, int, cicompare> electrodeMap;

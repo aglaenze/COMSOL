@@ -145,9 +145,19 @@ int main(int argc, char * argv[]) {
 	ViewFEMesh* vFE = new ViewFEMesh();
 	//vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
-	if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {vFE->SetArea(-25*pitch, -25*pitch, 0,  25*pitch, 25*pitch, 50*pitch);}
-	else if (modelNum >= 5 && modelNum < 8) {vFE->SetArea(-damp/2, -damp/2, 0,  damp/2+2*pitch, damp/2+2*pitch, damp+2*pitch);}
-	else {vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., 0,  (damp+5*pitch)/2., (damp+5*pitch)/2., damp+5*pitch);}
+	double zmin = 0;
+	double zmax = ddrift;
+	if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {
+		zmax = 50*pitch;
+		vFE->SetArea(-25*pitch, -25*pitch, zmin,  25*pitch, 25*pitch, zmax);}
+	else if (modelNum >= 5 && modelNum < 8) {
+		zmax = damp+2*pitch;
+		vFE->SetArea(-damp/2, -damp/2, zmin,  damp/2+2*pitch, damp/2+2*pitch, zmax);
+	}
+	else {
+		zmax = damp+5*pitch;
+		vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., zmin,  (damp+5*pitch)/2., (damp+5*pitch)/2., zmax);
+	}
 	vFE->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
@@ -169,6 +179,7 @@ int main(int argc, char * argv[]) {
 		vFE->SetYaxisTitle("z (cm)");
 		cout << "Plotting..." << endl;
 		vFE->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
 	}
 	

@@ -102,13 +102,13 @@ int main(int argc, char * argv[]) {
 	
 	const bool zoom = true;
 	if (zoom) {
-		double size = 2*pitch;	// size of a side of the window to plot
+		double size = 8*pitch;	// size of a side of the window to plot
 		const double xmin = 0;
 		double zmin = damp-size;
 		if (zmin < 0) {zmin = 0;}
 		if (zmin+size > ddrift) {size = ddrift-zmin;}
 		const double xmax =  xmin+size;
-		const double zmax =  zmin+size;
+		const double zmax =  damp+size;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		//vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);

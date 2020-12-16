@@ -15,7 +15,7 @@
 
 int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
-	bool extended = false;
+	bool ionAnalysis = false;
 	
 	time_t t0 = time(NULL);
 	gStyle->SetTitleFontSize(.06);
@@ -41,7 +41,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	TString fileName = path + "fe-spectrum-convoluted";
 	TString fSignalName = path + "signal";
 	TString outputName = Form("Figures/model%d/analysis-%s", modelNum, gasName.c_str());
-	TString outputName2 = Form("Figures/model%d/ionAnalysis-%s", modelNum, gasName.c_str());
+	TString outputName2 = Form("Figures/model%d/ion-analysis-%s", modelNum, gasName.c_str());
 	for (int k = 0; k< (int)hvList.size(); k++) {
 		fileName += Form("-%d", hvList[k]);
 		fSignalName += Form("-%d", hvList[k]);
@@ -97,7 +97,6 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	vector <Int_t> *nWinnersVec = nullptr;
 	vector <Int_t> gainVec = {};
 	Int_t ni = 0, ionBackNum = 0;
-	//tAvalanche->SetBranchAddress("amplificationElectrons", &nAmplification);
 	tAvalanche->SetBranchAddress("amplificationElectrons", &nWinnersVec);
 	tAvalanche->SetBranchAddress("ionNum", &ni);
 	tAvalanche->SetBranchAddress("ionBackNum", &ionBackNum);
@@ -106,31 +105,12 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	// Now draw both spectra
 	cv->cd(2);
-	
-	/*
-	 // This is convolution
-	 
-	 hFeAmplification->Draw("hist");
-	 f->Draw("same");
-	 // Add text to frame
-	 TString txt = Form("Number of electrons --> Gain = %.0f #pm %.3f", f->GetParameter(0), f->GetParError(0));
-	 
-	 hFeCharge->Draw("hist same");
-	 f2->Draw("same");
-	 TString txt2 = Form("Induced charge --> Gain = %.0f #pm %.3f", f2->GetParameter(0), f2->GetParError(0));
-	 
-	 TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
-	 legend->AddEntry(f,txt,"l");
-	 legend->AddEntry(f2,txt2,"l");
-	 legend->SetTextSize(0.04);
-	 legend->Draw("same");
-	 */
-	
-	DrawAmplificationElectrons(gasName, fSignalName, false);
-	/*
+
+	//DrawAmplificationElectrons(gasName, fSignalName, false);
 	// Ignore convolution in the end
 	DrawFeConvolution(fileName);
-	 */
+
+
 	
 	
 	std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
@@ -144,12 +124,11 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	
 	// 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
 	
-	TH1F* hIbf = new TH1F("ibf", "ibf", 2000, 0, 100);
+	TH1F* hIbf = new TH1F("ibf", "ibf", 10000, 0, 100);
 	for (int k = 0; k<nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
-		tAvalanche->GetEntry(k);
-		gainVec = *nWinnersVec;
 		//if (nAmplification>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
+		gainVec = *nWinnersVec;
 		if (gainVec[0]>1) {hIbf->Fill((double)ionBackNum/ni*100.);}
 	}
 	
@@ -221,7 +200,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	// 4e étape : dessiner les histos d'ibf
 	cv->cd(3);
 	hIbf->SetTitle("IBF");
-	fIbf->SetLineColor(kBlue);
+	hIbf->SetLineColor(kBlue);
 	hIbf->Draw("hist");
 	fIbf->SetLineColor(kBlue);
 	fIbf->Draw("same");
@@ -300,7 +279,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
 	
 	std::vector<float> electronStartPoints = {};
-	TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, 0, damp*1.2);
+	double zmin = 0;
+	double zmax = damp*1.2;
+	TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, zmin, zmax);
 	for (int k = 0; k < nAvalanche; k++) {
 		tAvalanche->GetEntry(k);
 		electronStartPoints = *electronStartPointsInput;
@@ -313,13 +294,14 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	if (!(modelNum==1 || (modelNum >15 && modelNum < 19)) ) zElDistribution->SetMaximum(0.05);
 	zElDistribution->GetXaxis()->SetTitle("z (cm)");
 	zElDistribution->Draw("hist");
+	DrawElectrodes(modelNum, zElDistribution->GetMinimum(), zElDistribution->GetMaximum(), true);
 	
 	cv->cd(6);
 	DrawDyingIons(modelNum, fSignalName);
 	
 	cv->SaveAs(outputName);
 	
-	if (!extended) {
+	if (!ionAnalysis) {
 		time_t t1 = time(NULL);
 		PrintTime(t0, t1);
 		
