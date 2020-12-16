@@ -33,16 +33,16 @@ using namespace std;
 int main(int argc, char * argv[]) {
 	
 	bool keepSignal = false;
-	bool remote = true;
 	//______________________
 	// variables, to change in the file input.txt
 	bool testMode = false;
+	bool remote = false;
 	int modelNum = 0;
 	string gasName = "";
 	bool computeIBF = true;
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode)) {cout << "variables not loaded" << endl; return -1;}
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote)) {cout << "variables not loaded" << endl; return -1;}
 	if (testMode) {
 		remote = false;
 		nEvents = 10;
@@ -93,8 +93,8 @@ int main(int argc, char * argv[]) {
 	string type = "signal";
 	if (useFeSource) type = "fe-signal";
 	if (!computeIBF) type += "-noibf";
-	TString fOutputName = Form("rootFiles-%s-model%d-%s", gasName.c_str(), modelNum, type.c_str());
-	if (testMode) fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
+	TString fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
+	if (remote) fOutputName = Form("rootFiles-%s-model%d-%s", gasName.c_str(), modelNum, type.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
 	if (testMode) fOutputName += "-test.root";
 	else fOutputName += Form("-%d.root", saveNum);

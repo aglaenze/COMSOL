@@ -151,14 +151,14 @@ int GetElectrodeNum(int modelNum) {
 	return electrodeMap.size();
 }
 
-bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& plotDrift2D, bool& plotDrift3D)
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote, bool& plotDrift2D, bool& plotDrift3D)
 //T LoadVariable(string elementString)
 {
 	//cout << "elementString = " << elementString << endl;
 	ifstream file("input.txt", ios::in);
 	//T* element = nullptr;
 	string a, b;
-	bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, feInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false, testModeFound = false;
+	bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, feInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false, testModeFound = false, remoteFound = false;
 	if(file) {
 		string line {};
 		getline(file, line);	//first line does not contains info
@@ -203,6 +203,11 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 				stream >> a >> b >> plotDrift3D;
 				plot3dInfoFound = true;
 			}
+			else if (line.find("remote") != string::npos) {
+				stringstream stream(line);
+				stream >> a >> b >> remote;
+				remoteFound = true;
+			}
 		}
 		//cout << "Element " << elementString << " not found in input.txt";
 		return (modelFound && gasFound && feInfoFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound && testModeFound);
@@ -214,9 +219,9 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 
 bool LoadVariables(int& modelNum, string& gasName) {
 	int nEvents = 0;
-	bool computeIBF = false, useFeSource = false, testMode = false;
+	bool computeIBF = false, useFeSource = false, testMode = false, remote = false;
 	bool plotDrift2D = 0, plotDrift3D = 0;
-	bool result = LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, plotDrift2D, plotDrift3D);
+	bool result = LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
 	if (!result) return false;
 	cout << endl;
 	cout << "#################################" << endl;
@@ -230,8 +235,8 @@ bool LoadVariables(int& modelNum, string& gasName) {
 
 bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plotDrift3D) {
 	int nEvents = 0;
-	bool computeIBF = false, useFeSource = false, testMode = false;
-	bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, plotDrift2D, plotDrift3D);
+	bool computeIBF = false, useFeSource = false, testMode = false, remote = false;
+	bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
 	if (!result) return false;
 	cout << endl;
 	cout << "#################################" << endl;
@@ -245,9 +250,9 @@ bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plot
 	return true;
 }
 
-bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode) {
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote) {
 	bool plotDrift2D = 0, plotDrift3D = 0;
-	bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, plotDrift2D, plotDrift3D);
+	bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
 	if (!result) return false;
 	cout << endl;
 	cout << "#################################" << endl;
