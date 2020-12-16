@@ -6,13 +6,16 @@ plotField
 signal
 spectrumFe55
 
+aglaenze.cc
+
 Process.sh
 ComputeSignal.sh
+clean.sh
 
 Figures
 COMSOL_data
 rootFiles
-input.txt
+input*
 
 *Test*
 *copie*
@@ -22,7 +25,7 @@ input.txt
 output
 log
 error
-test
+*test*
 
 *.root
 *.sub

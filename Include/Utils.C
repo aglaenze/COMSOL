@@ -263,10 +263,11 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
 	return true;
 }
 
-int GetMaxModelNum() {
+int GetMaxModelNum(bool remote) {
 	int num = 0;
 	for (int i = 1; i < 100; i++) {
 		string folder = "COMSOL_data/model" + to_string(i);
+		if (remote) folder = ".";
 		const char* path = &folder[0];
 		DIR* rep = NULL;
 		rep = opendir(path);

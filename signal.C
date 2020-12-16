@@ -33,6 +33,7 @@ using namespace std;
 int main(int argc, char * argv[]) {
 	
 	bool keepSignal = false;
+	bool remote = true;
 	//______________________
 	// variables, to change in the file input.txt
 	bool testMode = false;
@@ -43,6 +44,7 @@ int main(int argc, char * argv[]) {
 	int nEvents = 0;  // number of avalanches to simulate
 	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode)) {cout << "variables not loaded" << endl; return -1;}
 	if (testMode) {
+		remote = false;
 		nEvents = 10;
 		if (useFeSource) nEvents = 3;
 	}
@@ -50,9 +52,9 @@ int main(int argc, char * argv[]) {
 	
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {
 		cout << "Wrong model number" << endl;
-		cout << "Model Number is comprised between 1 and " << GetMaxModelNum() << endl;
+		cout << "Model Number is comprised between 1 and " << GetMaxModelNum(remote) << endl;
 		return -1;
 	}
 	
@@ -82,7 +84,7 @@ int main(int argc, char * argv[]) {
 
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
-	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return -1;
@@ -91,7 +93,8 @@ int main(int argc, char * argv[]) {
 	string type = "signal";
 	if (useFeSource) type = "fe-signal";
 	if (!computeIBF) type += "-noibf";
-	TString fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
+	TString fOutputName = Form("rootFiles-%s-model%d-%s", gasName.c_str(), modelNum, type.c_str());
+	if (testMode) fOutputName = Form("rootFiles/%s/model%d/%s", gasName.c_str(), modelNum, type.c_str());
 	for (int k = 0; k< electrodeNum-1; k++) fOutputName += Form("-%d", hvList[k]);
 	if (testMode) fOutputName += "-test.root";
 	else fOutputName += Form("-%d.root", saveNum);
@@ -193,7 +196,7 @@ int main(int argc, char * argv[]) {
 		ionBackNum = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
-			if (useFeSource) {
+ 			if (useFeSource) {
 				track.GetElectron(j, x, y, z, t, e, dx, dy, dz);
 				aval->AvalancheElectron(x, y, z, t, e, 0, 0, -1);
 			}
@@ -298,7 +301,6 @@ int main(int argc, char * argv[]) {
 		}
 	}
 	f->Close();
-	
 	
 	// Plot the signal.
 	const bool plotSignal = false;
