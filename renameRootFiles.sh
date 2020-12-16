@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # variables
-modelNum=20
-hv='350 490 790 850 1050'
+modelNum=21
+hv='390 560 900 1240 1340'
 
 ## end of variables
 
@@ -15,7 +15,18 @@ hvString="${hvString%?}"        # delete last -
 nNotExisting=0
 i=0
 
-filePrefix=rootFiles/Ar-iC4H10/model$modelNum/signal-noibf-$hvString
+#filePrefix=rootFiles/Ar-iC4H10/model$modelNum/fe-signal-noibf-$hvString
+filePrefix=rootFiles/Ar-iC4H10/model$modelNum/signal-$hvString
+
+for ((k=0;k<151;k++)); do
+fileIn=$filePrefix-$k.root
+if test -f $fileIn ;
+ then
+#rm $fileIn
+continue
+fi
+done
+#exit
 
 for ((k=0;k<500;k++)); do
 fileIn=$filePrefix-$k.root
@@ -26,7 +37,7 @@ if ! test -f $fileIn ;
 else
 fileOut=$filePrefix-$i.root
 echo moving $fileIn to $fileOut
-#mv $fileIn $fileOut
+mv $fileIn $fileOut
 i=$(( $i + 1))
 fi
 done
