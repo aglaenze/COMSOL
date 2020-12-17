@@ -1,11 +1,11 @@
 #!/bin/bash
 
-numberOfJobs=20
+numberOfJobs=50
 
 # variables
 
-modelNum=8
-hv='330 430 650 760'
+modelNum=21
+hv='300 500 700 950 1060'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=50            # number of events to simulate
 computeIBF=1

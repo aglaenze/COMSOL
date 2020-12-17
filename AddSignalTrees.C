@@ -34,7 +34,7 @@ int AddSignalTrees(int modelNum, string gasName, vector<int> hvList, bool comput
 	int numberOfFiles = GetNumberOfFiles(path, filename+"-");
 	cout << "number of files = " << numberOfFiles << endl;
 	if (numberOfFiles == 0) {cout << "no files to add, terminating" << endl; return 0;}
-
+	//numberOfFiles = 20;
 	TString outputName = path + filename+".root";
 	TFile* fOut = new TFile(outputName, "RECREATE");
 	
