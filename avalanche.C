@@ -150,17 +150,11 @@ int main(int argc, char * argv[]) {
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
 	double zmin = 0;
 	double zmax = ddrift;
-	if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {
-		zmax = 50*pitch;
-		vFE->SetArea(-25*pitch, -25*pitch, zmin,  25*pitch, 25*pitch, zmax);}
-	else if (modelNum >= 5 && modelNum < 8) {
-		zmax = damp+2*pitch;
-		vFE->SetArea(-damp/2, -damp/2, zmin,  damp/2+2*pitch, damp/2+2*pitch, zmax);
-	}
-	else {
-		zmax = damp+5*pitch;
-		vFE->SetArea(-(damp+5*pitch)/2., -(damp+5*pitch)/2., zmin,  (damp+5*pitch)/2., (damp+5*pitch)/2., zmax);
-	}
+	if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
+	else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
+	else {zmax = damp+5*pitch;}
+	
+	vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 	vFE->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
@@ -184,8 +178,15 @@ int main(int argc, char * argv[]) {
 		vFE->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
-		DrawElectrodes(modelNum, damp*0.7, damp*1.1);
-		c2->SaveAs(fOutputName2dZoom);
+		
+		zmin = damp*0.7; zmax = damp*1.1;
+		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		TCanvas* c3 = new TCanvas();
+		vFE->SetCanvas(c3);
+		cout << "Plotting..." << endl;
+		vFE->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
+		c3->SaveAs(fOutputName2dZoom);
 	}
 	
 	
