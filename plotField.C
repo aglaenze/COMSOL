@@ -34,9 +34,10 @@ int main(int argc, char * argv[]) {
 	int modelNum = 0;
 	std::string gasName = "";
 	if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
+	bool remote = false;
 	//____________________
 	//time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {std::cout << "Wrong model number" << std::endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {std::cout << "Wrong model number" << std::endl; return 0;}
 	
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();

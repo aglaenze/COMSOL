@@ -194,6 +194,7 @@ int main(int argc, char * argv[]) {
 		}
 		double e = 0;
 		ionBackNum = 0;
+		ni = 0;
 		double x, y, z, t, dx, dy, dz;	// position where the photon creates electrons
 		for (int j = 0; j < ne; j++) {	// number of primary electrons created by the photon, = 1 when no photon source
  			if (useFeSource) {
@@ -201,10 +202,11 @@ int main(int argc, char * argv[]) {
 				aval->AvalancheElectron(x, y, z, t, e, 0, 0, -1);
 			}
 			else aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
-			ni = 0;
+			int ni2 = 0;
 			neAval = 0;
 			nWinners = 0;
-			aval->GetAvalancheSize(neAval, ni);
+			aval->GetAvalancheSize(neAval, ni2);
+			ni += ni2;
 			cout << "\nAvalanche size = " << neAval << endl;
 			const int np = aval->GetNumberOfElectronEndpoints();
 			double xe1, ye1, ze1, te1, e1;
