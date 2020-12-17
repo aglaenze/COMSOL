@@ -67,7 +67,7 @@ int main(int argc, char * argv[]) {
 	TString fOutputName2d = Form("Figures/model%d/avalanche2d-%s", modelNum,  gasName.c_str());
 	TString fOutputName2dZoom = Form("Figures/model%d/avalanche2d-zoom-%s", modelNum,  gasName.c_str());
 	TString fOutputName3d = Form("Figures/model%d/avalanche3d-%s", modelNum,  gasName.c_str());
-	for (int k = 0; k< electrodeNum-1; k++) {fOutputName2d += Form("-%d", hvList[k]); fOutputName3d += Form("-%d", hvList[k]);}
+	for (int k = 0; k< electrodeNum-1; k++) {fOutputName2d += Form("-%d", hvList[k]); fOutputName2dZoom += Form("-%d", hvList[k]); fOutputName3d += Form("-%d", hvList[k]);}
 	fOutputName2d += ".pdf";
 	fOutputName3d += ".pdf";
 	fOutputName2dZoom += ".pdf";
@@ -179,7 +179,7 @@ int main(int argc, char * argv[]) {
 		DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
 		
-		zmin = damp*0.7; zmax = damp*1.1;
+		zmin = damp*0.9; zmax = damp*1.05;
 		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 		TCanvas* c3 = new TCanvas();
 		vFE->SetCanvas(c3);
