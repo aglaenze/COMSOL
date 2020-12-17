@@ -32,12 +32,13 @@ int main(int argc, char * argv[]) {
 	// variables
 	int modelNum = 0;
 	string gasName = "";
+	bool remote = false;
 	bool plotDrift2D = 0, plotDrift3D = 0;
 	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D)) {cout << "variables not loaded" << endl; return 0;}
 	//____________________
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum()) {cout << "Wrong model number" << endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {cout << "Wrong model number" << endl; return 0;}
 
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
