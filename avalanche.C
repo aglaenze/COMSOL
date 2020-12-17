@@ -70,6 +70,7 @@ int main(int argc, char * argv[]) {
 	for (int k = 0; k< electrodeNum-1; k++) {fOutputName2d += Form("-%d", hvList[k]); fOutputName3d += Form("-%d", hvList[k]);}
 	fOutputName2d += ".pdf";
 	fOutputName3d += ".pdf";
+	fOutputName2dZoom += ".pdf";
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
