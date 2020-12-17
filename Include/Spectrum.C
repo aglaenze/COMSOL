@@ -75,6 +75,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	Int_t iBinMax = hAmplification->GetMaximumBin();
 	Double_t xMax = hAmplification->GetXaxis()->GetBinCenter( iBinMax );
 	hAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hAmplification->GetRMS());
+	hAmplification->GetXaxis()->SetTitle("Number of electrons");
 	
 	if (xMax > 8000) hAmplification->GetXaxis()->SetMaxDigits(3);
 	
@@ -90,12 +91,12 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	
 	// Write gain, sigma and res = sigma/gain on the plot
 	double xPos = fAmplification->GetParameter(0)*0.2;
-	TLatex* txtGain = new TLatex(xPos, 1.1, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 1.0, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
+	TLatex* txtGain = new TLatex(xPos, 1.2, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
 	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
 	Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
 	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 0.9, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtRes = new TLatex(xPos, 1.0, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
 	
 	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
 }
@@ -112,7 +113,8 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	hFeAmplification->SetMaximum(1.3);
 	//hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
 	hFeAmplification->SetLineColor(kBlue);
-	hFeAmplification->SetTitle("Gain convoluted with Fe source");
+	hFeAmplification->SetTitle("Gain with Fe source");
+	hFeAmplification->GetXaxis()->SetTitle("Normalised number of electrons");
 	
 	TF1* f = GetFitCurve(hFeAmplification);
 	f->SetLineColor(kBlue);
@@ -128,12 +130,12 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	
 	// Write gain, sigma and res = sigma/gain on the plot
 	double xPos = f->GetParameter(0)*0.2;
-	TLatex* txtGain = new TLatex(xPos, 1.1, Form("Gain = %.1f #pm %.1f ", f->GetParameter(0), f->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 1.0, Form("Sigma = %.1f #pm %.1f ", f->GetParameter(1), f->GetParError(1)));
+	TLatex* txtGain = new TLatex(xPos, 1.2, Form("Gain = %.1f #pm %.1f ", f->GetParameter(0), f->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("Sigma = %.1f #pm %.1f ", f->GetParameter(1), f->GetParError(1)));
 	Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
 	Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
 	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 0.9, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtRes = new TLatex(xPos, 1.0, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
 	
 	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
 	
