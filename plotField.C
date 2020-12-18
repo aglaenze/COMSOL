@@ -103,13 +103,13 @@ int main(int argc, char * argv[]) {
 	
 	const bool zoom = true;
 	if (zoom) {
-		double size = 8*pitch;	// size of a side of the window to plot
+		double size = 4*pitch;	// size of a side of the window to plot
 		const double xmin = 0;
-		double zmin = damp-size;
+		double zmin = damp-size*0.7;
 		if (zmin < 0) {zmin = 0;}
 		if (zmin+size > ddrift) {size = ddrift-zmin;}
 		const double xmax =  xmin+size;
-		const double zmax =  damp+size;
+		const double zmax =  damp+size*0.3;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		//vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
 		c1->SaveAs(Form("Figures/model%d/potentialZoom", modelNum)+suffix);
 		vf->SetCanvas(c2);
 		vf->Plot("e", "CONT4Z");
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
 		// Field lines
 		vf->SetCanvas(c3);
@@ -136,7 +136,7 @@ int main(int argc, char * argv[]) {
 		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(Form("Figures/model%d/fieldlines", modelNum)+suffix);
 		//vf->SetNumberOfContours(2);
 		//vf->PlotProfile(0, 0, 0, width/2, width/2, damp*2, "v");
