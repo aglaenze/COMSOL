@@ -64,10 +64,12 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
 	Int_t fitRangeMin = 0;
 	Int_t fitRangeMax = xMax + 0.5 * h->GetRMS();
 	if (gauss) {
-		fitRangeMin = xMax - 1.1 * h->GetRMS();
-		fitRangeMax = xMax + 1.5*h->GetRMS();
+		fitRangeMin = xMax - 1. * h->GetRMS();
+		fitRangeMax = xMax + 1. *h->GetRMS();
 	}
 	if (fitRangeMin < 0) fitRangeMin = 0;
+	// if IBF
+	if (xMax < 5) {fitRangeMin = xMax - 2 * h->GetRMS(); fitRangeMax = xMax + 2*h->GetRMS();}
 	
 	TF1* f;
 	if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
