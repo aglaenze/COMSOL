@@ -171,8 +171,8 @@ int main(int argc, char * argv[]) {
 	
 	vFE->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
+	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
-	vFE->SetViewDrift(driftView);
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
 	if (plotDrift2D) {
@@ -185,6 +185,7 @@ int main(int argc, char * argv[]) {
 		 vFE->SetColor(1, kGray);
 		 vFE->SetColor(2, kGray);
 		 */
+		vFE->SetViewDrift(driftView);
 		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 		vFE->EnableAxes();
 		vFE->SetXaxisTitle("x (cm)");
