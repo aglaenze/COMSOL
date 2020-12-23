@@ -103,19 +103,14 @@ int main(int argc, char * argv[]) {
 	// To look at the avalanche of electrons (if 3D, ions too)
 	ViewDrift* driftView = new ViewDrift();
 	driftView->SetPlane(0, -1, 0, 0, 0, 0);
-	drift->EnablePlotting(driftView);
-	/*
 	aval->EnablePlotting(driftView);
 	if (plotDrift3D) drift->EnablePlotting(driftView);
-	 */
 	
-	/*
 	// To look at the avalanche of ions
 	ViewDrift* driftViewIons = new ViewDrift();
 	driftViewIons->SetPlane(0, -1, 0, 0, 0, 0);
 	aval->EnablePlotting(driftViewIons);
 	drift->EnablePlotting(driftViewIons);
-	 */
 	
 	const int nEvents = 1;
 	
@@ -178,13 +173,13 @@ int main(int argc, char * argv[]) {
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
-	/*
+
 	 ViewFEMesh* vFEIons = new ViewFEMesh();
 	vFEIons->SetComponent(fm);
 	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	vFEIons->SetPlane(0, -1, 0, 0, 0, 0);
 	vFEIons->SetFillMesh(true);
-	 */
+
 	if (plotDrift2D) {
 		TCanvas* c2 = new TCanvas();
 		vFE->SetCanvas(c2);
@@ -214,7 +209,6 @@ int main(int argc, char * argv[]) {
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
 		
-		/*
 		// Same with ions
 		vFEIons->SetViewDrift(driftViewIons);
 		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
@@ -234,7 +228,6 @@ int main(int argc, char * argv[]) {
 		vFEIons->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
-		 */
 	}
 	
 	
