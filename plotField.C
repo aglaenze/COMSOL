@@ -52,7 +52,7 @@ int main(int argc, char * argv[]) {
 		std::cout << errorMessage << std::endl;
 		return 0;
 	}
-	std::vector<int> hvList = {};
+	vector<int> hvList = {};
 	for (int k = 1; k < electrodeNum; k++) hvList.push_back(atoi(argv[k]) );
 	
 	TString suffix = "";
@@ -103,6 +103,7 @@ int main(int argc, char * argv[]) {
 	
 	const bool zoom = true;
 	if (zoom) {
+		/*
 		double size = 4*pitch;	// size of a side of the window to plot
 		const double xmin = 0;
 		double zmin = damp-size*0.7;
@@ -110,6 +111,9 @@ int main(int argc, char * argv[]) {
 		if (zmin+size > ddrift) {size = ddrift-zmin;}
 		const double xmax =  xmin+size;
 		const double zmax =  damp+size*0.3;
+		 */
+		double zmin = damp*0.9, zmax = damp*1.05;
+		double xMin = -(zmax-zmin)/2, xMin = (zmax-zmin)/2;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		//vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
@@ -126,13 +130,19 @@ int main(int argc, char * argv[]) {
 		vf->Plot("e", "CONT4Z");
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
+		
 		// Field lines
 		vf->SetCanvas(c3);
 		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
 		vf->Plot("v", "CONT1");
-		std::vector<double> xf;
-		std::vector<double> yf;
-		std::vector<double> zf;
+		vector<double> xf;
+		vector<double> yf;
+		vector<double> zf;
+		zmin = 0;
+		zmax = ddrift;
+		if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
+		else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
+		else {zmax = damp+5*pitch;}
 		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
