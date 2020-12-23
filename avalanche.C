@@ -161,6 +161,7 @@ int main(int argc, char * argv[]) {
 	
 	// Set up the object for FE mesh visualization.
 	ViewFEMesh* vFE = new ViewFEMesh();
+	ViewFEMesh* vFEIons = new ViewFEMesh();
 	//vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
 	double zmin = 0;
@@ -170,11 +171,14 @@ int main(int argc, char * argv[]) {
 	else {zmax = damp+5*pitch;}
 	
 	vFE->SetComponent(fm);
+	vFEIons->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
+	vFEIons->SetPlane(0, -1, 0, 0, 0, 0);
+	vFEIons->SetFillMesh(true);
 	if (plotDrift2D) {
 		TCanvas* c2 = new TCanvas();
 		vFE->SetCanvas(c2);
@@ -205,21 +209,22 @@ int main(int argc, char * argv[]) {
 		c3->SaveAs(fOutputName2dZoom);
 		
 		// Same with ions
-		vFE->SetViewDrift(driftViewIons);
-		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		vFEIons->SetViewDrift(driftViewIons);
+		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		vFEIons->EnableAxes();
 		TCanvas* c4 = new TCanvas();
-		vFE->SetCanvas(c4);
+		vFEIons->SetCanvas(c4);
 		cout << "Plotting..." << endl;
-		vFE->Plot();
+		vFEIons->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c4->SaveAs(fOutputNameIons2d);
 		
 		zmin = damp*0.9; zmax = damp*1.05;
-		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 		TCanvas* c5 = new TCanvas();
-		vFE->SetCanvas(c5);
+		vFEIons->SetCanvas(c5);
 		cout << "Plotting..." << endl;
-		vFE->Plot();
+		vFEIons->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
 	}
