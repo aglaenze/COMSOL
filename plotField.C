@@ -119,7 +119,6 @@ int main(int argc, char * argv[]) {
 		//vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
 		TCanvas* c2 = new TCanvas("c22", "c22", 600, 600);
-		TCanvas* c3 = new TCanvas("c3", "Field lines", 600, 600);
 		//TCanvas* c2 = new TCanvas("c2", "c2", 1000*4*pitch, 1000*damp);
 		vf->SetCanvas(c1);
 		if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
@@ -132,7 +131,10 @@ int main(int argc, char * argv[]) {
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
 		*/
+		
 		// Field lines
+		//TCanvas* c3 = new TCanvas("c3", "Field lines", 600, 600);
+		TCanvas* c3 = new TCanvas();
 		vf->SetCanvas(c3);
 		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
 		vf->Plot("v", "CONT1");
