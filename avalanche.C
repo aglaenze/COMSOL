@@ -205,7 +205,7 @@ int main(int argc, char * argv[]) {
 		gPad->SetBottomMargin(0.15);
 		gPad->SetRightMargin(0.15);
 		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
 		
 		// Same with ions
@@ -217,7 +217,7 @@ int main(int argc, char * argv[]) {
 		gPad->SetBottomMargin(0.15);
 		gPad->SetRightMargin(0.15);
 		vFEIons->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c4->SaveAs(fOutputNameIons2d);
 		
 		// Now zoom on electron avalanche
@@ -230,7 +230,7 @@ int main(int argc, char * argv[]) {
 		gPad->SetBottomMargin(0.15);
 		gPad->SetRightMargin(0.15);
 		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
 		
 		// And zoom on ion avalanche
@@ -242,36 +242,8 @@ int main(int argc, char * argv[]) {
 		gPad->SetBottomMargin(0.15);
 		gPad->SetRightMargin(0.15);
 		vFEIons->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
-		
-		/*
-		// Same with ions
-		vFE->SetViewDrift(driftViewIons);
-		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
-		vFE->EnableAxes();
-		TCanvas* c4 = new TCanvas();
-		vFE->SetCanvas(c4);
-		cout << "Plotting..." << endl;
-		gPad->SetLeftMargin(0.15);
-		gPad->SetBottomMargin(0.15);
-		gPad->SetRightMargin(0.15);
-		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
-		c4->SaveAs(fOutputNameIons2d);
-		
-		zmin = damp*0.9; zmax = damp*1.05;
-		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
-		TCanvas* c5 = new TCanvas();
-		vFE->SetCanvas(c5);
-		cout << "Plotting..." << endl;
-		gPad->SetLeftMargin(0.15);
-		gPad->SetBottomMargin(0.15);
-		gPad->SetRightMargin(0.15);
-		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
-		c5->SaveAs(fOutputNameIons2dZoom);
-		*/
 
 	}
 	
