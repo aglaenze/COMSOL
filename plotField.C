@@ -112,6 +112,7 @@ int main(int argc, char * argv[]) {
 		const double xmax =  xmin+size;
 		const double zmax =  damp+size*0.3;
 		 */
+		/*
 		double zmin = damp*0.9, zmax = damp*1.05;
 		double xmin = -(zmax-zmin)/2, xmax = (zmax-zmin)/2;
 		vf->SetArea(xmin, zmin, xmax, zmax);
@@ -130,7 +131,7 @@ int main(int argc, char * argv[]) {
 		vf->Plot("e", "CONT4Z");
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(Form("Figures/model%d/fieldZoom", modelNum)+suffix);
-		
+		*/
 		// Field lines
 		vf->SetCanvas(c3);
 		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
@@ -139,15 +140,18 @@ int main(int argc, char * argv[]) {
 		vector<double> yf;
 		vector<double> zf;
 		
-		zmin = 0;
-		zmax = ddrift;
+		double zmin = 0;
+		double zmax = ddrift;
 		if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
 		else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
 		else {zmax = damp+5*pitch;}
-		xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
+		double xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
+		gPad->SetLeftMargin(0.15);
+		gPad->SetBottomMargin(0.15);
+		gPad->SetRightMargin(0.15);
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(Form("Figures/model%d/fieldlines", modelNum)+suffix);
