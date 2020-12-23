@@ -71,8 +71,14 @@ int main(int argc, char * argv[]) {
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
 	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
 	
+	// Make a sensor.
+	Sensor sensor;
+	sensor.AddComponent(fm);
+	sensor.SetArea(-width/2, -depth/2, 0, width/2, depth/2, ddrift);
+	
 	ViewField* vf = new ViewField();
-	vf->SetComponent(fm);
+	//vf->SetComponent(fm);
+	vf->SetSensor(sensor);
 	vf->SetArea(0, 0, width, ddrift);
 	double yPlane = pitch/4;
 	//double yPlane = 0;
@@ -151,7 +157,7 @@ int main(int argc, char * argv[]) {
 		int nPitch = int((xmax-xmin)/pitch);
 		//cout << "nPitch = " << nPitch << endl;
 		int nLines = nPitch*40+1;
-		vf->EqualFluxIntervals(-nPitch*pitch/2, yPlane, zmax*0.55, nPitch*pitch/2, yPlane, zmax*0.55, xf, yf, zf, nLines);
+		vf->EqualFluxIntervals(-nPitch*pitch/2, yPlane, zmax*0.99, nPitch*pitch/2, yPlane, zmax*0.99, xf, yf, zf, nLines);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		gPad->SetLeftMargin(0.15);

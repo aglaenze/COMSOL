@@ -89,8 +89,8 @@ int main(int argc, char * argv[]) {
 	// Make a sensor.
 	Sensor sensor;
 	sensor.AddComponent(fm);
-	//sensor.SetArea(-width/2, -depth/2, 0, width/2, depth/2, ddrift);
-	sensor.SetArea(-width/2, -depth/2, damp/2, width/2, depth/2, ddrift);
+	sensor.SetArea(-width/2, -depth/2, 0, width/2, depth/2, ddrift);
+	//sensor.SetArea(-width/2, -depth/2, damp/2, width/2, depth/2, ddrift);
 	//sensor.SetArea(pitch, pitch, damp-pitch, 3*pitch, 3*pitch, damp+pitch);
 	
 	
