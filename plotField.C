@@ -74,7 +74,8 @@ int main(int argc, char * argv[]) {
 	ViewField* vf = new ViewField();
 	vf->SetComponent(fm);
 	vf->SetArea(0, 0, width, ddrift);
-	double yPlane = pitch/2;
+	//double yPlane = pitch/2;
+	double yPlane = pitch;
 	vf->SetPlane(0, -1, 0, 0, yPlane, 0);
 	//vf->SetPlaneXZ();
 	/*
@@ -146,7 +147,7 @@ int main(int argc, char * argv[]) {
 		vector<double> xf;
 		vector<double> yf;
 		vector<double> zf;
-		vf->EqualFluxIntervals(xmin, yPlane, zmax, xmax, yPlane, zmax, xf, yf, zf, 1000);
+		vf->EqualFluxIntervals(xmin, yPlane, zmax, xmax, yPlane, zmax, xf, yf, zf, 100);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		gPad->SetLeftMargin(0.15);
