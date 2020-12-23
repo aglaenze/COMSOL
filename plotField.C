@@ -139,6 +139,7 @@ int main(int argc, char * argv[]) {
 		if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
 		else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
 		else {zmax = damp+5*pitch;}
+		zmin = damp*0.9; zmax = damp*1.05;
 		xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		
