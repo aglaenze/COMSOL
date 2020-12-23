@@ -109,6 +109,7 @@ int main(int argc, char * argv[]) {
 	// To look at the avalanche of ions
 	ViewDrift* driftViewIons = new ViewDrift();
 	driftViewIons->SetPlane(0, -1, 0, 0, 0, 0);
+	aval->EnablePlotting(driftViewIons);
 	drift->EnablePlotting(driftViewIons);
 	
 	const int nEvents = 1;
