@@ -113,7 +113,7 @@ int main(int argc, char * argv[]) {
 		const double zmax =  damp+size*0.3;
 		 */
 		double zmin = damp*0.9, zmax = damp*1.05;
-		double xMin = -(zmax-zmin)/2, xMin = (zmax-zmin)/2;
+		double xmin = -(zmax-zmin)/2, xmax = (zmax-zmin)/2;
 		vf->SetArea(xmin, zmin, xmax, zmax);
 		//vf->SetArea(0, damp-pitch, 2*pitch, damp+pitch);
 		TCanvas* c1 = new TCanvas("c11", "c11", 600, 600);
@@ -138,11 +138,13 @@ int main(int argc, char * argv[]) {
 		vector<double> xf;
 		vector<double> yf;
 		vector<double> zf;
+		
 		zmin = 0;
 		zmax = ddrift;
 		if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
 		else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
 		else {zmax = damp+5*pitch;}
+		xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
 		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
