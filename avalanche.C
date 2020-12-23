@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
 		double x0 = 0;
 		double y0 = 0;
 		//double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
-		double z0 = damp+ (ddrift-damp)*0.2;
+		double z0 = damp+ (ddrift-damp)*0.1;
 		double t0 = 0;
 		double e = 0;
 		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
@@ -172,6 +172,10 @@ int main(int argc, char * argv[]) {
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
+	vFE->SetViewDrift(driftView);
+	vFE->EnableAxes();
+	vFE->SetXaxisTitle("x (cm)");
+	vFE->SetYaxisTitle("z (cm)");
 
 	
 	 ViewFEMesh* vFEIons = new ViewFEMesh();
@@ -179,11 +183,13 @@ int main(int argc, char * argv[]) {
 	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	vFEIons->SetPlane(0, -1, 0, 0, 0, 0);
 	vFEIons->SetFillMesh(true);
+	vFEIons->SetViewDrift(driftViewIons);
+	vFEIons->EnableAxes();
+	vFEIons->SetXaxisTitle("x (cm)");
+	vFEIons->SetYaxisTitle("z (cm)");
 
 
 	if (plotDrift2D) {
-		TCanvas* c2 = new TCanvas();
-		vFE->SetCanvas(c2);
 		/*
 		 //for (unsigned int i = 0; i < nMaterials; ++i) vFE->SetColor(i, kGray+i);
 		 //vFE->SetColor(0, kWhite);
@@ -191,11 +197,9 @@ int main(int argc, char * argv[]) {
 		 vFE->SetColor(1, kGray);
 		 vFE->SetColor(2, kGray);
 		 */
-		vFE->SetViewDrift(driftView);
 		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
-		vFE->EnableAxes();
-		vFE->SetXaxisTitle("x (cm)");
-		vFE->SetYaxisTitle("z (cm)");
+		TCanvas* c2 = new TCanvas();
+		vFE->SetCanvas(c2);
 		cout << "Plotting..." << endl;
 		gPad->SetLeftMargin(0.15);
 		gPad->SetBottomMargin(0.15);
@@ -204,6 +208,19 @@ int main(int argc, char * argv[]) {
 		DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
 		
+		// Same with ions
+		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		TCanvas* c4 = new TCanvas();
+		vFEIons->SetCanvas(c4);
+		cout << "Plotting..." << endl;
+		gPad->SetLeftMargin(0.15);
+		gPad->SetBottomMargin(0.15);
+		gPad->SetRightMargin(0.15);
+		vFEIons->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
+		c4->SaveAs(fOutputNameIons2d);
+		
+		// Now zoom on electron avalanche
 		zmin = damp*0.9; zmax = damp*1.05;
 		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 		TCanvas* c3 = new TCanvas();
@@ -215,6 +232,18 @@ int main(int argc, char * argv[]) {
 		vFE->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
+		
+		// And zoom on ion avalanche
+		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		TCanvas* c5 = new TCanvas();
+		vFEIons->SetCanvas(c5);
+		cout << "Plotting..." << endl;
+		gPad->SetLeftMargin(0.15);
+		gPad->SetBottomMargin(0.15);
+		gPad->SetRightMargin(0.15);
+		vFEIons->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
+		c5->SaveAs(fOutputNameIons2dZoom);
 		
 		/*
 		// Same with ions
@@ -243,32 +272,6 @@ int main(int argc, char * argv[]) {
 		DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
 		*/
-	
-		// Same with ions
-		vFEIons->SetViewDrift(driftViewIons);
-		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
-		vFEIons->EnableAxes();
-		TCanvas* c4 = new TCanvas();
-		vFEIons->SetCanvas(c4);
-		cout << "Plotting..." << endl;
-		gPad->SetLeftMargin(0.15);
-		gPad->SetBottomMargin(0.15);
-		gPad->SetRightMargin(0.15);
-		vFEIons->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
-		c4->SaveAs(fOutputNameIons2d);
-		
-		zmin = damp*0.9; zmax = damp*1.05;
-		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
-		TCanvas* c5 = new TCanvas();
-		vFEIons->SetCanvas(c5);
-		cout << "Plotting..." << endl;
-		gPad->SetLeftMargin(0.15);
-		gPad->SetBottomMargin(0.15);
-		gPad->SetRightMargin(0.15);
-		vFEIons->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
-		c5->SaveAs(fOutputNameIons2dZoom);
 
 	}
 	
