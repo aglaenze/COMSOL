@@ -167,7 +167,6 @@ int main(int argc, char * argv[]) {
 	
 	// Set up the object for FE mesh visualization.
 	ViewFEMesh* vFE = new ViewFEMesh();
-	ViewFEMesh* vFEIons = new ViewFEMesh();
 	//vFE->SetArea(-5*pitch, -5*pitch, 0,  5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-5*pitch,  5*pitch, 5*pitch, damp+5*pitch);
 	double zmin = 0;
@@ -177,14 +176,17 @@ int main(int argc, char * argv[]) {
 	else {zmax = damp+5*pitch;}
 	
 	vFE->SetComponent(fm);
-	vFEIons->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
-	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
+	/*
+	 ViewFEMesh* vFEIons = new ViewFEMesh();
+	vFEIons->SetComponent(fm);
+	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	vFEIons->SetPlane(0, -1, 0, 0, 0, 0);
 	vFEIons->SetFillMesh(true);
+	 */
 	if (plotDrift2D) {
 		TCanvas* c2 = new TCanvas();
 		vFE->SetCanvas(c2);
