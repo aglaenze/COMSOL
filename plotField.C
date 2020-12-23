@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
 	
 	ViewField* vf = new ViewField();
 	//vf->SetComponent(fm);
-	vf->SetSensor(*sensor);
+	vf->SetSensor(&sensor);
 	vf->SetArea(0, 0, width, ddrift);
 	double yPlane = pitch/4;
 	//double yPlane = 0;
