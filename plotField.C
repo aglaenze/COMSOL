@@ -145,6 +145,7 @@ int main(int argc, char * argv[]) {
 		else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
 		else {zmax = damp+5*pitch;}
 		xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
+		vf->SetArea(xmin, zmin, xmax, zmax);
 		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
