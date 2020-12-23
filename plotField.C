@@ -156,7 +156,7 @@ int main(int argc, char * argv[]) {
 		vector<double> zf;
 		int nPitch = int((xmax-xmin)/pitch);
 		//cout << "nPitch = " << nPitch << endl;
-		int nLines = nPitch*40+1;
+		int nLines = nPitch*40;
 		vf->EqualFluxIntervals(-nPitch*pitch/2, yPlane, zmax*0.99, nPitch*pitch/2, yPlane, zmax*0.99, xf, yf, zf, nLines);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
