@@ -156,11 +156,11 @@ int main(int argc, char * argv[]) {
 		vector<double> zf;
 		int nPitch = int((xmax-xmin)/pitch);
 		//cout << "nPitch = " << nPitch << endl;
-		int nLinesPerPitch = 20;
+		int nLinesPerPitch = 30;
 		int nLines = nPitch*nLinesPerPitch;
-		double xLineMin = -nPitch*pitch/2;
-		double xLineMax = nPitch*pitch/2 - double(pitch/nLinesPerPitch);
-		vf->EqualFluxIntervals(xLineMin, yPlane, zmax*0.99, xLineMax, yPlane, zmax*0.99, xf, yf, zf, nLines);
+		double xLineMin = -nPitch*pitch/2 + double(pitch/(2*nLinesPerPitch));
+		double xLineMax = nPitch*pitch/2 - double(pitch/(2*nLinesPerPitch));
+		vf->EqualFluxIntervals(xLineMin, yPlane, zmax*1.0, xLineMax, yPlane, zmax*1.0, xf, yf, zf, nLines);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		gPad->SetLeftMargin(0.15);
