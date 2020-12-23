@@ -145,10 +145,8 @@ int main(int argc, char * argv[]) {
 		int status;
 		for (int j = np; j--;) {
 			aval->GetElectronEndpoint(j, xe1, ye1, ze1, te1, e1, xe2, ye2, ze2, te2, e2, status);
-			if (plotDrift3D) {
-				drift->DriftIon(xe1, ye1, ze1, te1);
-				drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
-			}
+			drift->DriftIon(xe1, ye1, ze1, te1);
+			drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
 		}
 		
 		
