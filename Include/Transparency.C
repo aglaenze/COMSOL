@@ -17,6 +17,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
 	
+	/*
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
@@ -27,6 +28,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	gStyle->SetLabelSize(.05, "XY");
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetTextSize(0.05);
+	 */
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -51,7 +53,7 @@ void DrawDyingIons(const int modelNum = 15, TString fSignalName=""){
 	while (it != electrodeMap.end()) {
 		if (it->first != "pad") {
 			electrodeNames[i] = it->first;
-			hDyingIons[i] = new TH1F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), "Dying ions", 400, 0, ddrift*1.1);
+			hDyingIons[i] = new TH1F(Form("hDyingIonsFromBelow%s", electrodeNames[i].c_str()), "Dying ions", int(ddrift*1.1*200), 0, ddrift*1.1);
 			i++;
 		}
 		it++;
@@ -106,6 +108,7 @@ void DrawDyingIons2d(const int modelNum = 15, TString fSignalName=""){
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
 	
+	/*
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
@@ -120,6 +123,7 @@ void DrawDyingIons2d(const int modelNum = 15, TString fSignalName=""){
 	
 	gPad->SetLeftMargin(0.15);
 	gPad->SetBottomMargin(0.15);
+	 */
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -195,6 +199,7 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
 	
+	/*
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
@@ -209,6 +214,7 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 	
 	gPad->SetLeftMargin(0.15);
 	gPad->SetBottomMargin(0.15);
+	 */
 	
 	const int unitConversion = 10;	// units go from cm to mm
 	
@@ -292,6 +298,7 @@ void DrawDyingIons3d(const int modelNum = 15, TString fSignalName=""){
 
 void DrawNionsInDriftRegion(TString fSignalName=""){
 	
+	/*
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
@@ -303,6 +310,7 @@ void DrawNionsInDriftRegion(TString fSignalName=""){
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetMarkerStyle(20);
 	gStyle->SetTextSize(0.05);
+	 */
 	
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
@@ -336,6 +344,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	TFile* fSignal = TFile::Open(fSignalName, "READ");
 	TTree* tAvalanche = (TTree*)fSignal->Get("tAvalanche");
 	
+	/*
 	gStyle->SetTitleFontSize(.06);
 	gStyle->SetTitleSize(.06);
 	
@@ -347,6 +356,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	gStyle->SetMarkerSize(0.3);
 	gStyle->SetTextSize(0.05);
 	gStyle->SetLabelOffset(0.01);
+	 */
 	
 	
 	std::map <std::string, int, NoSorting> electrodeMap;
@@ -385,7 +395,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 	// Write text with the value of transparency
 	Double_t totalTransp = (double)winners/nAval;
 	
-	TText* txttr = new TText(-0.5,0.9*hTransparencyTotal->GetMaximum(),Form("Full detector transparency = %.1f %s", totalTransp*100, "%"));
+	TLatex* txttr = new TLatex(-0.5,0.9*hTransparencyTotal->GetMaximum(),Form("#bf{Full detector transparency = %.1f %s}", totalTransp*100, "%"));
 	txttr->Draw("same");
 	
 	// Now draw transparency of all electrodes
@@ -461,7 +471,7 @@ void DrawTransparency(const int modelNum = 15, TString fSignalName="") {
 		hTransparency[j]->Scale(1./nElectrons[j]);
 		hTransparency[j]->SetMaximum(1.2);
 		//hTransparency[j]->Draw("hist same");
-		TText* txt = new TText(-0.5,0.9-j*0.1,Form("%s transparency = %.1f %s", electrodeNames[j].c_str(), transp[j]*100, "%"));
+		TLatex* txt = new TLatex(-0.5,0.9-j*0.1,Form("#bf{%s transparency = %.1f %s}", electrodeNames[j].c_str(), transp[j]*100, "%"));
 		txt->Draw("same");
 	}
 	
@@ -477,6 +487,18 @@ int Transparency() {
 	std::vector <Int_t> hvList = {330, 410, 530, 730, 850};
 	//____________________
 	time_t t0 = time(NULL);
+	
+	gStyle->SetTitleFontSize(.06);
+	gStyle->SetTitleSize(.06);
+	
+	gStyle->SetOptStat(0);
+	gStyle->SetTitleFontSize(.05);
+	gStyle->SetTitleXSize(.05);
+	gStyle->SetTitleYSize(.05);
+	gStyle->SetLabelSize(.05, "XY");
+	gStyle->SetMarkerSize(0.3);
+	gStyle->SetTextSize(0.05);
+	gStyle->SetLabelOffset(0.01);
 	
 	
 	const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);

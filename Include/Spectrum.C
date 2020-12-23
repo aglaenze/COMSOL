@@ -18,6 +18,10 @@
 
 using namespace std;
 
+Double_t ln(Double_t x) {
+	return TMath::Log(x);
+}
+
 void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalName="", bool useFeSource = false) {
 	/* Draw the gain */
 	
@@ -91,14 +95,18 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 	
 	// Write gain, sigma and res = sigma/gain on the plot
 	double xPos = fAmplification->GetParameter(0)*0.2;
-	TLatex* txtGain = new TLatex(xPos, 1.2, Form("Gain = %.1f #pm %.1f ", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("Sigma = %.1f #pm %.1f ", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
+	TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
 	Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
 	Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
+	Double_t fwhm = resolution * 2* ln(2);
+	Double_t fwhmError = resolutionError * 2* ln(2);
 	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 1.0, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = %.1f #pm %.1f %s}", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = %.1f #pm %.1f %s}", fwhm*100, fwhmError*100, percent.c_str()));
 	
-	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
+	txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
+	txtFwhm->Draw("same");
 }
 
 
@@ -130,14 +138,18 @@ void DrawFeConvolution(TString fConvolutedName="") {
 	
 	// Write gain, sigma and res = sigma/gain on the plot
 	double xPos = f->GetParameter(0)*0.2;
-	TLatex* txtGain = new TLatex(xPos, 1.2, Form("Gain = %.1f #pm %.1f ", f->GetParameter(0), f->GetParError(0)));
-	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("Sigma = %.1f #pm %.1f ", f->GetParameter(1), f->GetParError(1)));
+	TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", f->GetParameter(0), f->GetParError(0)));
+	TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", f->GetParameter(1), f->GetParError(1)));
 	Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
 	Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
+	Double_t fwhm = resolution * 2* ln(2);
+	Double_t fwhmError = resolutionError * 2* ln(2);
 	std::string percent = "%";
-	TLatex* txtRes = new TLatex(xPos, 1.0, Form("Sigma/Mean = %.1f #pm %.1f %s", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = %.1f #pm %.1f %s}", resolution*100, resolutionError*100, percent.c_str()));
+	TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = %.1f #pm %.1f %s}", fwhm*100, fwhmError*100, percent.c_str()));
 	
-	txtGain->Draw("same"); txtSigma->Draw("same"); txtRes->Draw("same");
+	txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
+	txtFwhm->Draw("same");
 	
 	/*
 	 TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
@@ -176,16 +188,7 @@ void DrawFeChargeConvolution(TString fConvolutedName="", int readoutElectrode = 
 int Spectrum(int modelNum, std::string gasName, std::vector<int> hvList, bool useFeSource) {
 	
 	time_t t0 = time(NULL);
-	gStyle->SetTitleFontSize(.06);
-	gStyle->SetTitleSize(.06);
-	
-	gStyle->SetOptStat(0);
-	gStyle->SetTitleFontSize(.05);
-	gStyle->SetTitleXSize(.05);
-	gStyle->SetTitleYSize(.05);
-	gStyle->SetLabelSize(.04, "XY");
-	gStyle->SetMarkerSize(0.3);
-	gStyle->SetTextSize(0.05);
+	LoadStyle();
 	
 	int electrodeNum = GetElectrodeNum(modelNum);
 	if ((int)hvList.size() != electrodeNum-1) {cout << "Wrong hv input" << endl; return 0;}
