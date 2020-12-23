@@ -18,16 +18,8 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 	bool ionAnalysis = false;
 	
 	time_t t0 = time(NULL);
-	gStyle->SetTitleFontSize(.06);
-	gStyle->SetTitleSize(.06);
 	
-	gStyle->SetOptStat(0);
-	gStyle->SetTitleFontSize(.05);
-	gStyle->SetTitleXSize(.05);
-	gStyle->SetTitleYSize(.05);
-	gStyle->SetLabelSize(.05, "XY");
-	gStyle->SetMarkerSize(0.3);
-	gStyle->SetTextSize(0.05);
+	LoadStyle();
 	
 	int electrodeNum = GetElectrodeNum(modelNum);
 	if ((int)hvList.size() != electrodeNum-1) {std::cout << "Wrong hv input" << std::endl; return 0;}
@@ -124,13 +116,17 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
 		}
 		electronStartPoints.clear();
 	}
-	zElDistribution->Scale(1/zElDistribution->GetMaximum());
-	if (!(modelNum==1 || (modelNum >15 && modelNum < 19)) ) zElDistribution->SetMaximum(0.05);
+	//zElDistribution->Scale(1/zElDistribution->GetMaximum());
+	if (!(modelNum==1 || (modelNum >15 && modelNum < 19)) ) zElDistribution->SetMaximum(0.05* zElDistribution->GetMaximum());
 	zElDistribution->GetXaxis()->SetTitle("z (cm)");
+	//if (zmax < 0.1) zElDistribution->GetXaxis()->SetMaxDigits(2);
+	
+	gPad->SetLogy();
 	zElDistribution->Draw("hist");
 	DrawElectrodes(modelNum, zElDistribution->GetMinimum(), zElDistribution->GetMaximum(), true);
 	
 	cv->cd(6);
+	gPad->SetLogy();
 	DrawDyingIons(modelNum, fSignalName);
 	
 	cv->SaveAs(outputName);

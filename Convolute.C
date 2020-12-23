@@ -24,6 +24,8 @@ int Convolute(int modelNum, string gasName, vector<int> hvList) {
 	
 	const bool drawConvoluteSpectrum = false;
 	
+	LoadStyle();
+	
 	
 	time_t t0 = time(NULL);
 	

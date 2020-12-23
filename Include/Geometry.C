@@ -16,10 +16,11 @@
 #include "TKey.h"
 #include "Riostream.h"
 
+using namespace std;
 
-// Set up detector geometry
+/* Set up detector geometry */
 
-void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, double& pitch, double& width, double& depth, std::vector<double>& zElectrodes) {
+void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, double& pitch, double& width, double& depth, vector<double>& zElectrodes) {
 	int periodicityNum = 2000;
 	if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
 		damp = 0.0128;
@@ -124,25 +125,25 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
 }
 
 void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, double& pitch, double& width, double& depth) {
-	std::vector<double> zElectrodes = {};
+	vector<double> zElectrodes = {};
 	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth, zElectrodes);
 }
 
-void LoadParameters(int modelNum, std::vector<double>& zElectrodes) {
+void LoadParameters(int modelNum, vector<double>& zElectrodes) {
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
 	LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth, zElectrodes);
 }
 
-void DrawDetector(int modelNum, std::vector<int> hvList) {
+void DrawDetector(int modelNum, vector<int> hvList) {
 	// Draw geometry with voltages
 	
 	gStyle->SetTextSize(0.05);
 	
-	std::map <std::string, int, NoSorting> electrodeMap;
+	map <string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
 	int electrodeNum = GetElectrodeNum(modelNum);
 	
-	std::vector<double> zElectrodes = {};
+	vector<double> zElectrodes = {};
 	LoadParameters(modelNum, zElectrodes);
 	
 	// insert pad voltage in HV list
@@ -158,7 +159,7 @@ void DrawDetector(int modelNum, std::vector<int> hvList) {
 	
 	// draw the electrodes from top to bottom (as declared in the function LoadElectrodeMap)
 	
-	std::map<std::string, int>::iterator it = electrodeMap.begin();
+	map<string, int>::iterator it = electrodeMap.begin();
 	// Iterate over the map using Iterator until end.
 	while (it != electrodeMap.end()) {
 		double yCoord = yMax-i*space;
@@ -188,9 +189,9 @@ void DrawDetector(int modelNum, std::vector<int> hvList) {
 }
 
 void DrawElectrodes(int modelNum, double zMin, double zMax, bool yDir = false) {
-	std::map <std::string, int, NoSorting> electrodeMap;
+	map <string, int, NoSorting> electrodeMap;
 	LoadElectrodeMap(modelNum, electrodeMap);
-	std::vector<double> zElectrodes = {};
+	vector<double> zElectrodes = {};
 	LoadParameters(modelNum, zElectrodes);
 	
 	double zPadMin = gPad->GetUymin();

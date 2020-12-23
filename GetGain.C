@@ -45,10 +45,20 @@ int GetGain() {
     
     double damp = 0.0128, ddrift = 0.5;
     
-    std::map <std::string, int> electrode;
+	std::map <std::string, int, NoSorting> electrode;
     LoadElectrodeMap(modelNum, electrode);
-    
-    int readoutElectrode = electrode["pad"];
+
+	int readoutElectrode = 0;
+	int driftElectrode = 0;
+	
+	std::map<std::string, int>::iterator it = electrode.begin();
+	for (it=electrode.begin(); it!=electrode.end(); ++it) {
+		//std::cout << it->first << " => " << it->second << '\n';
+		if (it->first == "pad") readoutElectrode = it->second;	// could be mesh, it depends on where you want to read
+		else if (it->first == "drift") driftElectrode = it->second;
+	}
+	if (readoutElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return 0;}
+
 
     // Get number of files to look at
     //Int_t num = 1;
@@ -90,8 +100,9 @@ int GetGain() {
         //hFeAmplification->Rebin(8);
         //hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
         hFeAmplification->SetLineColor(kBlue + 2);
+		//return 0;
 
-        TF1* f = GetFitGain(hFeAmplification);
+        TF1* f = GetFitCurve(hFeAmplification);
                 
         Int_t iBinMax = hFeAmplification->GetMaximumBin();
         Double_t xMax = hFeAmplification->GetXaxis()->GetBinCenter( iBinMax );
@@ -103,11 +114,11 @@ int GetGain() {
         hFeCharge->Scale(1/hFeCharge->GetMaximum());
         hFeCharge->SetMaximum(1.2);
         hFeCharge->SetLineColor(kBlue + 2);
-        TF1* fFeCharge = GetFitGain(hFeCharge);
+        TF1* fFeCharge = GetFitCurve(hFeCharge);
         hFeCharge->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
         gainFeChargeList[k] = fFeCharge->GetParameter(0);
         gainFeChargeErrorList[k] = fFeCharge->GetParError(0);
-        
+
         // Now draw both spectra
         c2->cd(k+1);
         // Upper plot will be in pad1
@@ -172,9 +183,9 @@ int GetGain() {
     grSim1->GetHistogram()->SetMinimum(2.e2);   // along Y axis
     grSim1->GetHistogram()->SetMaximum(8.e4);   // along Y axis
     grSim1->SetMarkerStyle(20);
-    grSim1->Draw("ACP");
+    grSim1->Draw("AP");
 	grSim2->SetMarkerStyle(20);
-    grSim2->Draw("CP same");
+    grSim2->Draw("P same");
     
     // Fit the gain curve with an exponential function
     TF1* fExp = new TF1( "FitFunctionExp", FitFunctionExp, hvMeshList[0]-5, hvMeshList[num-1]+5, 2 );
@@ -189,17 +200,17 @@ int GetGain() {
         
     TGraphErrors* grData1 = new TGraphErrors(dataNum, hvMeshListData, gainListData, 0, gainErrorListData);
     grData1->SetMarkerStyle(20);
-    //grData1->Draw("CP same");
+    grData1->Draw("P same");
     TGraphErrors* grData2 = new TGraphErrors(dataNum, hvMeshListData, gainListData_old, 0, gainErrorListData_old);
     grData2->SetMarkerStyle(20);
-    grData2->Draw("CP same");
+    grData2->Draw("P same");
     
     TF1* fExp2 = new TF1( "FitFunctionExp2", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
     fExp2->SetParName( 0, "const" );
     fExp2->SetParName( 1, "slope" );
     fExp2->SetLineColor(3);
     grData1->Fit( fExp2, "0" );
-    //fExp2->Draw("same");
+    fExp2->Draw("same");
     PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExp2->GetParameter(0), fExp2->GetParameter(1) ) );
         
     TF1* fExp3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
@@ -212,10 +223,10 @@ int GetGain() {
     
     TLegend* legend = new TLegend(0.7,0.2,0.9,0.4);
     //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-    /*legend->AddEntry(fExp2,"Data", "l");
+    legend->AddEntry(fExp2,"Data", "l");
     legend->AddEntry(fExp3,"Data (old)", "l");
-	 */
-	legend->AddEntry(fExp3,"Data", "l");
+
+	//legend->AddEntry(fExp3,"Data", "l");
     legend->AddEntry(fExp,"Simulation", "l");
     legend->Draw();
 
@@ -232,9 +243,9 @@ int GetGain() {
 	grSimRatio1->GetHistogram()->SetMinimum(2.e2);   // along Y axis
 	grSimRatio1->GetHistogram()->SetMaximum(8.e4);   // along Y axis
 	grSimRatio1->SetMarkerStyle(20);
-	grSimRatio1->Draw("ACP");
+	grSimRatio1->Draw("AP");
 	grSimRatio2->SetMarkerStyle(20);
-	grSimRatio2->Draw("CP same");
+	grSimRatio2->Draw("P same");
 	
 	// Fit the gain curve with an exponential function
 	TF1* fExpRatio = new TF1( "FitFunctionExp", FitFunctionExp, hvRatioList[0]-2, hvRatioList[num-1]+2, 2 );
@@ -247,17 +258,17 @@ int GetGain() {
 	
 	TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, hvRatioListData, gainListData, 0, gainErrorListData);
 	grDataRatio1->SetMarkerStyle(20);
-	//grDataRatio1->Draw("CP same");
+	grDataRatio1->Draw("P same");
 	TGraphErrors* grDataRatio2 = new TGraphErrors(dataNum, hvRatioListData, gainListData_old, 0, gainErrorListData_old);
 	grDataRatio2->SetMarkerStyle(20);
-	grDataRatio2->Draw("CP same");
+	grDataRatio2->Draw("P same");
 	
 	TF1* fExpRatio2 = new TF1( "FitFunctionExp2", FitFunctionExp, hvRatioListData[0]-2, hvRatioListData[dataNum-1]+2, 2 );
 	fExpRatio2->SetParName( 0, "const" );
 	fExpRatio2->SetParName( 1, "slope" );
 	fExpRatio2->SetLineColor(3);
 	grDataRatio1->Fit( fExpRatio2, "0" );
-	//fExpRatio2->Draw("same");
+	fExpRatio2->Draw("same");
 	PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExpRatio2->GetParameter(0), fExpRatio2->GetParameter(1) ) );
 	
 	TF1* fExpRatio3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvRatioListData[0]-2, hvRatioListData[dataNum-1]+2, 2 );
@@ -270,10 +281,9 @@ int GetGain() {
 	
 	TLegend* legendRatio = new TLegend(0.7,0.2,0.9,0.4);
 	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-	/*legendRatio->AddEntry(fExpRatio2,"Data", "l");
+	legendRatio->AddEntry(fExpRatio2,"Data", "l");
 	legendRatio->AddEntry(fExpRatio3,"Data (old)", "l");
-	 */
-	legendRatio->AddEntry(fExpRatio3,"Data", "l");
+	//legendRatio->AddEntry(fExpRatio3,"Data", "l");
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
 	legendRatio->Draw();
         

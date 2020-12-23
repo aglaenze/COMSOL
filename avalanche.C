@@ -66,11 +66,21 @@ int main(int argc, char * argv[]) {
 	
 	TString fOutputName2d = Form("Figures/model%d/avalanche2d-%s", modelNum,  gasName.c_str());
 	TString fOutputName2dZoom = Form("Figures/model%d/avalanche2d-zoom-%s", modelNum,  gasName.c_str());
+	TString fOutputNameIons2d = Form("Figures/model%d/avalanche2d-ions-%s", modelNum,  gasName.c_str());
+	TString fOutputNameIons2dZoom = Form("Figures/model%d/avalanche2d-ions-zoom-%s", modelNum,  gasName.c_str());
 	TString fOutputName3d = Form("Figures/model%d/avalanche3d-%s", modelNum,  gasName.c_str());
-	for (int k = 0; k< electrodeNum-1; k++) {fOutputName2d += Form("-%d", hvList[k]); fOutputName2dZoom += Form("-%d", hvList[k]); fOutputName3d += Form("-%d", hvList[k]);}
+	for (int k = 0; k< electrodeNum-1; k++) {
+		fOutputName2d += Form("-%d", hvList[k]);
+		fOutputName2dZoom += Form("-%d", hvList[k]);
+		fOutputNameIons2d += Form("-%d", hvList[k]);
+		fOutputNameIons2dZoom += Form("-%d", hvList[k]);
+		fOutputName3d += Form("-%d", hvList[k]);
+	}
 	fOutputName2d += ".pdf";
-	fOutputName3d += ".pdf";
 	fOutputName2dZoom += ".pdf";
+	fOutputNameIons2d += ".pdf";
+	fOutputNameIons2dZoom += ".pdf";
+	fOutputName3d += ".pdf";
 	
 	//Load geometry parameters
 	double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
@@ -90,11 +100,16 @@ int main(int argc, char * argv[]) {
 	drift->SetSensor(&sensor);
 	drift->SetDistanceSteps(2.e-4);
 	
-	// To look at the avalanche
+	// To look at the avalanche of electrons (if 3D, ions too)
 	ViewDrift* driftView = new ViewDrift();
 	driftView->SetPlane(0, -1, 0, 0, 0, 0);
 	aval->EnablePlotting(driftView);
 	if (plotDrift3D) drift->EnablePlotting(driftView);
+	
+	// To look at the avalanche of ions
+	ViewDrift* driftViewIons = new ViewDrift();
+	driftViewIons->SetPlane(0, -1, 0, 0, 0, 0);
+	drift->EnablePlotting(driftViewIons);
 	
 	const int nEvents = 1;
 	
@@ -154,7 +169,6 @@ int main(int argc, char * argv[]) {
 	else if (modelNum >= 5 && modelNum < 8) {zmax = damp+2*pitch;}
 	else {zmax = damp+5*pitch;}
 	
-	vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 	vFE->SetComponent(fm);
 	driftView->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	//vFE->SetArea(-5*pitch, -5*pitch, damp-8*pitch, 5*pitch, 5*pitch, damp+2*pitch);
@@ -171,6 +185,7 @@ int main(int argc, char * argv[]) {
 		 vFE->SetColor(1, kGray);
 		 vFE->SetColor(2, kGray);
 		 */
+		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
 		vFE->EnableAxes();
 		vFE->SetXaxisTitle("x (cm)");
 		vFE->SetYaxisTitle("z (cm)");
@@ -187,6 +202,25 @@ int main(int argc, char * argv[]) {
 		vFE->Plot();
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
+		
+		// Same with ions
+		vFE->SetViewDrift(driftViewIons);
+		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		TCanvas* c4 = new TCanvas();
+		vFE->SetCanvas(c4);
+		cout << "Plotting..." << endl;
+		vFE->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
+		c4->SaveAs(fOutputNameIons2d);
+		
+		zmin = damp*0.9; zmax = damp*1.05;
+		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
+		TCanvas* c5 = new TCanvas();
+		vFE->SetCanvas(c5);
+		cout << "Plotting..." << endl;
+		vFE->Plot();
+		DrawElectrodes(modelNum, zmin, zmax);
+		c5->SaveAs(fOutputNameIons2dZoom);
 	}
 	
 	

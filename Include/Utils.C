@@ -297,3 +297,19 @@ int GetMaxAmp(TTree& tAvalanche) {
 	}
 	return max;
 }
+
+void LoadStyle() {
+	
+	gStyle->SetTitleFontSize(.06);
+	gStyle->SetTitleSize(.06);
+	
+	gStyle->SetOptStat(0);
+	gStyle->SetTitleFontSize(.05);
+	gStyle->SetTitleXSize(.05);
+	gStyle->SetTitleYSize(.05);
+	gStyle->SetLabelSize(.04, "XY");
+	gStyle->SetMarkerSize(0.3);
+	gStyle->SetTextSize(0.05);
+}
+
+
