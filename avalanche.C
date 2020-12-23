@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
 		double x0 = 0;
 		double y0 = 0;
 		//double z0 = damp + 2*radius + (ddrift-damp-2*radius)*RndmUniform();
-		double z0 = damp+ (ddrift-damp)/2;
+		double z0 = damp+ (ddrift-damp)*0.2;
 		double t0 = 0;
 		double e = 0;
 		aval->AvalancheElectron(x0, y0, z0, t0, e, 0, 0, -1);
@@ -173,13 +173,13 @@ int main(int argc, char * argv[]) {
 	vFE->SetPlane(0, -1, 0, 0, 0, 0);
 	vFE->SetFillMesh(true);
 
-	/*
+	
 	 ViewFEMesh* vFEIons = new ViewFEMesh();
 	vFEIons->SetComponent(fm);
 	driftViewIons->SetArea(-5*pitch, -5*pitch, 0, 5*pitch, 5*pitch, damp*2);
 	vFEIons->SetPlane(0, -1, 0, 0, 0, 0);
 	vFEIons->SetFillMesh(true);
-	 */
+
 
 	if (plotDrift2D) {
 		TCanvas* c2 = new TCanvas();
@@ -216,6 +216,7 @@ int main(int argc, char * argv[]) {
 		DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
 		
+		/*
 		// Same with ions
 		vFE->SetViewDrift(driftViewIons);
 		vFE->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
@@ -241,8 +242,8 @@ int main(int argc, char * argv[]) {
 		vFE->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
-		
-		/*
+		*/
+	
 		// Same with ions
 		vFEIons->SetViewDrift(driftViewIons);
 		vFEIons->SetArea(-(zmax-zmin)/2., -(zmax-zmin)/2., zmin,  (zmax-zmin)/2., (zmax-zmin)/2., zmax);
@@ -268,7 +269,7 @@ int main(int argc, char * argv[]) {
 		vFEIons->Plot();
 		DrawElectrodes(modelNum, zmin, zmax);
 		c5->SaveAs(fOutputNameIons2dZoom);
-		 */
+
 	}
 	
 	
