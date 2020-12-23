@@ -2,7 +2,7 @@
 
 # variables
 modelNum=21
-hv='330 530 730 930 1040'
+hv='250 450 650 900 1010'
 
 ## end of variables
 

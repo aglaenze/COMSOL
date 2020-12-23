@@ -4,14 +4,14 @@ numberOfJobs=50
 
 # variables
 
-modelNum=21
-hv='300 500 700 950 1060'
+modelNum=11
+hv='250 450 650 900 1010 '
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=50            # number of events to simulate
 computeIBF=1
 useFeSource=0
 testMode=0		# to run locally, of a reduced number of events
-remote=0		# to run locally, of a reduced number of events
+remote=1		# to run locally, of a reduced number of events
 
 ## end of variables
 

@@ -176,7 +176,7 @@ int main(int argc, char * argv[]) {
 		vFE->SetYaxisTitle("z (cm)");
 		cout << "Plotting..." << endl;
 		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c2->SaveAs(fOutputName2d);
 		
 		zmin = damp*0.9; zmax = damp*1.05;
@@ -185,7 +185,7 @@ int main(int argc, char * argv[]) {
 		vFE->SetCanvas(c3);
 		cout << "Plotting..." << endl;
 		vFE->Plot();
-		DrawElectrodes(modelNum, zmin, zmax);
+		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(fOutputName2dZoom);
 	}
 	
