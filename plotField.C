@@ -146,7 +146,7 @@ int main(int argc, char * argv[]) {
 		vector<double> xf;
 		vector<double> yf;
 		vector<double> zf;
-		vf->EqualFluxIntervals(xmin, yPlane, zmax, xmax, yPlane, zmax, xf, yf, zf, 20);
+		vf->EqualFluxIntervals(xmin, yPlane, zmax, xmax, yPlane, zmax, xf, yf, zf, 1000);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		gPad->SetLeftMargin(0.15);
