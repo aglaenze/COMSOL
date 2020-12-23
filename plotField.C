@@ -140,20 +140,20 @@ int main(int argc, char * argv[]) {
 		else {zmax = damp+5*pitch;}
 		xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
 		vf->SetArea(xmin, zmin, xmax, zmax);
-		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		
 		TCanvas* c3 = new TCanvas();
 		vf->SetCanvas(c3);
-		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
-		vf->Plot("v", "CONT1");
 		vector<double> xf;
 		vector<double> yf;
 		vector<double> zf;
+		vf->EqualFluxIntervals(xmin, yPlane, zmin + (zmax-zmin)*0.8, xmax, yPlane, zmin + (zmax-zmin)*0.8, xf, yf, zf, 50);
 		
 		//vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
 		gPad->SetLeftMargin(0.15);
 		gPad->SetBottomMargin(0.15);
 		gPad->SetRightMargin(0.15);
+		//vf->Plot("v", "CONT4Z");	// "CONT1Z"
+		vf->Plot("v", "CONT1");
 		vf->PlotFieldLines(xf, yf, zf, true, false);	// last one should be false in you want to plot something else before (pltaxis = false)
 		//DrawElectrodes(modelNum, zmin, zmax);
 		c3->SaveAs(Form("Figures/model%d/fieldlines", modelNum)+suffix);
