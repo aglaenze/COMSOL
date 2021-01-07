@@ -9,3 +9,5 @@ mv avalanche $COMSOL
 mv plotField $COMSOL
 mv spectrumFe55 $COMSOL
 mv signal $COMSOL
+
+cd $COMSOL

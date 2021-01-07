@@ -11,7 +11,7 @@ nEvents=50            # number of events to simulate
 computeIBF=1
 useFeSource=0
 testMode=1		# to run locally, of a reduced number of events
-remote=0		# to run locally, of a reduced number of events
+remote=0		# to run on lxplus on remote machines using condor
 
 ## end of variables
 
@@ -54,7 +54,7 @@ echo 'nEvents =' $nEvents'            # number of events to simulate'  >> input.
 echo 'computeIBF =' $computeIBF '         # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)'  >> input.txt
 echo 'useFeSource =' $useFeSource'        # in signal.C: in false, will only simulate one ionisation in the drift region / if true, it will simulate a photon that converts into electrons in the drift region'  >> input.txt
 echo 'testMode =' $testMode'		# in signal.C: tests the code on a reduced number of events'  >> input.txt
-echo 'remote =' $remote'		# to run on lxplus machines'  >> input.txt
+echo 'remote =' $remote'		# to run on lxplus machines using condor'  >> input.txt
 echo '# to draw the avalanche'  >> input.txt
 echo 'plotDrift2D = 0'  >> input.txt
 echo 'plotDrift3D = 1'  >> input.txt
@@ -142,15 +142,17 @@ echo 'request_cpus      = 4' >> job.sub
 echo 'transfer_output_remaps  = "'$phraseIn'='$phraseOut'" ' >> job.sub
 echo 'queue' $numberOfJobs >> job.sub
 
-make
+source make-executables.sh
+wait
 condor_submit job.sub
 
 else
 
-inputExecutable=input.sh
+inputExecutable="input/input-local.sh"
 writeExecutable
 source input.sh
-make
+source make-executables.sh
+wait
 ./signal $hv
 
 fi
