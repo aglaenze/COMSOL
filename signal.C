@@ -120,7 +120,7 @@ int main(int argc, char * argv[]) {
 	// Create ROOT histograms of the signal and a file in which to store them.
 	TFile* f = new TFile(fOutputName, "RECREATE");
 	//TFile* f = new TFile("rootFiles/test.root", "RECREATE");
-	
+
 	TTree *tAvalanche = new TTree("tAvalanche","Gain");
 	int nWinners = 0, neAval = 0;
 	vector<int> neAvalVec = {}, nWinnersVec = {};
@@ -167,7 +167,6 @@ int main(int argc, char * argv[]) {
 	
 	int division = int(nEvents/10);
 	if (nEvents < 10 || useFeSource) division = 1;
-	
 	//return 0;
 	for (int i = 0; i < nEvents; ++i) {
 		if (i % division == 0) {
@@ -249,7 +248,7 @@ int main(int argc, char * argv[]) {
 	tAvalanche->Write("", TObject::kOverwrite);
 	
 	//cout << "induced charge for electrode " << 2 << " = " << sensor->GetInducedCharge("V2") << endl;
-	
+
 	if (computeIBF) {
 		for (int k = 0; k < electrodeNum; k++) {
 			TTree *tSignal = new TTree(Form("tSignal_%d",k+2),"Currents");
