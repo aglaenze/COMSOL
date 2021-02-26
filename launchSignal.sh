@@ -4,13 +4,13 @@ numberOfJobs=50
 
 # variables
 
-modelNum=20
-hv='250 450 650 1100 1200'
+modelNum=1
+hv='380 580 1'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents=50            # number of events to simulate
-computeIBF=1
+nEvents=500            # number of events to simulate
+computeIBF=0
 useFeSource=0
-testMode=1		# to run locally, of a reduced number of events
+testMode=0		# to run locally, of a reduced number of events
 remote=0		# to run on lxplus on remote machines using condor
 
 ## end of variables
@@ -111,7 +111,7 @@ echo
 echo Computing signal root files for model $modelNum, gas = $gasName and HV = $hv
 echo
 
-if [ $testMode == 0 ]
+if [ $testMode == 0 ] && [ $remote == 1 ]
 then
 num=0
 while test -f input/input-$num.sh
@@ -148,9 +148,12 @@ condor_submit job.sub
 
 else
 
-inputExecutable="input/input-local.sh"
+cd input
+inputExecutable="input-local.sh"
 writeExecutable
-source input.sh
+source $inputExecutable
+mv input.txt ..
+cd $COMSOL
 source make-executables.sh
 wait
 ./signal $hv

@@ -8,9 +8,8 @@
 #include <TFile.h>
 #include <TMath.h>
 
-#include "Include/Utils.C"
 #include "Include/Data.C"
-#include "Include/Functions.C"
+#include "Include/Spectrum.C"
 
 /*
  TO-DO:
@@ -18,7 +17,7 @@
  */
 
 
-int GetGain() {
+int GetGain(bool ibf = false) {
     
     //______________________
     // variables
@@ -43,6 +42,8 @@ int GetGain() {
     
     const TString path = Form("rootFiles/%s/model%d/", gasName.c_str(), modelNum);
     
+    cout << path << endl;
+    
     double damp = 0.0128, ddrift = 0.5;
     
 	std::map <std::string, int, NoSorting> electrode;
@@ -62,23 +63,27 @@ int GetGain() {
 
     // Get number of files to look at
     //Int_t num = 1;
-    Int_t num = GetNumberOfFiles(path, "convoluted");
+    string filesName = "fe-spectrum-convoluted";
+    if (!ibf) filesName += "-noibf";
+    Int_t num = GetNumberOfFiles(path, filesName);
+    //num -= 1;
     Int_t num2 = int(num/2.);
-    if (num/2.> num2) num2+=1;
+    if ((double)num2 < (double)num/2.) num2+=1;
 
     TCanvas* c2 = new TCanvas("c2","c2", 600, 300*num2);
     //c2->Divide(2);
     c2->Divide(2, num2);
 
-	num = 4;
+	//num = 4;
     Double_t hvMeshList[num], hvDriftList[num], hvRatioList[num];
     Double_t gainList[num], gainFeChargeList[num], gainErrorList[num], gainFeChargeErrorList[num];
-    for (unsigned int k = 0; k < num; ++k) {
+    for (unsigned int k = 0; k < num; k++) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
         TString fileName;
         if (modelNum == 1) {
-            hvMesh = 340+20*k;
-            hvDrift = 540+20*k;
+            int step = 40;
+            hvMesh = 340+step*k;
+            hvDrift = 540+step*k;
             fileName = Form("rootFiles/%s/model%d/fe-spectrum-convoluted-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
         }
         else if (modelNum >= 2) {
@@ -91,74 +96,14 @@ int GetGain() {
 		hvDriftList[k] = hvDrift;
 		hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
         
-        TFile* fGain = TFile::Open(fileName, "READ");
-        TH1F* hFeAmplification = (TH1F*)fGain->Get("hFeAmplification");
-        TH1F* hFeCharge = (TH1F*)fGain->Get(Form("hFeCharge_%d", readoutElectrode));
-
-        hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
-        hFeAmplification->SetMaximum(1.2);
-        //hFeAmplification->Rebin(8);
-        //hFeAmplification->GetXaxis()->SetRangeUser(2, 10000);
-        hFeAmplification->SetLineColor(kBlue + 2);
-		//return 0;
-
-        TF1* f = GetFitCurve(hFeAmplification);
-                
-        Int_t iBinMax = hFeAmplification->GetMaximumBin();
-        Double_t xMax = hFeAmplification->GetXaxis()->GetBinCenter( iBinMax );
-        hFeAmplification->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
-        //hFeAmplification->GetXaxis()->SetRangeUser(0, 40000);
-        gainList[k] = f->GetParameter(0);
-        gainErrorList[k] = f->GetParError(0);
-        
-        hFeCharge->Scale(1/hFeCharge->GetMaximum());
-        hFeCharge->SetMaximum(1.2);
-        hFeCharge->SetLineColor(kBlue + 2);
-        TF1* fFeCharge = GetFitCurve(hFeCharge);
-        hFeCharge->GetXaxis()->SetRangeUser(0, xMax + 3*hFeAmplification->GetRMS());
-        gainFeChargeList[k] = fFeCharge->GetParameter(0);
-        gainFeChargeErrorList[k] = fFeCharge->GetParError(0);
-
-        // Now draw both spectra
         c2->cd(k+1);
-        // Upper plot will be in pad1
-        TPad *pad1 = new TPad("pad1", "pad1", 0, 0.5, 1, 0.95);
-        pad1->SetTopMargin(0.2);
-        pad1->SetBottomMargin(0); // Upper and lower plot are joined
-        pad1->SetLeftMargin(0.15);
-        //pad1->SetGridx();         // Vertical grid
-        pad1->Draw();             // Draw the upper pad: pad1
-        pad1->cd();               // pad1 becomes the current pad
-        hFeAmplification->Draw("hist");
-        f->Draw("same");
-        // Add text to frame
-        TLatex* txt = new TLatex(0.5*xMax,1,Form("Gain = %.3g #pm %.3f", f->GetParameter(0), f->GetParError(0)));
-        TLatex* txt2 = new TLatex(0.5*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
-        txt->SetTextSize(0.05) ;
-        txt2->SetTextSize(0.05) ;
-        txt->Draw();
-        txt2->Draw();
+        Double_t gain = 0, gainError = 0;
+        DrawFeConvolution(fileName, gain, gainError);
+        gainList[k] = gain;
+        gainErrorList[k] = gainError;
         
-         // lower plot will be in pad
-        c2->cd(k+1);          // Go back to the main canvas before defining pad2
-        TPad *pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.5);
-        pad2->SetTopMargin(0);
-        pad2->SetLeftMargin(0.15);
-        pad2->SetBottomMargin(0.2);
-        //pad2->SetGridx(); // vertical grid
-        pad2->Draw();
-        pad2->cd();       // pad2 becomes the current pad
-        hFeCharge->Draw("hist");
-        fFeCharge->Draw("same");
-        TLatex* txt3 = new TLatex(0.5*xMax,1,Form("Gain = %.3g #pm %.3f", fFeCharge->GetParameter(0), fFeCharge->GetParError(0)));
-        TLatex* txt4 = new TLatex(0.5*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
-        txt3->SetTextSize(0.05) ;
-        txt4->SetTextSize(0.05) ;
-        txt3->Draw();
-        txt4->Draw();
-
     }
-    c2->SaveAs(Form("Figures/model%d/gains-%s.pdf", modelNum, gasName.c_str()));
+    c2->SaveAs(Form("Figures/model%d/gains2-%s.pdf", modelNum, gasName.c_str()));
 
 	// Load data
 	const Int_t dataNum = dataQuantity(gasName);
@@ -194,13 +139,13 @@ int GetGain() {
     grSim1->Fit( fExp, "0");
     fExp->SetLineColor(2);
     fExp->Draw("same");
-    PutText( 0.2, 0.7, Form( "y_{simulation} = exp( %.3g + %.3g x)", fExp->GetParameter(0), fExp->GetParameter(1) ) );
+    PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3g + %.3g x)}", fExp->GetParameter(0), fExp->GetParameter(1) ) );
         
     // Same with data
         
     TGraphErrors* grData1 = new TGraphErrors(dataNum, hvMeshListData, gainListData, 0, gainErrorListData);
     grData1->SetMarkerStyle(20);
-    grData1->Draw("P same");
+    //grData1->Draw("P same");
     TGraphErrors* grData2 = new TGraphErrors(dataNum, hvMeshListData, gainListData_old, 0, gainErrorListData_old);
     grData2->SetMarkerStyle(20);
     grData2->Draw("P same");
@@ -210,8 +155,8 @@ int GetGain() {
     fExp2->SetParName( 1, "slope" );
     fExp2->SetLineColor(3);
     grData1->Fit( fExp2, "0" );
-    fExp2->Draw("same");
-    PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExp2->GetParameter(0), fExp2->GetParameter(1) ) );
+    //fExp2->Draw("same");
+    //PutText( 0.2, 0.8, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExp2->GetParameter(0), fExp2->GetParameter(1) ) );
         
     TF1* fExp3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
     fExp3->SetParName( 0, "const" );
@@ -219,14 +164,16 @@ int GetGain() {
     fExp3->SetLineColor(4);
     grData2->Fit( fExp3, "0" );
     fExp3->Draw("same");
-    PutText( 0.2, 0.75, Form( "y_{data old} = exp( %.3g + %.3g x)", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
+    //PutText( 0.2, 0.75, Form( "#bf{y_{data old} = exp( %.3g + %.3g x)}", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
+    PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
     
     TLegend* legend = new TLegend(0.7,0.2,0.9,0.4);
     //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
+    /*
     legend->AddEntry(fExp2,"Data", "l");
     legend->AddEntry(fExp3,"Data (old)", "l");
-
-	//legend->AddEntry(fExp3,"Data", "l");
+*/
+	legend->AddEntry(fExp3,"Data", "l");
     legend->AddEntry(fExp,"Simulation", "l");
     legend->Draw();
 
@@ -254,11 +201,11 @@ int GetGain() {
 	grSimRatio1->Fit( fExpRatio, "0");
 	fExpRatio->SetLineColor(2);
 	fExpRatio->Draw("same");
-	PutText( 0.2, 0.7, Form( "y_{simulation} = exp( %.3g + %.3g x)", fExpRatio->GetParameter(0), fExpRatio->GetParameter(1) ) );
+	PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3g + %.3g x)}", fExpRatio->GetParameter(0), fExpRatio->GetParameter(1) ) );
 	
 	TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, hvRatioListData, gainListData, 0, gainErrorListData);
 	grDataRatio1->SetMarkerStyle(20);
-	grDataRatio1->Draw("P same");
+	//grDataRatio1->Draw("P same");
 	TGraphErrors* grDataRatio2 = new TGraphErrors(dataNum, hvRatioListData, gainListData_old, 0, gainErrorListData_old);
 	grDataRatio2->SetMarkerStyle(20);
 	grDataRatio2->Draw("P same");
@@ -268,8 +215,8 @@ int GetGain() {
 	fExpRatio2->SetParName( 1, "slope" );
 	fExpRatio2->SetLineColor(3);
 	grDataRatio1->Fit( fExpRatio2, "0" );
-	fExpRatio2->Draw("same");
-	PutText( 0.2, 0.8, Form( "y_{data} = exp( %.3g + %.3g x)", fExpRatio2->GetParameter(0), fExpRatio2->GetParameter(1) ) );
+	//fExpRatio2->Draw("same");
+	//PutText( 0.2, 0.8, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExpRatio2->GetParameter(0), fExpRatio2->GetParameter(1) ) );
 	
 	TF1* fExpRatio3 = new TF1( "FitFunctionExp3", FitFunctionExp, hvRatioListData[0]-2, hvRatioListData[dataNum-1]+2, 2 );
 	fExpRatio3->SetParName( 0, "const" );
@@ -277,22 +224,25 @@ int GetGain() {
 	fExpRatio3->SetLineColor(4);
 	grDataRatio2->Fit( fExpRatio3, "0" );
 	fExpRatio3->Draw("same");
-	PutText( 0.2, 0.75, Form( "y_{data old} = exp( %.3g + %.3g x)", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
-	
+    //PutText( 0.2, 0.75, Form( "#bf{y_{data old} = exp( %.3g + %.3g x)}", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
+    PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
+    
 	TLegend* legendRatio = new TLegend(0.7,0.2,0.9,0.4);
 	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
+    /*
 	legendRatio->AddEntry(fExpRatio2,"Data", "l");
 	legendRatio->AddEntry(fExpRatio3,"Data (old)", "l");
-	//legendRatio->AddEntry(fExpRatio3,"Data", "l");
+     */
+	legendRatio->AddEntry(fExpRatio3,"Data", "l");
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
 	legendRatio->Draw();
         
-    c3->SaveAs(Form("Figures/model%d/GainCurve-%s.pdf", modelNum, gasName.c_str()));
+    c3->SaveAs(Form("Figures/model%d/GainCurve2-%s.pdf", modelNum, gasName.c_str()));
 
      
     time_t t1 = time(NULL);
     //PrintTime(t0, t1);
-    
+
     return 0;
 }
 
