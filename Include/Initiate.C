@@ -27,8 +27,9 @@ Garfield::MediumMagboltz* InitiateGas(string gasName) {
 	const string path = getenv("GARFIELD_HOME");
 	if (gasName=="Ar-iC4H10") {
 		gas->SetComposition("Ar", 95., "C4H10", 5.);
-		rPenning = 0.4753;
-        //rPenning = 0.48;
+        //rPenning = 0.4753;
+        //rPenning = 0.478;
+        rPenning = 0.48;
 		gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
 		gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
 	}

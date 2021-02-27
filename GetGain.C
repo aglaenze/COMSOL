@@ -17,7 +17,7 @@
  */
 
 
-int GetGain(bool ibf = false) {
+int GetGain(bool ibf = true) {
     
     //______________________
     // variables
@@ -81,7 +81,7 @@ int GetGain(bool ibf = false) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
         TString fileName;
         if (modelNum == 1) {
-            int step = 40;
+            int step = 20;
             hvMesh = 340+step*k;
             hvDrift = 540+step*k;
             fileName = Form("rootFiles/%s/model%d/fe-spectrum-convoluted-%d-%d.root", gasName.c_str(), modelNum, hvMesh, hvDrift);
