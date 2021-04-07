@@ -128,8 +128,13 @@ int main(int argc, char * argv[]) {
 	tAvalanche->Branch("avalancheSize", &neAvalVec);
 	int ni = 0, ionBackNum = 0;
 	vector<float> electronStartPoints = {}, electronEndPoints = {};
+    vector<float> electronStartPointsX = {}, electronStartPointsY = {};
 	vector<float> ionStartPoints = {}, ionEndPoints = {}, ionEndPointsX = {}, ionEndPointsY = {};
 	tAvalanche->Branch("electronStartPoints", &electronStartPoints);
+    if (testMode) {
+        tAvalanche->Branch("electronStartPointsX", &electronStartPointsX);
+        tAvalanche->Branch("electronStartPointsY", &electronStartPointsY);
+    }
 	tAvalanche->Branch("electronEndPoints", &electronEndPoints);
 	if (computeIBF) {
 		tAvalanche->Branch("ionNum", &ni);
@@ -218,6 +223,10 @@ int main(int argc, char * argv[]) {
 				if (ze2 < 0.008) nWinners++;
 				electronStartPoints.push_back(ze1);
 				electronEndPoints.push_back(ze2);
+                if (testMode) {
+                    electronStartPointsX.push_back(xe1);
+                    electronStartPointsY.push_back(ye1);
+                }
 				if (computeIBF) {
 					drift->DriftIon(xe1, ye1, ze1, te1);
 					drift->GetIonEndpoint(0, xi1, yi1, zi1, ti1, xi2, yi2, zi2, ti2, status);
@@ -238,6 +247,10 @@ int main(int argc, char * argv[]) {
 		nWinnersVec.clear();
 		electronStartPoints.clear();
 		electronEndPoints.clear();
+        if (testMode) {
+            electronStartPointsX.clear();
+            electronStartPointsY.clear();
+        }
 		if (computeIBF) {
 			ionStartPoints.clear();
 			ionEndPoints.clear();

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd $COMSOL/build
-cmake3 $COMSOL
+cmake $COMSOL
 wait
 make
 

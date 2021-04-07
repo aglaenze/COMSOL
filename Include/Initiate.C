@@ -17,11 +17,12 @@
 #include "Garfield/ComponentComsol.hh"
 
 using namespace std;
+using namespace Garfield;
 
 // Make a gas medium.
-Garfield::MediumMagboltz* InitiateGas(string gasName) {
+MediumMagboltz* InitiateGas(string gasName) {
 	
-	Garfield::MediumMagboltz* gas = new Garfield::MediumMagboltz();
+	MediumMagboltz* gas = new MediumMagboltz();
 	double rPenning;
 	const double lambdaPenning = 0.;    // parameter for sampling the distance of the Penning electron with respect to the excitation
 	const string path = getenv("GARFIELD_HOME");
@@ -29,7 +30,8 @@ Garfield::MediumMagboltz* InitiateGas(string gasName) {
 		gas->SetComposition("Ar", 95., "C4H10", 5.);
         //rPenning = 0.4753;
         //rPenning = 0.478;
-        rPenning = 0.48;
+        //rPenning = 0.48;
+        rPenning = 0.18;
 		gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
 		gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
 	}
@@ -50,14 +52,14 @@ Garfield::MediumMagboltz* InitiateGas(string gasName) {
 	}
 	else {cout << "What gas??" << endl; return 0;}
 	gas->SetTemperature(293.15);
-	gas->SetPressure(Garfield::AtmosphericPressure);
+	gas->SetPressure(AtmosphericPressure);
 	gas->EnableDrift();
 	//gas->EnablePenningTransfer(rPenning, lambdaPenning);
 	return gas;
 }
 
 
-Garfield::ComponentComsol* InitiateField(int modelNum, vector<int> hvList, Garfield::MediumMagboltz* gas, bool remote = false) {
+ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz* gas, bool remote = false) {
 	// Load the field map.
 	string dataFolder = Form("COMSOL_data/model%d/", modelNum);
 	if (remote) dataFolder = "./";
@@ -74,7 +76,7 @@ Garfield::ComponentComsol* InitiateField(int modelNum, vector<int> hvList, Garfi
 	if (!(meshFile && materialsFile && potentialFile)) {return nullptr;}
 	else {
 		// Load the field map.
-		Garfield::ComponentComsol* fm = new Garfield::ComponentComsol();
+		ComponentComsol* fm = new ComponentComsol();
 		fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
 		fm->PrintMaterials();
 		fm->EnableMirrorPeriodicityX();

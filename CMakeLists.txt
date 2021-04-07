@@ -1,4 +1,4 @@
-#---Setup the example project---------------------------------------------------
+#---Setup the project-----------------------------------------------------------
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(COMSOL)
 
@@ -6,9 +6,11 @@ project(COMSOL)
 find_package(Garfield REQUIRED)
 
 #---Locate the ROOT package and define a number of useful targets and variables-
-find_package(ROOT REQUIRED COMPONENTS Tree)
+find_package(ROOT REQUIRED COMPONENTS Tree RIO)
+
 
 #---Build executables------------------------------------------------------------
+
 add_executable(avalanche avalanche.C)
 target_link_libraries(avalanche Garfield)
 
@@ -16,7 +18,7 @@ add_executable(plotField plotField.C)
 target_link_libraries(plotField Garfield)
 
 add_executable(spectrumFe55 spectrumFe55.C)
-target_link_libraries(spectrumFe55 Garfield)
+target_link_libraries(spectrumFe55 Garfield ROOT::RIO)
 
 add_executable(signal signal.C)
 target_link_libraries(signal Garfield ROOT::RIO ROOT::Tree)

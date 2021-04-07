@@ -96,14 +96,14 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
     // Write gain, sigma and res = sigma/gain on the plot
     double xPos = fAmplification->GetParameter(0)*0.2;
     TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", fAmplification->GetParameter(1), fAmplification->GetParError(1)));
-    Double_t resolution = fAmplification->GetParameter(1)/fAmplification->GetParameter(0);
+    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", abs(fAmplification->GetParameter(1)), abs(fAmplification->GetParError(1))));
+    Double_t resolution = abs(fAmplification->GetParameter(1)/fAmplification->GetParameter(0));
     Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
     Double_t fwhm = resolution * 2* ln(2);
     Double_t fwhmError = resolutionError * 2* ln(2);
     std::string percent = "%";
-    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = %.1f #pm %.1f %s}", resolution*100, resolutionError*100, percent.c_str()));
-    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = %.1f #pm %.1f %s}", fwhm*100, fwhmError*100, percent.c_str()));
+    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
+    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
     
     txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
     txtFwhm->Draw("same");
@@ -114,7 +114,7 @@ void DrawFeConvolution(TString fConvolutedName, Double_t& gain, Double_t& gainEr
     // First draw convoluted spectrum
     TFile* fConvoluted = TFile::Open(fConvolutedName, "READ");
     
-    TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification");
+    TH1F* hFeAmplification = (TH1F*)fConvoluted->Get("hFeAmplification"); // total number of electrons
     while (hFeAmplification->GetMaximum() < 100) hFeAmplification->Rebin(2);
     
     hFeAmplification->Scale(1/hFeAmplification->GetMaximum());
@@ -147,8 +147,8 @@ void DrawFeConvolution(TString fConvolutedName, Double_t& gain, Double_t& gainEr
     Double_t fwhm = resolution * 2* ln(2);
     Double_t fwhmError = resolutionError * 2* ln(2);
     std::string percent = "%";
-    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = %.1f #pm %.1f %s}", resolution*100, resolutionError*100, percent.c_str()));
-    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = %.1f #pm %.1f %s}", fwhm*100, fwhmError*100, percent.c_str()));
+    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
+    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
     
     txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
     txtFwhm->Draw("same");
@@ -168,7 +168,27 @@ void DrawFeConvolution(TString fConvolutedName="") {
     return;
 }
 
-void DrawFeChargeConvolution(TString fConvolutedName="", int readoutElectrode = 0) {
+void DrawFeChargeConvolution(int modelNum, TString fConvolutedName, string readout, Double_t& gain, Double_t& gainError) {
+    
+    std::map <std::string, int, NoSorting> electrode;
+    LoadElectrodeMap(modelNum, electrode);
+    int readoutElectrode = 0;
+    std::map<std::string, int>::iterator it = electrode.begin();
+    for (it=electrode.begin(); it!=electrode.end(); ++it) {
+        //std::cout << it->first << " => " << it->second << '\n';
+        if (it->first == readout) readoutElectrode = it->second;    // could be mesh, it depends on where you want to read
+    }
+    if (readoutElectrode == 0) {
+        std::cout << "Did not find mesh electrode, using pad instead" << std::endl;
+        readout = "pad";
+        for (it=electrode.begin(); it!=electrode.end(); ++it) {
+            if (it->first == readout) readoutElectrode = it->second;    // could be mesh, it depends on where you want to read
+        }
+        if (readoutElectrode == 0) {
+            std::cout << "Did not find pad electrode" << std::endl;
+            return;
+        }
+    }
     
     TFile* fConvoluted = TFile::Open(fConvolutedName, "READ");
     TH1F* hFeCharge = (TH1F*)fConvoluted->Get(Form("hFeCharge_%d", readoutElectrode));
@@ -176,13 +196,25 @@ void DrawFeChargeConvolution(TString fConvolutedName="", int readoutElectrode = 
     //hFeAmplification->Rebin(8);
     
     hFeCharge->Scale(1/hFeCharge->GetMaximum());
+    hFeCharge->SetMaximum(1.3);
     hFeCharge->SetLineColor(kRed);
-    TF1* f2 = GetFitCurve(hFeCharge);
-    f2->SetLineColor(kRed);
+    hFeCharge->SetLineColor(kBlue);
+    hFeCharge->SetTitle("Gain with Fe source");
+    hFeCharge->GetXaxis()->SetTitle(Form("Normalised number of charges on the %s", readout.c_str()));
+    
+    
+    TF1* f = GetFitCurve(hFeCharge);
+    f->SetLineColor(kRed);
+    
+    Int_t iBinMax = hFeCharge->GetMaximumBin();
+    Double_t xMax = hFeCharge->GetXaxis()->GetBinCenter( iBinMax );
+    hFeCharge->GetXaxis()->SetRangeUser(0, xMax + 3*hFeCharge->GetRMS());
+    
+    if (xMax > 8000) hFeCharge->GetXaxis()->SetMaxDigits(3);
     
     hFeCharge->Draw("hist same");
-    f2->Draw("same");
-    TString txt2 = Form("Induced charge --> Gain = %.0f #pm %.3f", f2->GetParameter(0), f2->GetParError(0));
+    f->Draw("same");
+    TString txt2 = Form("Induced charge --> Gain = %.0f #pm %.3f", f->GetParameter(0), f->GetParError(0));
     /*
      TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
      legend->AddEntry(f,txt,"l");
@@ -190,6 +222,30 @@ void DrawFeChargeConvolution(TString fConvolutedName="", int readoutElectrode = 
      legend->SetTextSize(0.04);
      legend->Draw("same");
      */
+
+    
+    // Write gain, sigma and res = sigma/gain on the plot
+    double xPos = f->GetParameter(0)*0.2;
+    TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", f->GetParameter(0), f->GetParError(0)));
+    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", f->GetParameter(1), f->GetParError(1)));
+    gain = f->GetParameter(0);
+    gainError = f->GetParError(0);
+    Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
+    Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
+    Double_t fwhm = resolution * 2* ln(2);
+    Double_t fwhmError = resolutionError * 2* ln(2);
+    std::string percent = "%";
+    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
+    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
+    
+    txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
+    txtFwhm->Draw("same");
+}
+
+void DrawFeChargeConvolution(int modelNum = 0, TString fConvolutedName="", string readout = "") {
+    Double_t gain = 0, gainError = 0;
+    DrawFeChargeConvolution(modelNum, fConvolutedName, readout, gain, gainError);
+    return;
 }
 
 void DrawGains(int modelNum = 0, TString fConvolutedName="") {

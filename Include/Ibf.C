@@ -26,9 +26,16 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
     std::map<std::string, int>::iterator it = electrode.begin();
     for (it=electrode.begin(); it!=electrode.end(); ++it) {
         //std::cout << it->first << " => " << it->second << '\n';
-        if (it->first == "pad") readoutElectrode = it->second;    // could be mesh, it depends on where you want to read
+        if (it->first == "mesh") readoutElectrode = it->second;    // could be mesh, it depends on where you want to read
         else if (it->first == "drift") driftElectrode = it->second;
     }
+    if (readoutElectrode == 0) {
+        std::cout << "Did not find mesh electrode, trying pad" << std::endl;
+        for (it=electrode.begin(); it!=electrode.end(); ++it) {
+            if (it->first == "pad") readoutElectrode = it->second;
+        }
+    }
+        
     if (readoutElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return;}
     
     TFile* fSignal = TFile::Open(fSignalName, "READ");
@@ -155,9 +162,9 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
     
     // Finally legend
     
-    TString txtIbf1 = Form("IBF = %.2f #pm %.2f %s", fIbf->GetParameter(0), fIbf->GetParError(0), "%");
-    TString txtIbf2 = Form("IBF = %.2f #pm %.2f %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%");
-    TString txtIbf3 = Form("IBF = %.2f #pm %.2f %s", fIbfIonCharge->GetParameter(0), fIbfIonCharge->GetParError(0), "%");
+    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fIbf->GetParameter(0), fIbf->GetParError(0), "%");
+    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%");
+    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fIbfIonCharge->GetParameter(0), fIbfIonCharge->GetParError(0), "%");
     TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
     legend->SetMargin(0.15);
     legend->AddEntry(hIbf,"IBF ratio: " + txtIbf1,"l");
@@ -233,9 +240,9 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     hFeIbfIonCharge->Draw("hist same");
     fFeIbfIonCharge->Draw("same");
     
-    TString txtIbf1 = Form("IBF = %.2f #pm %.2f %s", fFeIbf->GetParameter(0), fFeIbf->GetParError(0), "%");
-    TString txtIbf2 = Form("IBF = %.2f #pm %.2f %s", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParError(0), "%");
-    TString txtIbf3 = Form("IBF = %.2f #pm %.2f %s", fFeIbfIonCharge->GetParameter(0), fFeIbfIonCharge->GetParError(0), "%");
+    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbf->GetParameter(0), fFeIbf->GetParError(0), "%");
+    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParError(0), "%");
+    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfIonCharge->GetParameter(0), fFeIbfIonCharge->GetParError(0), "%");
     TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
     legend->SetMargin(0.15);
     /*

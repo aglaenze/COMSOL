@@ -62,7 +62,7 @@ int Convolute(int modelNum, string gasName, vector<int> hvList, bool ibf = true)
     map<string, int>::iterator it = electrode.begin();
     for (it=electrode.begin(); it!=electrode.end(); ++it) {
         //cout << it->first << " => " << it->second << '\n';
-        if (it->first == "pad") padElectrode = it->second;
+        if (it->first == "mesh") padElectrode = it->second;
         else if (it->first == "drift") driftElectrode = it->second;
     }
     if (padElectrode == 0 || driftElectrode == 0) {cout << "Did not find drift or pad electrode" << endl; return 0;}

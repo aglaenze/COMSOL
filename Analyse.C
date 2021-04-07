@@ -81,7 +81,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
     
     //DrawAmplificationElectrons(gasName, fSignalName, false);
     // Ignore convolution in the end
-    DrawFeConvolution(fileName);
+    //DrawFeConvolution(fileName);
+    string readout = "mesh";
+    DrawFeChargeConvolution(modelNum, fileName, readout);
     
     
     std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
