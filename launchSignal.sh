@@ -1,11 +1,11 @@
 #!/bin/bash
 
-numberOfJobs=50
+numberOfJobs=10     # used only if remote=1
 
 # variables
 
-modelNum=1
-hv='360 560 1'
+modelNum=22
+hv='380 580 1'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=100            # number of events to simulate
 computeIBF=1

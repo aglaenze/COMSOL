@@ -94,7 +94,7 @@ Int_t GetPrimary(string gasName) {
 
 void LoadElectrodeMap(int modelNum, map <string, int, NoSorting>& electrodeMap) {
     electrodeMap = {};
-    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18) {
+    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18 || modelNum == 22) {
         electrodeMap["pad"] = 4;
         electrodeMap["mesh"] = 2;
         electrodeMap["drift"] = 3;

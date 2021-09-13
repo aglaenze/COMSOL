@@ -1,5 +1,5 @@
 When creating a new model:
-- update electrode positions in Geometry.C
+- update electrode positions in LoadParameters in Geometry.C
 - update LoadElectrodeMap in Utils.C
 
 
