@@ -312,4 +312,20 @@ void LoadStyle() {
     gStyle->SetTextSize(0.05);
 }
 
-
+template <typename T>
+void PrintListVec(
+               TString name,
+               vector<T> vec,
+               TString format = "%f" )
+{
+    //std::cout << "const Double_t " << name << "["<<size<< "] = {";
+    Int_t num = (int) vec.size();
+    std::cout << "Double_t " << name << "[" << num << "]" << " = {";
+    for( Int_t i=0; i<num; ++i )
+    {
+        std::cout << Form( format.Data(), vec[i] );
+        if( i != num-1 ) std::cout << ", ";
+        else std::cout << "};";
+    }
+    std::cout << std::endl;
+}

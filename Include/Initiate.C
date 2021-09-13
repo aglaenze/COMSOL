@@ -31,7 +31,7 @@ MediumMagboltz* InitiateGas(string gasName) {
         //rPenning = 0.4753;
         //rPenning = 0.478;
         //rPenning = 0.48;
-        rPenning = 0.18;
+        rPenning = 0.38;
 		gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
 		gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
 	}

@@ -35,7 +35,8 @@ int GetGain(bool ibf = true) {
     gStyle->SetTitleXSize(.05);
     gStyle->SetTitleYSize(.05);
     gStyle->SetLabelSize(.05, "XY");
-	gStyle->SetMarkerSize(0.3);
+	//gStyle->SetMarkerSize(0.3);
+    gStyle->SetMarkerStyle(20);
 	gStyle->SetTextSize(.05);
 	gStyle->SetPadLeftMargin(0.15);
 	gStyle->SetPadBottomMargin(0.15);
@@ -76,6 +77,7 @@ int GetGain(bool ibf = true) {
 
 	//num = 4;
     Double_t hvMeshList[num], hvDriftList[num], hvRatioList[num];
+    Double_t fieldList[num];
     Double_t gainList[num], gainFeChargeList[num], gainErrorList[num], gainFeChargeErrorList[num];
     for (unsigned int k = 0; k < num; k++) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
@@ -94,7 +96,9 @@ int GetGain(bool ibf = true) {
         }
 		hvMeshList[k] = hvMesh;
 		hvDriftList[k] = hvDrift;
-		hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
+		//hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
+        hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*ddrift/damp;
+        fieldList[k] = (double)hvMesh/damp/1000.;
         
         c2->cd(k+1);
         Double_t gain = 0, gainError = 0;
@@ -103,37 +107,43 @@ int GetGain(bool ibf = true) {
         gainErrorList[k] = gainError;
         
     }
-    c2->SaveAs(Form("Figures/model%d/gains2-%s.pdf", modelNum, gasName.c_str()));
+    c2->SaveAs(Form("Figures/model%d/gains3-%s.pdf", modelNum, gasName.c_str()));
 
 	// Load data
 	const Int_t dataNum = dataQuantity(gasName);
 	Double_t hvMeshListData[dataNum], hvDriftListData[dataNum], gainListData[dataNum], gainErrorListData_old[dataNum], gainListData_old[dataNum], gainErrorListData[dataNum];
+    Double_t fieldListData[dataNum];
 	LoadGainData(gasName, dataNum, hvMeshListData, hvDriftListData, gainListData, gainErrorListData, gainListData_old, gainErrorListData_old);
 	Double_t hvRatioListData[dataNum];
-	for (int i = 0; i < dataNum; i++) {hvRatioListData[i] = hvMeshListData[i]/(hvDriftListData[i]-hvMeshListData[i]) * (ddrift-damp)/damp;}
+	for (int i = 0; i < dataNum; i++) {
+        hvRatioListData[i] = hvMeshListData[i]/(hvDriftListData[i]-hvMeshListData[i]) * (ddrift-damp)/damp;
+        fieldListData[i] = hvMeshListData[i]/damp;
+    }
 	
     // Draw results of simulation
-    TCanvas* c3 = new TCanvas("c3", "c3", 200, 300);
-	c3->Divide(1,2);
+    TCanvas* c3 = new TCanvas("c3", "c3", 600, 300);
+	c3->Divide(2);
 
 	c3->cd(1);
     gPad->SetLogy();
 	gPad->SetGrid();
-    TGraphErrors* grSim1 = new TGraphErrors(num, hvMeshList, gainList, 0, gainErrorList);
-    TGraphErrors* grSim2 = new TGraphErrors(num, hvMeshList, gainFeChargeList, 0, gainFeChargeErrorList);
+    TGraphErrors* grSim1 = new TGraphErrors(num, fieldList, gainList, 0, gainErrorList);
+    TGraphErrors* grSim2 = new TGraphErrors(num, fieldList, gainFeChargeList, 0, gainFeChargeErrorList);
     grSim1->SetTitle("Gain curve in the Micromegas");
-    grSim1->GetXaxis()->SetTitle( "V_{mesh}" );
+    //grSim1->GetXaxis()->SetTitle( "V_{mesh}" );
+    grSim1->GetXaxis()->SetTitle( "E_{amp} (kV/cm)" );
     grSim1->GetYaxis()->SetTitle( "Gain" );
-    grSim1->GetHistogram()->GetXaxis()->SetLimits(330, 450);
+    //grSim1->GetHistogram()->GetXaxis()->SetLimits(330, 450);
+    //grSim1->GetHistogram()->GetXaxis()->SetLimits(20000, 40000);
     grSim1->GetHistogram()->SetMinimum(2.e2);   // along Y axis
     grSim1->GetHistogram()->SetMaximum(8.e4);   // along Y axis
     grSim1->SetMarkerStyle(20);
     grSim1->Draw("AP");
 	grSim2->SetMarkerStyle(20);
-    grSim2->Draw("P same");
+    //grSim2->Draw("P same");
     
     // Fit the gain curve with an exponential function
-    TF1* fExp = new TF1( "FitFunctionExp", FitFunctionExp, hvMeshList[0]-5, hvMeshList[num-1]+5, 2 );
+    TF1* fExp = new TF1( "FitFunctionExp", FitFunctionExp, fieldList[0]-5, fieldList[num-1]+5, 2 );
     fExp->SetParName( 0, "const" );
     fExp->SetParName( 1, "slope" );
     grSim1->Fit( fExp, "0");
@@ -143,12 +153,10 @@ int GetGain(bool ibf = true) {
         
     // Same with data
         
-    TGraphErrors* grData1 = new TGraphErrors(dataNum, hvMeshListData, gainListData, 0, gainErrorListData);
-    grData1->SetMarkerStyle(20);
+    TGraphErrors* grData1 = new TGraphErrors(dataNum, fieldListData, gainListData, 0, gainErrorListData);
     //grData1->Draw("P same");
-    TGraphErrors* grData2 = new TGraphErrors(dataNum, hvMeshListData, gainListData_old, 0, gainErrorListData_old);
-    grData2->SetMarkerStyle(20);
-    grData2->Draw("P same");
+    TGraphErrors* grData2 = new TGraphErrors(dataNum, fieldListData, gainListData_old, 0, gainErrorListData_old);
+    //grData2->Draw("P same");
     
     TF1* fExp2 = new TF1( "FitFunctionExp2", FitFunctionExp, hvMeshListData[0]-5, hvMeshListData[dataNum-1]+5, 2 );
     fExp2->SetParName( 0, "const" );
@@ -163,9 +171,9 @@ int GetGain(bool ibf = true) {
     fExp3->SetParName( 1, "slope" );
     fExp3->SetLineColor(4);
     grData2->Fit( fExp3, "0" );
-    fExp3->Draw("same");
+    //fExp3->Draw("same");
     //PutText( 0.2, 0.75, Form( "#bf{y_{data old} = exp( %.3g + %.3g x)}", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
-    PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
+    //PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExp3->GetParameter(0), fExp3->GetParameter(1) ) );
     
     TLegend* legend = new TLegend(0.7,0.2,0.9,0.4);
     //legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
@@ -175,7 +183,7 @@ int GetGain(bool ibf = true) {
 */
 	legend->AddEntry(fExp3,"Data", "l");
     legend->AddEntry(fExp,"Simulation", "l");
-    legend->Draw();
+    //legend->Draw();
 
 	
 	c3->cd(2);
@@ -192,7 +200,7 @@ int GetGain(bool ibf = true) {
 	grSimRatio1->SetMarkerStyle(20);
 	grSimRatio1->Draw("AP");
 	grSimRatio2->SetMarkerStyle(20);
-	grSimRatio2->Draw("P same");
+	//grSimRatio2->Draw("P same");
 	
 	// Fit the gain curve with an exponential function
 	TF1* fExpRatio = new TF1( "FitFunctionExp", FitFunctionExp, hvRatioList[0]-2, hvRatioList[num-1]+2, 2 );
@@ -208,7 +216,7 @@ int GetGain(bool ibf = true) {
 	//grDataRatio1->Draw("P same");
 	TGraphErrors* grDataRatio2 = new TGraphErrors(dataNum, hvRatioListData, gainListData_old, 0, gainErrorListData_old);
 	grDataRatio2->SetMarkerStyle(20);
-	grDataRatio2->Draw("P same");
+	//grDataRatio2->Draw("P same");
 	
 	TF1* fExpRatio2 = new TF1( "FitFunctionExp2", FitFunctionExp, hvRatioListData[0]-2, hvRatioListData[dataNum-1]+2, 2 );
 	fExpRatio2->SetParName( 0, "const" );
@@ -223,9 +231,9 @@ int GetGain(bool ibf = true) {
 	fExpRatio3->SetParName( 1, "slope" );
 	fExpRatio3->SetLineColor(4);
 	grDataRatio2->Fit( fExpRatio3, "0" );
-	fExpRatio3->Draw("same");
+	//fExpRatio3->Draw("same");
     //PutText( 0.2, 0.75, Form( "#bf{y_{data old} = exp( %.3g + %.3g x)}", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
-    PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
+    //PutText( 0.2, 0.75, Form( "#bf{y_{data} = exp( %.3g + %.3g x)}", fExpRatio3->GetParameter(0), fExpRatio3->GetParameter(1) ) );
     
 	TLegend* legendRatio = new TLegend(0.7,0.2,0.9,0.4);
 	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
@@ -233,15 +241,32 @@ int GetGain(bool ibf = true) {
 	legendRatio->AddEntry(fExpRatio2,"Data", "l");
 	legendRatio->AddEntry(fExpRatio3,"Data (old)", "l");
      */
-	legendRatio->AddEntry(fExpRatio3,"Data", "l");
+    
+	//legendRatio->AddEntry(fExpRatio3,"Data", "l");
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
-	legendRatio->Draw();
+	//legendRatio->Draw();
         
-    c3->SaveAs(Form("Figures/model%d/GainCurve2-%s.pdf", modelNum, gasName.c_str()));
+    c3->SaveAs(Form("Figures/model%d/GainCurve3-%s.pdf", modelNum, gasName.c_str()));
 
      
     time_t t1 = time(NULL);
     //PrintTime(t0, t1);
+    
+    // Prints lists
+    vector<double> gainVec = {};
+    vector<double> gainErrorVec = {};
+    vector<double> fieldVec = {};
+    vector<double> fieldRatioVec = {};
+    for (int k = 0; k < num; k++) {
+        gainVec.push_back(gainList[k]);
+        gainErrorVec.push_back(gainErrorList[k]);
+        fieldVec.push_back(fieldList[k]);
+        fieldRatioVec.push_back(hvRatioList[k]);
+    }
+    PrintListVec( "gainListSim", gainVec, "%.3f" );
+    PrintListVec( "gainErrorListSim", gainErrorVec, "%.3f" );
+    PrintListVec( "fieldListSim", fieldVec, "%.2f" );
+    PrintListVec( "fieldRatioListSim", fieldRatioVec, "%.2f" );
 
     return 0;
 }
