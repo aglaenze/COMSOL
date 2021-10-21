@@ -29,9 +29,9 @@ MediumMagboltz* InitiateGas(string gasName) {
 	if (gasName=="Ar-iC4H10") {
 		gas->SetComposition("Ar", 95., "C4H10", 5.);
         //rPenning = 0.4753;
-        //rPenning = 0.478;
+        rPenning = 0.478;
         //rPenning = 0.48;
-        rPenning = 0.38;
+        //rPenning = 0.38;
 		gas->EnablePenningTransfer(rPenning, lambdaPenning, "ar");
 		gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
 	}
@@ -50,6 +50,10 @@ MediumMagboltz* InitiateGas(string gasName) {
 		gas->LoadIonMobility(path + "/Data/IonMobility_Ar+_Ar.txt");
 		//gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
 	}
+    else if (gasName=="air") {
+        gas->SetComposition("N2", 78.1, "O2", 20.9, "Ar", 0.9, "CO2", 0.4);
+        //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
+    }
 	else {cout << "What gas??" << endl; return 0;}
 	gas->SetTemperature(293.15);
 	gas->SetPressure(AtmosphericPressure);

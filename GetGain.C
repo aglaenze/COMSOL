@@ -23,7 +23,7 @@ int GetGain(bool ibf = true) {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 22;
     //____________________
 
     time_t t0 = time(NULL);
@@ -46,6 +46,7 @@ int GetGain(bool ibf = true) {
     cout << path << endl;
     
     double damp = 0.0128, ddrift = 0.5;
+    if (modelNum == 22) damp = 0.0125;
     
 	std::map <std::string, int, NoSorting> electrode;
     LoadElectrodeMap(modelNum, electrode);
@@ -82,7 +83,7 @@ int GetGain(bool ibf = true) {
     for (unsigned int k = 0; k < num; k++) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
         TString fileName;
-        if (modelNum == 1) {
+        if (modelNum == 1 || modelNum == 22) {
             int step = 20;
             hvMesh = 340+step*k;
             hvDrift = 540+step*k;
@@ -96,8 +97,8 @@ int GetGain(bool ibf = true) {
         }
 		hvMeshList[k] = hvMesh;
 		hvDriftList[k] = hvDrift;
-		//hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
-        hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*ddrift/damp;
+		hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
+        //hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*ddrift/damp;
         fieldList[k] = (double)hvMesh/damp/1000.;
         
         c2->cd(k+1);

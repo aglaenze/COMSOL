@@ -1,7 +1,7 @@
 /*
-Note that the spectrum shape only depends on the detector geometry
+ Note that the spectrum shape only depends on the detector geometry
  Photons create electrons with energy = 0
-*/
+ */
 
 #include <iostream>
 #include <fstream>
@@ -38,9 +38,11 @@ int main(int argc, char * argv[]) {
     //______________________
     // variables
     //string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
-    const bool variableThickness = false;   // to see how many photons converted depending on the thickness of the detector
+    //string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
+    string gasName = "air";
+    const bool variableThickness = true;   // to see how many photons converted depending on the thickness of the detector
+    const bool saveResults = true;
+    const bool drawSpectrum = true;
     //____________________
     
     time_t t0 = time(NULL);
@@ -52,6 +54,7 @@ int main(int argc, char * argv[]) {
     
     //Load geometry parameters
     double damp = 0., ddrift = 0., radius = 0., pitch = 0., width = 0., depth = 0.;
+    int modelNum = 1;
     LoadParameters(modelNum, damp, ddrift, radius, pitch, width, depth);
     
     
@@ -63,10 +66,10 @@ int main(int argc, char * argv[]) {
         double zStep = 0.2;
         int nStep = 50;
         TH1F* hConversion = new TH1F("hConversion", "Proportion of photons that converted", nStep, ddriftMin-zStep/2, ddriftMin+nStep*zStep-zStep/2);
-
+        
         for (int k = 0; k<nStep; k++) {
             ddrift = ddriftMin+k*zStep; // cm
-
+            
             cout << "\n\n\n" << nStep-k << " to go... " << endl;
             time_t t1 = time(NULL);
             PrintTime(t0, t1);
@@ -80,11 +83,11 @@ int main(int argc, char * argv[]) {
             // Make a component
             ComponentConstant field;
             field.SetGeometry(geo);
-
+            
             // Make a sensor.
             Sensor sensor;
             sensor.AddComponent(&field);
-
+            
             // Use Heed for simulating the photon absorption.
             TrackHeed track;
             track.SetSensor(&sensor);
@@ -122,19 +125,19 @@ int main(int argc, char * argv[]) {
         }
         hConversion->Write();
         fOut->Close();
-    }
-    
+        cout << "Wrote root file ConversionNumber.root" << endl;
+    }   // end of if (variableThickness)
     else {
         /*
-        // Create a cylinder in which the x-rays can convert.
-        // Diameter [cm]
-        const double diameter = 7.8;
-        // Half-length of the cylinder [cm].
-        const double length = 10.;
-        SolidTube tube(0.0, 0.0, 0.0, 0.0, 0.5 * diameter, length);
-        
-        // Combine gas and box to a simple geometry.
-        geo->AddSolid(&tube, gas);
+         // Create a cylinder in which the x-rays can convert.
+         // Diameter [cm]
+         const double diameter = 7.8;
+         // Half-length of the cylinder [cm].
+         const double length = 10.;
+         SolidTube tube(0.0, 0.0, 0.0, 0.0, 0.5 * diameter, length);
+         
+         // Combine gas and box to a simple geometry.
+         geo->AddSolid(&tube, gas);
          */
         
         // Set up detector geometry
@@ -146,11 +149,11 @@ int main(int argc, char * argv[]) {
         // Make a component
         ComponentConstant field;
         field.SetGeometry(geo);
-
+        
         // Make a sensor.
         Sensor sensor;
         sensor.AddComponent(&field);
-
+        
         // Use Heed for simulating the photon absorption.
         TrackHeed track;
         track.SetSensor(&sensor);
@@ -168,9 +171,9 @@ int main(int argc, char * argv[]) {
             double y0 = depth/2.;
             double z0 = ddrift;
             /*
-            double x0 = 0.;
-            double y0 = 0.;
-            double z0 = 0.;
+             double x0 = 0.;
+             double y0 = 0.;
+             double z0 = 0.;
              */
             double t0 = 0.;
             // Sample the photon energy, using the relative intensities according to XDB.
@@ -186,8 +189,7 @@ int main(int argc, char * argv[]) {
             track.TransportPhoton(x0, y0, z0, t0, egamma, 0., 0., -1, ne);
             if (ne > 2) hElectrons.Fill(ne);
         }
-    
-        const bool drawSpectrum = false;
+        
         if (drawSpectrum) {
             TCanvas c("c", "", 600, 600);
             c.cd();
@@ -202,18 +204,17 @@ int main(int argc, char * argv[]) {
             cout << "\nnPrimary = " << nPrimary << " in " << gasName << endl;
             
             cout << "\nCalculations yield:" << endl;
-            cout << "nPrimary = 228 in Ar-iC4H10 (90/10)" << endl;
+            cout << "nPrimary = 228 in Ar-iC4H10 (95/5)" << endl;
             cout << "nPrimary = 222 in Ar-CO2 (93/7)" << endl;
             cout << "nPrimary = 157 in Ne" << endl;
         }
-    
-        const bool saveResults = false;
+        
         if (saveResults) {
-        // Write the histograms to the TFile.
-        const char* name = Form("rootFiles/%s/spectrum-Fe55.root", gasName.c_str());
-        TFile* f = new TFile(name, "RECREATE");
-        hElectrons.Write();
-        f->Close();
+            // Write the histograms to the TFile.
+            const char* name = Form("rootFiles/%s/spectrum-Fe55.root", gasName.c_str());
+            TFile* f = new TFile(name, "RECREATE");
+            hElectrons.Write();
+            f->Close();
         }
     }
     

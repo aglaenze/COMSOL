@@ -120,7 +120,8 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
         zElectrodes = {ddrift, damp, 0.0128+0.4+0.0060, 0.0128+0.4, 0.0128, 0};
     }
     else if (modelNum == 22) {
-        damp = 0.0125;
+        //damp = 0.0125;
+        damp = 0.0192;
         ddrift = 0.5;      // cm
         radius = 0.0009;   // cm
         pitch = 0.0063;    // cm
