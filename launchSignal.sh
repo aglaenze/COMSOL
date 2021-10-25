@@ -10,7 +10,7 @@ gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
 nEvents=100            # number of events to simulate
 computeIBF=1
 useFeSource=0
-testMode=0		# to run locally, of a reduced number of events
+testMode=1		# to run locally, of a reduced number of events
 remote=0		# to run on lxplus on remote machines using condor
 
 ## end of variables

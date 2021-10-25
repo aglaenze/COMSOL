@@ -67,7 +67,7 @@ int main(int argc, char * argv[]) {
 	
 	TString errorMessage = "Please enter HVmesh like this: ./signal";
 	for (int k = 0; k< electrodeNum-1; k++) errorMessage += Form(" $hv%d", k+1);
-	if (testMode && argc != electrodeNum) {
+	if (testMode && argc < electrodeNum) {
 		errorMessage += " (test mode)";
 		cout << errorMessage << endl;
 		return -1;

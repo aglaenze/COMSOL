@@ -67,21 +67,23 @@ ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz*
 	// Load the field map.
 	string dataFolder = Form("COMSOL_data/model%d/", modelNum);
 	if (remote) dataFolder = "./";
-	string dataFile = dataFolder + "ewfield";
-	for (int k = 0; k < (int)hvList.size(); k++) dataFile += Form("-%d", hvList[k]);
-	dataFile += ".txt";
-	ifstream meshFile(dataFolder+"mesh.mphtxt");
-	ifstream materialsFile(dataFolder+"dielectrics.dat");
-	ifstream potentialFile(dataFile);
-	if (!meshFile) cout << "no mesh file to read" << endl;
-	if (!materialsFile) cout << "no materials file to read" << endl;
-	if (!potentialFile) cout << "no data file (with V and E) to read" << endl;
+	string dataFileName = dataFolder + "ewfield";
+	for (int k = 0; k < (int)hvList.size(); k++) dataFileName += Form("-%d", hvList[k]);
+	dataFileName += ".txt";
+    string meshFileName = dataFolder+"mesh.mphtxt";
+    string materialsFileName = dataFolder+"dielectrics.dat";
+	ifstream meshFile(meshFileName);
+	ifstream materialsFile(materialsFileName);
+	ifstream potentialFile(dataFileName);
+	if (!meshFile) cout << meshFileName << " not found" << endl;
+	if (!materialsFile) cout << materialsFileName << " not found" << endl;
+	if (!potentialFile) cout << dataFileName << " not found" << endl;
 	
 	if (!(meshFile && materialsFile && potentialFile)) {return nullptr;}
 	else {
 		// Load the field map.
 		ComponentComsol* fm = new ComponentComsol();
-		fm->Initialise(dataFolder+"mesh.mphtxt", dataFolder+"dielectrics.dat", dataFile);
+		fm->Initialise(meshFileName, materialsFileName, dataFileName);
 		fm->PrintMaterials();
 		fm->EnableMirrorPeriodicityX();
 		fm->EnableMirrorPeriodicityY();
