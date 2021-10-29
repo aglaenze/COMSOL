@@ -127,6 +127,13 @@ void LoadParameters(int modelNum, double& damp, double& ddrift, double& radius, 
         pitch = 0.0063;    // cm
         zElectrodes = {ddrift, damp, 0};
     }
+    else if (modelNum == 23) {
+        damp = 0.0128;
+        ddrift = 0.5;      // cm
+        radius = 0.0015;   // cm
+        pitch = 0.0100;    // cm
+        zElectrodes = {ddrift, damp, 0};
+    }
     else {std::cout << "Model num?" << std::endl; return;}
     width = periodicityNum * pitch;
     depth = periodicityNum * pitch;

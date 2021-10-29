@@ -23,7 +23,7 @@ int GetGain(bool ibf = true) {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 22;
+    const int modelNum = 16;
     //____________________
 
     time_t t0 = time(NULL);
@@ -46,7 +46,7 @@ int GetGain(bool ibf = true) {
     cout << path << endl;
     
     double damp = 0.0128, ddrift = 0.5;
-    if (modelNum == 22) damp = 0.0125;
+    //if (modelNum == 22) damp = 0.0125;
     
 	std::map <std::string, int, NoSorting> electrode;
     LoadElectrodeMap(modelNum, electrode);
