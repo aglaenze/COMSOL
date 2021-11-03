@@ -20,7 +20,8 @@ int GetIbf() {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 1;
+    const int modelNum = 23;
+    bool convoluted = true;     // to draw convoluted ibf with Fe source instead of "pure" ibf
     //____________________
     
     time_t t0 = time(NULL);
@@ -70,15 +71,15 @@ int GetIbf() {
         else if (it->first == "drift") driftElectrode = it->second;
     }
     if (readoutElectrode == 0 || driftElectrode == 0) {cout << "Did not find drift or pad electrode" << endl; return 0;}
-
+    
     for (int k = 0; k<num; k++) {
         int hvMesh = 340+20*k;
         int hvDrift = 200+hvMesh;
         //hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*(ddrift-damp)/damp;
         hvRatioList[k] = (double)hvMesh/(hvDrift-hvMesh)*ddrift/damp;
         
-        TFile* fSignal = TFile::Open(Form("rootFiles/Ar-iC4H10/model1/signal-%d-%d.root", hvMesh, hvDrift), "READ");
-        TFile* fConvoluted = TFile::Open(Form("rootFiles/Ar-iC4H10/model1/fe-spectrum-convoluted-%d-%d.root", hvMesh, hvDrift), "READ");
+        TFile* fSignal = TFile::Open(Form("rootFiles/Ar-iC4H10/model%d/signal-%d-%d.root", modelNum, hvMesh, hvDrift), "READ");
+        TFile* fConvoluted = TFile::Open(Form("rootFiles/Ar-iC4H10/model%d/fe-spectrum-convoluted-%d-%d.root", modelNum, hvMesh, hvDrift), "READ");
         
         // 1ere étape: récupérer les fichiers de ibf, les dessiner dans un TH1, et les fitter
         // 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
@@ -112,14 +113,14 @@ int GetIbf() {
         
         Int_t iBinMax = hIbf->GetMaximumBin();
         Double_t xMax = hIbf->GetXaxis()->GetBinCenter( iBinMax );
-        hIbf->GetXaxis()->SetRangeUser(0, xMax + 3*hIbf->GetRMS());
         
-        hIbf->GetXaxis()->SetRangeUser(0, 10.);
+        double xPlotMax = 3*f->GetParameter(0);
+        hIbf->GetXaxis()->SetRangeUser(0, xPlotMax);
         hvMeshList[k] = hvMesh;
         fieldList[k] = hvMesh/damp/1000.;
         ibfList[k] = f->GetParameter(0);
         ibfErrorList[k] = f->GetParError(0);
-
+        
         // 2e étape : récupérer les fichiers de charge induite, dessiner le ratio dans un TH1, et les fitter
         
         TTree* tChargeReadout = (TTree*)fSignal->Get(Form("tInducedCharge_%d", readoutElectrode));
@@ -159,7 +160,7 @@ int GetIbf() {
          hIbfCharge->GetXaxis()->SetRangeUser(0, xMax + 3*hIbf->GetRMS());
          */
         
-        hIbfCharge->GetXaxis()->SetRangeUser(0, 10.);
+        hIbfCharge->GetXaxis()->SetRangeUser(0, xPlotMax);
         ibfList2[k] = fIbfCharge->GetParameter(0);
         ibfErrorList2[k] = fIbfCharge->GetParError(0);
         
@@ -170,11 +171,23 @@ int GetIbf() {
         hFeIbf->Scale(1/hFeIbf->GetMaximum());
         hFeIbfTotalCharge->Scale(1/hFeIbfTotalCharge->GetMaximum());
         hFeIbfIonCharge->Scale(1/hFeIbfIonCharge->GetMaximum());
+        hFeIbf->SetMaximum(1.2);
+        hFeIbfTotalCharge->SetMaximum(1.2);
+        hFeIbfIonCharge->SetMaximum(1.2);
+        
+        if (convoluted) {
+            iBinMax = hFeIbf->GetMaximumBin();
+            xMax = hFeIbf->GetXaxis()->GetBinCenter( iBinMax );
+        }
         
         TF1* fFeIbf = GetFitIbf(hFeIbf);
         TF1* fFeIbfTotalCharge = GetFitIbf(hFeIbfTotalCharge);
         TF1* fFeIbfIonCharge = GetFitIbf(hFeIbfIonCharge);
-        hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
+        if (convoluted) xPlotMax = 3*fFeIbf->GetParameter(0);
+        
+        hFeIbf->GetXaxis()->SetRangeUser(0, xPlotMax);
+        hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, xPlotMax);
+        hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, xPlotMax);
         
         // Extract IBF values
         ibfConvolutedList[k] = fFeIbf->GetParameter(0);
@@ -186,7 +199,6 @@ int GetIbf() {
         ibfConvolutedList3[k] = fFeIbfIonCharge->GetParameter(0);
         ibfConvolutedErrorList3[k] = fFeIbfIonCharge->GetParError(0);
         
-        
         // 4e étape : dessiner les courbes ibf = f(field ratio)
         c2->cd(k+1);
         // Upper plot will be in pad1
@@ -197,16 +209,25 @@ int GetIbf() {
         //pad1->SetGridx();         // Vertical grid
         pad1->Draw();             // Draw the upper pad: pad1
         pad1->cd();               // pad1 becomes the current pad
-        hIbf->Draw("hist");
-        f->Draw("same");
+        if (convoluted) {
+            hFeIbf->Draw("hist");
+            fFeIbf->Draw("same");
+        }
+        else {
+            hIbf->Draw("hist");
+            f->Draw("same");
+        }
         
         
         // Add text to frame
-        TLatex* txt = new TLatex(1.2*xMax,1,Form("IBF = %.3g #pm %.3f %s", f->GetParameter(0), f->GetParError(0), "%"));
-        TLatex* txt2 = new TLatex(1.2*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
+        double xPos = 1.6*xMax;
+        TLatex* txt = new TLatex(xPos,0.6,Form("#bf{IBF = %.2f #pm %.2f %s}", f->GetParameter(0), f->GetParError(0), "%"));
+        TLatex* txtConv = new TLatex(xPos,0.6,Form("#bf{IBF = %.2f #pm %.2f %s}",fFeIbf->GetParameter(0), fFeIbf->GetParError(0), "%"));
+        TLatex* txt2 = new TLatex(xPos,0.5,Form("#bf{Field ratio = %.2f}", hvRatioList[k]));
         txt->SetTextSize(0.05) ;
         txt2->SetTextSize(0.05) ;
-        txt->Draw();
+        if (convoluted) txtConv->Draw();
+        else txt->Draw();
         txt2->Draw();
         
         // lower plot will be in pad
@@ -218,29 +239,45 @@ int GetIbf() {
         //pad2->SetGridx(); // vertical grid
         pad2->Draw();
         pad2->cd();       // pad2 becomes the current pad
-        hIbfCharge->Draw("hist");
-        hIbfIonCharge->SetLineColor(6);
-        hIbfIonCharge->Draw("hist same");
-        fIbfCharge->Draw("same");
+        if (convoluted) {
+            hFeIbfTotalCharge->Draw("hist");
+            hFeIbfIonCharge->SetLineColor(6);
+            hFeIbfIonCharge->Draw("hist same");
+            fFeIbfTotalCharge->Draw("same");
+        }
+        else {
+            hIbfCharge->Draw("hist");
+            hIbfIonCharge->SetLineColor(6);
+            hIbfIonCharge->Draw("hist same");
+            fIbfCharge->Draw("same");
+        }
         
-        TLegend* legend = new TLegend(0.5,0.7,0.9,0.9);
-        legend->SetTextSize(0.03);
-        legend->AddEntry(hIbfCharge,"All induced charges","l");
-        legend->AddEntry(hIbfIonCharge,"Induced ion charges","l");
+        TLegend* legend = new TLegend(0.6,0.7,0.9,0.9);
+        legend->SetTextSize(0.045);
+        if (convoluted) {
+            legend->AddEntry(hFeIbfTotalCharge,"All induced charges","l");
+            legend->AddEntry(hFeIbfIonCharge,"Induced ion charges","l");
+        }
+        else {
+            legend->AddEntry(hIbfCharge,"All induced charges","l");
+            legend->AddEntry(hIbfIonCharge,"Induced ion charges","l");
+        }
         legend->Draw("same");
         
-        TLatex* txt3 = new TLatex(1.2*xMax,1,Form("IBF = %.3g #pm %.3f %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%"));
-        TLatex* txt4 = new TLatex(1.2*xMax,0.9,Form("Field ratio = %.2f", hvRatioList[k]));
+        TLatex* txt3 = new TLatex(xPos, 0.6, Form("#bf{IBF = %.2f #pm %.2f %s}", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%"));
+        TLatex* txt3Conv = new TLatex(xPos, 0.6, Form("#bf{IBF = %.2f #pm %.2f %s}", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParError(0), "%"));
+        TLatex* txt4 = new TLatex(xPos, 0.5, Form("#bf{Field ratio = %.2f}", hvRatioList[k]));
         txt3->SetTextSize(0.05) ;
         txt4->SetTextSize(0.05) ;
-        txt3->Draw();
+        if (convoluted) txt3Conv->Draw();
+        else txt3->Draw();
         txt4->Draw();
         
         
         c2->cd(k+1);
         //ibfLine->Draw("same");
     }
-    c2->SaveAs(Form("Figures/model%d/ibf_%-3s.pdf", modelNum, gasName.c_str()));
+    c2->SaveAs(Form("Figures/model%d/ibf_%s.pdf", modelNum, gasName.c_str()));
     
     
     TCanvas* c5 = new TCanvas("c5", "c5", 600, 300);
@@ -270,7 +307,8 @@ int GetIbf() {
     grSimConvoluted->SetMarkerColor(4);
     //grSimConvoluted->Draw("LP same");
     
-    TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, fieldList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
+    //TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, fieldList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
+    TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, fieldList, ibfList, 0, ibfErrorList);
     //grSimConvoluted2->SetMarkerColor(7);
     //grSimConvoluted2->Draw("LP same");
     grSimConvoluted2->SetTitle("IBF curve in the Micromegas");
@@ -319,7 +357,9 @@ int GetIbf() {
     
     c5->cd(2);
     gPad->SetGrid();
-    TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
+    //TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
+    TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfList, 0, ibfErrorList);
+    //TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList, 0, ibfConvolutedErrorList);
     grSimRatio1->SetTitle("IBF = f(field ratio)");
     grSimRatio1->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
     grSimRatio1->GetYaxis()->SetTitle( "IBF (%)" );
@@ -340,6 +380,7 @@ int GetIbf() {
     grSimRatio2->SetMarkerColor(2);
     //grSimRatio2->GetXaxis()->SetLimits(hvRatioList[0]-5, hvRatioList[num]+5);
     //grSimRatio2->Draw("LP same");
+    //grSimRatio2->Draw("AP");
     
     
     TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, ratioListData, ionBackFlowCorrectedVect1, 0, ionBackFlowCorrectedErrorVect1 );
@@ -358,11 +399,11 @@ int GetIbf() {
      legendRatio->AddEntry(grDataRatio2, "Data old", "lp");
      */
     legendRatio->AddEntry(grDataRatio2, "Data", "lp");
-    legendRatio->AddEntry(grSimRatio1,"Simulation (counting IBF)", "lp");
+    legendRatio->AddEntry(grSimRatio1, "Simulation (counting IBF)", "lp");
     legendRatio->AddEntry(grSimRatio2, "Simulation (induced charge)", "lp");
     //legendRatio->Draw();
     
-    c5->SaveAs(Form("Figures/model%d/IBFCurve-%s-3.pdf", modelNum, gasName.c_str()));
+    c5->SaveAs(Form("Figures/model%d/IBFCurve-%s.pdf", modelNum, gasName.c_str()));
     
     
     time_t t1 = time(NULL);
@@ -373,8 +414,14 @@ int GetIbf() {
     vector<double> fieldVec = {};
     vector<double> fieldRatioVec = {};
     for (int k = 0; k < num; k++) {
-        ibfVec.push_back(ibfConvolutedList2[k]);
-        ibfErrorVec.push_back(ibfConvolutedErrorList2[k]);
+        if (convoluted) {
+            ibfVec.push_back(ibfConvolutedList[k]);
+            ibfErrorVec.push_back(ibfConvolutedErrorList[k]);
+        }
+        else {
+            ibfVec.push_back(ibfList[k]);
+            ibfErrorVec.push_back(ibfErrorList[k]);
+        }
         fieldVec.push_back(fieldList[k]);
         fieldRatioVec.push_back(hvRatioList[k]);
     }

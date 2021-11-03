@@ -94,7 +94,7 @@ Int_t GetPrimary(string gasName) {
 
 void LoadElectrodeMap(int modelNum, map <string, int, NoSorting>& electrodeMap) {
     electrodeMap = {};
-    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18 || modelNum == 22 || modelNum == 23) {
+    if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18 || modelNum == 22 || modelNum == 23 || modelNum == 24) {
         electrodeMap["pad"] = 4;
         electrodeMap["mesh"] = 2;
         electrodeMap["drift"] = 3;
@@ -273,12 +273,14 @@ int GetMaxModelNum(bool remote) {
     for (int i = 1; i < 100; i++) {
         string folder = "COMSOL_data/model" + to_string(i);
         if (remote) folder = ".";
+        //string folder = "rootFiles/Ar-iC4H10/model" + to_string(i);
         const char* path = &folder[0];
         DIR* rep = NULL;
         rep = opendir(path);
         if (rep == NULL) {continue;}
         else {num = i;}
     }
+    //cout << "max model num = " << num << endl;
     return num;
 }
 

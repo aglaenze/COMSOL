@@ -23,7 +23,7 @@ int GetGain(bool ibf = true) {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 16;
+    const int modelNum = 23;
     //____________________
 
     time_t t0 = time(NULL);
@@ -83,7 +83,7 @@ int GetGain(bool ibf = true) {
     for (unsigned int k = 0; k < num; k++) {
         Int_t hvMesh = 0, hvDmDown = 0, hvDmUp = 0, hvGemDown = 0, hvGemUp = 0, hvDrift = 0;
         TString fileName;
-        if (modelNum == 1 || modelNum == 22) {
+        if (modelNum == 1 || modelNum == 16 || modelNum == 17 || modelNum == 18 || modelNum == 22 || modelNum == 23) {
             int step = 20;
             hvMesh = 340+step*k;
             hvDrift = 540+step*k;
@@ -108,7 +108,7 @@ int GetGain(bool ibf = true) {
         gainErrorList[k] = gainError;
         
     }
-    c2->SaveAs(Form("Figures/model%d/gains3-%s.pdf", modelNum, gasName.c_str()));
+    c2->SaveAs(Form("Figures/model%d/gains-%s.pdf", modelNum, gasName.c_str()));
 
 	// Load data
 	const Int_t dataNum = dataQuantity(gasName);
@@ -150,7 +150,7 @@ int GetGain(bool ibf = true) {
     grSim1->Fit( fExp, "0");
     fExp->SetLineColor(2);
     fExp->Draw("same");
-    PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3g + %.3g x)}", fExp->GetParameter(0), fExp->GetParameter(1) ) );
+    PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3f + %.3f x)}", fExp->GetParameter(0), fExp->GetParameter(1) ) );
         
     // Same with data
         
@@ -210,7 +210,7 @@ int GetGain(bool ibf = true) {
 	grSimRatio1->Fit( fExpRatio, "0");
 	fExpRatio->SetLineColor(2);
 	fExpRatio->Draw("same");
-	PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3g + %.3g x)}", fExpRatio->GetParameter(0), fExpRatio->GetParameter(1) ) );
+	PutText( 0.2, 0.7, Form( "#bf{y_{simulation} = exp( %.3f + %.3f x)}", fExpRatio->GetParameter(0), fExpRatio->GetParameter(1) ) );
 	
 	TGraphErrors* grDataRatio1 = new TGraphErrors(dataNum, hvRatioListData, gainListData, 0, gainErrorListData);
 	grDataRatio1->SetMarkerStyle(20);
@@ -247,7 +247,7 @@ int GetGain(bool ibf = true) {
 	legendRatio->AddEntry(fExpRatio,"Simulation", "l");
 	//legendRatio->Draw();
         
-    c3->SaveAs(Form("Figures/model%d/GainCurve3-%s.pdf", modelNum, gasName.c_str()));
+    c3->SaveAs(Form("Figures/model%d/GainCurve-%s.pdf", modelNum, gasName.c_str()));
 
      
     time_t t1 = time(NULL);

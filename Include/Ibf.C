@@ -123,9 +123,14 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
     TF1* fIbfIonCharge = GetFitCurve(hIbfIonCharge, gaussian);
     
     // Change x axis
+    /*
     hIbf->GetXaxis()->SetRangeUser(0, 10.);
     hIbfCharge->GetXaxis()->SetRangeUser(0, 10.);
     hIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
+    */
+    hIbf->GetXaxis()->SetRangeUser(0, 2*fIbfCharge->GetParameter(0));
+    hIbfCharge->GetXaxis()->SetRangeUser(0, 2*fIbfCharge->GetParameter(0));
+    hIbfIonCharge->GetXaxis()->SetRangeUser(0, 2*fIbfIonCharge->GetParameter(0));
     if (fIbf->GetParameter(0) < 0.9) {
         hIbf->GetXaxis()->SetRangeUser(0, 3.);
         hIbfCharge->GetXaxis()->SetRangeUser(0, 3.);
@@ -192,9 +197,14 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     TF1* fFeIbf = GetFitCurve(hFeIbf);
     TF1* fFeIbfTotalCharge = GetFitCurve(hFeIbfTotalCharge);
     TF1* fFeIbfIonCharge = GetFitCurve(hFeIbfIonCharge);
+    /*
     hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
     hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 10.);
     hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
+     */
+    hFeIbf->GetXaxis()->SetRangeUser(0, 2*fFeIbf->GetParameter(0));
+    hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 2*fFeIbfTotalCharge->GetParameter(0));
+    hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 2*fFeIbfIonCharge->GetParameter(0));
     if (fFeIbf->GetParameter(0) < 0.9) {
         hFeIbf->GetXaxis()->SetRangeUser(0, 3.);
         hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 3.);
