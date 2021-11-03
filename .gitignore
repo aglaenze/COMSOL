@@ -11,6 +11,7 @@ aglaenze.cc
 Process.sh
 ComputeSignal.sh
 clean.sh
+launchSignal.sh
 
 Figures
 COMSOL_data
