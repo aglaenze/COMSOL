@@ -167,9 +167,9 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
     
     // Finally legend
     
-    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fIbf->GetParameter(0), fIbf->GetParError(0), "%");
-    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParError(0), "%");
-    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fIbfIonCharge->GetParameter(0), fIbfIonCharge->GetParError(0), "%");
+    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fIbf->GetParameter(0), fIbf->GetParameter(1), "%");
+    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fIbfCharge->GetParameter(0), fIbfCharge->GetParameter(1), "%");
+    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fIbfIonCharge->GetParameter(0), fIbfIonCharge->GetParameter(1), "%");
     TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
     legend->SetMargin(0.15);
     legend->AddEntry(hIbf,"IBF ratio: " + txtIbf1,"l");
@@ -250,9 +250,9 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     hFeIbfIonCharge->Draw("hist same");
     fFeIbfIonCharge->Draw("same");
     
-    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbf->GetParameter(0), fFeIbf->GetParError(0), "%");
-    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParError(0), "%");
-    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfIonCharge->GetParameter(0), fFeIbfIonCharge->GetParError(0), "%");
+    TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbf->GetParameter(0), fFeIbf->GetParameter(1), "%");
+    TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParameter(1), "%");
+    TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfIonCharge->GetParameter(0), fFeIbfIonCharge->GetParameter(1), "%");
     TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
     legend->SetMargin(0.15);
     /*

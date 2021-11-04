@@ -213,6 +213,7 @@ void DrawFeChargeConvolution(int modelNum, TString fConvolutedName, string reado
     if (xMax > 8000) hFeCharge->GetXaxis()->SetMaxDigits(3);
     
     hFeCharge->Draw("hist same");
+    f->SetLineColor(kBlue);
     f->Draw("same");
     TString txt2 = Form("Induced charge --> Gain = %.0f #pm %.3f", f->GetParameter(0), f->GetParError(0));
     /*
