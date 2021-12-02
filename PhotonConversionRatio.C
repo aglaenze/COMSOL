@@ -34,12 +34,20 @@ int PhotonConversionRatio() {
     //string gasName = "air";
     //____________________
     
-    double hAbove = 10;      //cm
+    //double hAbove = 10;      //cm
+    double hAbove = 0;      //cm
     double lDetector = 12;   // size of active area in x, z (in cm)
     double hDetector = 3;    // height of the detector in z (in cm)
     
-    double zMin = 2.265;    // distance from the top of the detector to the closest electrode of interest
-    double zMax = 2.987;    // distance from the top of the detector to the furthest electrode of interest
+    //double zMin = 2.265;    // distance from the top of the detector to the closest electrode of interest
+    //double zMax = 2.987;    // distance from the top of the detector to the furthest electrode of interest
+    
+    /*
+    double zMin = 1.143;
+    double zMax = 2.193;
+     */
+    double zMin = 2.487;
+    double zMax = 2.987;
     
     
     gStyle->SetOptStat(0);
@@ -105,7 +113,7 @@ int PhotonConversionRatio() {
     
     double xText = ddriftMin + (ddriftMax-ddriftMin)*0.4;
     TLatex* txt = new TLatex(xText,0.3,Form("#bf{#sigma_{#gamma-Ar} = %.3g cm^{-2}}", fTh->GetParameter(1)));
-    //txt->Draw();
+    txt->Draw();
     
     cv->SaveAs(Form("Figures/PhotonConversionRatio-%s.pdf", gasName.c_str()));
     

@@ -22,6 +22,36 @@ Double_t ln(Double_t x) {
     return TMath::Log(x);
 }
 
+void WriteInfo(TF1* f) {
+    
+    // Write gain, sigma and res = sigma/gain on the plot
+    Double_t gain = f->GetParameter(0);
+    Double_t gainError = f->GetParError(0);
+    Double_t sigma = abs(f->GetParameter(1));
+    Double_t sigmaError = f->GetParError(1);
+    Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
+    Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
+    Double_t fwhm = 2*TMath::Sqrt(2* TMath::Log(2))*sigma;
+    Double_t fwhmError = 2*TMath::Sqrt(2* TMath::Log(2))*sigmaError;
+    /*
+     Double_t fwhm = resolution * 2* ln(2);
+     Double_t fwhmError = resolutionError * 2* ln(2);
+     */
+    
+    double xPos = f->GetParameter(0)*0.2;
+    TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", gain, gainError));
+    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{#sigma = %.1f #pm %.1f}", sigma, sigmaError));
+    
+    
+    std::string percent = "%";
+    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{#sigma/Mean = (%.1f #pm %.1f) %s}", abs(resolution)*100, abs(resolutionError)*100, percent.c_str()));
+    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = %.1f #pm %.1f}", abs(fwhm), abs(fwhmError)));
+    
+    txtGain->Draw("same");
+    txtSigma->Draw("same"); //txtRes->Draw("same");
+    txtFwhm->Draw("same");
+}
+
 void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalName="", bool useFeSource = false) {
     /* Draw the gain */
     
@@ -94,19 +124,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
     //legend->Draw("same");
     
     // Write gain, sigma and res = sigma/gain on the plot
-    double xPos = fAmplification->GetParameter(0)*0.2;
-    TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", fAmplification->GetParameter(0), fAmplification->GetParError(0)));
-    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", abs(fAmplification->GetParameter(1)), abs(fAmplification->GetParError(1))));
-    Double_t resolution = abs(fAmplification->GetParameter(1)/fAmplification->GetParameter(0));
-    Double_t resolutionError = resolution * TMath::Sqrt( Square(fAmplification->GetParError(0)/fAmplification->GetParameter(0)) + Square(fAmplification->GetParError(1)/fAmplification->GetParameter(1)) );
-    Double_t fwhm = resolution * 2* ln(2);
-    Double_t fwhmError = resolutionError * 2* ln(2);
-    std::string percent = "%";
-    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
-    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
-    
-    txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
-    txtFwhm->Draw("same");
+    WriteInfo(fAmplification);
 }
 
 
@@ -137,21 +155,7 @@ void DrawFeConvolution(TString fConvolutedName, Double_t& gain, Double_t& gainEr
     f->Draw("same");
     
     // Write gain, sigma and res = sigma/gain on the plot
-    double xPos = f->GetParameter(0)*0.2;
-    TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", f->GetParameter(0), f->GetParError(0)));
-    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", f->GetParameter(1), f->GetParError(1)));
-    gain = f->GetParameter(0);
-    gainError = f->GetParError(0);
-    Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
-    Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
-    Double_t fwhm = resolution * 2* ln(2);
-    Double_t fwhmError = resolutionError * 2* ln(2);
-    std::string percent = "%";
-    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
-    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
-    
-    txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
-    txtFwhm->Draw("same");
+    WriteInfo(f);
     
     /*
      TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
@@ -223,24 +227,8 @@ void DrawFeChargeConvolution(int modelNum, TString fConvolutedName, string reado
      legend->SetTextSize(0.04);
      legend->Draw("same");
      */
-
     
-    // Write gain, sigma and res = sigma/gain on the plot
-    double xPos = f->GetParameter(0)*0.2;
-    TLatex* txtGain = new TLatex(xPos, 1.2, Form("#bf{Gain = %.1f #pm %.1f}", f->GetParameter(0), f->GetParError(0)));
-    TLatex* txtSigma = new TLatex(xPos, 1.1, Form("#bf{Sigma = %.1f #pm %.1f}", f->GetParameter(1), f->GetParError(1)));
-    gain = f->GetParameter(0);
-    gainError = f->GetParError(0);
-    Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
-    Double_t resolutionError = resolution * TMath::Sqrt( Square(f->GetParError(0)/f->GetParameter(0)) + Square(f->GetParError(1)/f->GetParameter(1)) );
-    Double_t fwhm = resolution * 2* ln(2);
-    Double_t fwhmError = resolutionError * 2* ln(2);
-    std::string percent = "%";
-    TLatex* txtRes = new TLatex(xPos, 1.0, Form("#bf{Sigma/Mean = (%.1f #pm %.1f) %s}", resolution*100, resolutionError*100, percent.c_str()));
-    TLatex* txtFwhm = new TLatex(xPos, 1.0, Form("#bf{FWHM = (%.1f #pm %.1f) %s}", fwhm*100, fwhmError*100, percent.c_str()));
-    
-    txtGain->Draw("same"); txtSigma->Draw("same"); //txtRes->Draw("same");
-    txtFwhm->Draw("same");
+    WriteInfo(f);
 }
 
 void DrawFeChargeConvolution(int modelNum = 0, TString fConvolutedName="", string readout = "") {

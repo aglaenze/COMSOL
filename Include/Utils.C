@@ -309,7 +309,7 @@ void LoadStyle() {
     gStyle->SetTitleFontSize(.05);
     gStyle->SetTitleXSize(.05);
     gStyle->SetTitleYSize(.05);
-    gStyle->SetLabelSize(.04, "XY");
+    gStyle->SetLabelSize(.045, "XY");
     gStyle->SetMarkerSize(0.3);
     gStyle->SetTextSize(0.05);
 }

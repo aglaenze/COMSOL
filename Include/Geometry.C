@@ -198,8 +198,8 @@ void DrawDetector(int modelNum, vector<int> hvList) {
         electrodeLine->SetLineStyle(9);
         // 0 = drift
         if (i == 0 || i == electrodeNum-1) electrodeLine->SetLineStyle(1);
-        TLatex* electrodeText = new TLatex(0.05, yCoord+0.03, Form("V_{%s} = %d V", (it->first).c_str(), hvList[electrodeNum-1-i]));
-        TText* zElectrode = new TText(0.6, yCoord+0.03, Form("z = %.3f mm", zElectrodes[i]*10));
+        TLatex* electrodeText = new TLatex(0.05, yCoord+0.03, Form("V_{%s} = -%d V", (it->first).c_str(), hvList[electrodeNum-1-i]));
+        TLatex* zElectrode = new TLatex(0.6, yCoord+0.03, Form("#bf{z = %.3f mm}", zElectrodes[i]*10));
         electrodeLine->Draw("same");
         electrodeText->Draw("same");
         zElectrode->Draw("same");
@@ -208,7 +208,7 @@ void DrawDetector(int modelNum, vector<int> hvList) {
             double electricField = (hvList[electrodeNum-1-i]-hvList[electrodeNum-1-(i+1)])/(zElectrodes[i]-zElectrodes[i+1]);
             TString fieldtxt = Form("E = %.1f V/cm", electricField);
             if (electricField>1000.) fieldtxt = Form("E = %.2f kV/cm", electricField/1000.);
-            TText* electricFieldtxt = new TText(0.05, yCoord-0.5*space, fieldtxt);
+            TLatex* electricFieldtxt = new TLatex(0.05, yCoord-0.5*space, fieldtxt);
             electricFieldtxt->SetTextColor(kBlue);
             electricFieldtxt->Draw("same");
         }

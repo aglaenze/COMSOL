@@ -23,7 +23,7 @@ int GetGain(bool ibf = true) {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 24;
+    const int modelNum = 25;
     //____________________
     
     time_t t0 = time(NULL);

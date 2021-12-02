@@ -11,6 +11,7 @@
 #include <TMath.h>
 
 #include "Include/Ibf.C"
+#include "Include/Electrons.C"
 
 
 int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
@@ -81,9 +82,9 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
     
     //DrawAmplificationElectrons(gasName, fSignalName, false);
     // Ignore convolution in the end
-    //DrawFeConvolution(fileName);
+    DrawFeConvolution(fileName);
     string readout = "mesh";
-    DrawFeChargeConvolution(modelNum, fileName, readout);
+    //DrawFeChargeConvolution(modelNum, fileName, readout);
     
     
     std::cout << "\n\nStarting to draw the IBF now\n\n" << std::endl;
@@ -103,34 +104,19 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
     
     // Draw distribution of where electrons are created
     cv->cd(5);
-    std::vector<float> *electronStartPointsInput = 0;
-    tAvalanche->SetBranchAddress("electronStartPoints", &electronStartPointsInput);
-    
-    std::vector<float> electronStartPoints = {};
+    gPad->SetLogy();
     double zmin = 0;
     double zmax = damp*1.2;
-    TH1F* zElDistribution = new TH1F("hZelectrons", "Start z of electrons", 1000, zmin, zmax);
-    const int nAvalanche = tAvalanche->GetEntries();
-    for (int k = 0; k < nAvalanche; k++) {
-        tAvalanche->GetEntry(k);
-        electronStartPoints = *electronStartPointsInput;
-        for (int j = 0; j< (int)electronStartPoints.size(); j++) {
-            zElDistribution->Fill(electronStartPoints[j]);
-        }
-        electronStartPoints.clear();
-    }
-    //zElDistribution->Scale(1/zElDistribution->GetMaximum());
-    //if (!(modelNum==1 || (modelNum >15 && modelNum < 19)) ) zElDistribution->SetMaximum(0.05* zElDistribution->GetMaximum());
-    zElDistribution->GetXaxis()->SetTitle("z (cm)");
-    //if (zmax < 0.1) zElDistribution->GetXaxis()->SetMaxDigits(2);
+    //DrawElectronsStart(modelNum, fSignalName, zmin, zmax);
+    //DrawElectrodes(modelNum, zmin, zmax, true);
     
-    gPad->SetLogy();
-    zElDistribution->Draw("hist");
-    DrawElectrodes(modelNum, zElDistribution->GetMinimum(), zElDistribution->GetMaximum(), true);
+    DrawElectrodeStart(modelNum, fSignalName);
     
     cv->cd(6);
     gPad->SetLogy();
-    DrawDyingIons(modelNum, fSignalName);
+    gPad->SetBottomMargin(0.1);
+    //DrawDyingIons(modelNum, fSignalName);
+    DrawDyingIonsOverlaid(modelNum, fSignalName);
     
     cv->SaveAs(outputName);
     
