@@ -1,4 +1,10 @@
 #!/bin/bash
+source $GARFIELD_HOME/install/share/Garfield/setupGarfield.sh
+
+if ! [ -d $COMSOL/build ]
+then
+mkdir $COMSOL/build
+fi
 
 cd $COMSOL/build
 cmake $COMSOL

@@ -35,7 +35,7 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
             if (it->first == "pad") readoutElectrode = it->second;
         }
     }
-        
+    
     if (readoutElectrode == 0 || driftElectrode == 0) {std::cout << "Did not find drift or pad electrode" << std::endl; return;}
     
     TFile* fSignal = TFile::Open(fSignalName, "READ");
@@ -124,10 +124,10 @@ void DrawIbf(int modelNum = 0, TString fSignalName="") {
     
     // Change x axis
     /*
-    hIbf->GetXaxis()->SetRangeUser(0, 10.);
-    hIbfCharge->GetXaxis()->SetRangeUser(0, 10.);
-    hIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
-    */
+     hIbf->GetXaxis()->SetRangeUser(0, 10.);
+     hIbfCharge->GetXaxis()->SetRangeUser(0, 10.);
+     hIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
+     */
     hIbf->GetXaxis()->SetRangeUser(0, 2*fIbfCharge->GetParameter(0));
     hIbfCharge->GetXaxis()->SetRangeUser(0, 2*fIbfCharge->GetParameter(0));
     hIbfIonCharge->GetXaxis()->SetRangeUser(0, 2*fIbfIonCharge->GetParameter(0));
@@ -194,13 +194,13 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     hFeIbfTotalCharge->Scale(1/hFeIbfTotalCharge->GetMaximum());
     hFeIbfIonCharge->Scale(1/hFeIbfIonCharge->GetMaximum());
     
-    TF1* fFeIbf = GetFitCurve(hFeIbf);
-    TF1* fFeIbfTotalCharge = GetFitCurve(hFeIbfTotalCharge);
-    TF1* fFeIbfIonCharge = GetFitCurve(hFeIbfIonCharge);
+    TF1* fFeIbf = GetFitIbf(hFeIbf);
+    TF1* fFeIbfTotalCharge = GetFitIbf(hFeIbfTotalCharge);
+    TF1* fFeIbfIonCharge = GetFitIbf(hFeIbfIonCharge);
     /*
-    hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
-    hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 10.);
-    hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
+     hFeIbf->GetXaxis()->SetRangeUser(0, 10.);
+     hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 10.);
+     hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 10.);
      */
     hFeIbf->GetXaxis()->SetRangeUser(0, 2*fFeIbf->GetParameter(0));
     hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 2*fFeIbfTotalCharge->GetParameter(0));
@@ -239,27 +239,27 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     hFeIbfIonCharge->SetMaximum(1.35);
     
     // Draw convoluted IBF
+    hFeIbf->Draw("hist same");
+    fFeIbf->Draw("same");
+    
     /*
-     hFeIbf->Draw("hist same");
-     fFeIbf->Draw("same");
-     
      hFeIbfTotalCharge->Draw("hist same");
      fFeIbfTotalCharge->Draw("same");
      */
     
-    hFeIbfIonCharge->Draw("hist same");
-    fFeIbfIonCharge->Draw("same");
+    /*
+     hFeIbfIonCharge->Draw("hist same");
+     fFeIbfIonCharge->Draw("same");
+     */
     
     TString txtIbf1 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbf->GetParameter(0), fFeIbf->GetParameter(1), "%");
     TString txtIbf2 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfTotalCharge->GetParameter(0), fFeIbfTotalCharge->GetParameter(1), "%");
     TString txtIbf3 = Form("IBF = (%.2f #pm %.2f) %s", fFeIbfIonCharge->GetParameter(0), fFeIbfIonCharge->GetParameter(1), "%");
     TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);
     legend->SetMargin(0.15);
-    /*
-     legend->AddEntry(fFeIbf,"IBF ratio: " + txtIbf1,"l");
-     legend->AddEntry(fFeIbfTotalCharge,"All induced charges: " + txtIbf2,"l");
-     */
-    legend->AddEntry(fFeIbfIonCharge,"Induced ion charges: " + txtIbf3,"l");
+    legend->AddEntry(fFeIbf,"IBF ratio: " + txtIbf1,"l");
+    //legend->AddEntry(fFeIbfTotalCharge,"All induced charges: " + txtIbf2,"l");
+    //legend->AddEntry(fFeIbfIonCharge,"Induced ion charges: " + txtIbf3,"l");
     legend->SetTextSize(0.04);
     legend->Draw("same");
     

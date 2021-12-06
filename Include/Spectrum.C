@@ -22,11 +22,11 @@ Double_t ln(Double_t x) {
     return TMath::Log(x);
 }
 
-void WriteInfo(TF1* f) {
+void WriteInfo(TF1* f, double &gain, double &gainError) {
     
     // Write gain, sigma and res = sigma/gain on the plot
-    Double_t gain = f->GetParameter(0);
-    Double_t gainError = f->GetParError(0);
+    gain = f->GetParameter(0);
+    gainError = f->GetParError(0);
     Double_t sigma = abs(f->GetParameter(1));
     Double_t sigmaError = f->GetParError(1);
     Double_t resolution = f->GetParameter(1)/f->GetParameter(0);
@@ -50,6 +50,13 @@ void WriteInfo(TF1* f) {
     txtGain->Draw("same");
     txtSigma->Draw("same"); //txtRes->Draw("same");
     txtFwhm->Draw("same");
+}
+
+void WriteInfo(TF1* f) {
+    
+    // Write gain, sigma and res = sigma/gain on the plot
+    Double_t gain = 0, gainError = 0;
+    WriteInfo(f, gain, gainError);
 }
 
 void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalName="", bool useFeSource = false) {
@@ -128,7 +135,7 @@ void DrawAmplificationElectrons(string gasName = "Ar-iC4H10", TString fSignalNam
 }
 
 
-void DrawFeConvolution(TString fConvolutedName, Double_t& gain, Double_t& gainError) {
+void DrawFeConvolution(TString fConvolutedName, Double_t &gain, Double_t &gainError) {
     // First draw convoluted spectrum
     TFile* fConvoluted = TFile::Open(fConvolutedName, "READ");
     
@@ -155,7 +162,7 @@ void DrawFeConvolution(TString fConvolutedName, Double_t& gain, Double_t& gainEr
     f->Draw("same");
     
     // Write gain, sigma and res = sigma/gain on the plot
-    WriteInfo(f);
+    WriteInfo(f, gain, gainError);
     
     /*
      TLegend* legend = new TLegend(0.1,0.75,0.9,0.9);

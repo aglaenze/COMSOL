@@ -58,18 +58,18 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
     Int_t iBinMax = h->GetMaximumBin();
     Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
     
-    std::cout << "xMax = " << xMax << std::endl;
-    std::cout << "maximum = " << h->GetMaximum() << std::endl;
+    cout << "xMax = " << xMax << endl;
+    cout << "maximum = " << h->GetMaximum() << endl;
     
-    Int_t fitRangeMin = 0;
-    Int_t fitRangeMax = xMax + 0.5 * h->GetRMS();
+    Double_t fitRangeMin = 0;
+    Double_t fitRangeMax = xMax + 0.5 * h->GetRMS();
     if (gauss) {
-        fitRangeMin = xMax - 1.* h->GetRMS();
-        fitRangeMax = xMax + 1.*h->GetRMS();
+        fitRangeMin = xMax - 1.5 * h->GetRMS();
+        fitRangeMax = xMax + 1.5 * h->GetRMS();
     }
     if (fitRangeMin < 0) fitRangeMin = 0;
     // if IBF
-    if (xMax < 5) {fitRangeMin = xMax - 2 * h->GetRMS(); fitRangeMax = xMax + 2*h->GetRMS();}
+    //if (xMax < 5) {fitRangeMin = xMax - 2 * h->GetRMS(); fitRangeMax = xMax + 2*h->GetRMS();}
     
     TF1* f;
     if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
@@ -77,8 +77,8 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
     f->SetParNames("Mean", "Sigma", "Amplitude");
     f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
     
-    //std::cout << "\n\nh->GetRMS() = " << h->GetRMS() << std::endl;
-    //std::cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << std::endl;
+    //cout << "\n\nh->GetRMS() = " << h->GetRMS() << endl;
+    //cout << "\n\nh->GetMaximum() = " << h->GetMaximum() << endl;
     
     if (!gauss) {
         f->SetParLimits(0, 0.5*xMax, 2*xMax);
@@ -89,19 +89,27 @@ TF1* GetFitCurve(TH1F* h, bool gauss = true) {
     }
     
     h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
+    f->SetRange(fitRangeMin, fitRangeMax);
     return f;
 }
 
 TF1* GetFitIbf(TH1F* h, bool gauss = true) {
+    
     Int_t iBinMax = h->GetMaximumBin();
     Double_t xMax = h->GetXaxis()->GetBinCenter( iBinMax );
     
-    std::cout << "xMax = " << xMax << std::endl;
-    std::cout << "maximum = " << h->GetMaximum() << std::endl;
+    cout << endl << endl << "xMax = " << xMax << endl;
+    cout << "maximum = " << h->GetMaximum() << endl;
+    cout << "h->GetRMS() = " << h->GetRMS() << endl << endl;
     
-    Int_t fitRangeMin = xMax - 2*h->GetRMS();
+    double width = h->GetRMS();
+    if (h->GetRMS() > 0.5*xMax) width = h->GetRMS()/10;
+    Double_t fitRangeMin = xMax - 0.8 * width;
     //Int_t fitRangeMin = 0;
-    Int_t fitRangeMax = xMax + 3*h->GetRMS();
+    Double_t fitRangeMax = xMax + 0.8 * width;
+    
+    cout << endl << "fitRangeMin = " << fitRangeMin << endl;
+    cout << "fitRangeMax = " << fitRangeMax << endl << endl;
     
     TF1* f;
     if (gauss) f = new TF1( "FitFunction", FitGauss, fitRangeMin, fitRangeMax, 3);
@@ -109,9 +117,10 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
     f->SetParNames("Mean", "Sigma", "Amplitude");
     f->SetParameters(xMax, h->GetRMS(), h->GetMaximum());
     //f->SetParLimits(0,0,10);
-    f->SetParLimits(0,0.7*xMax,1.3*xMax);
+    //f->SetParLimits(0, 0.5*xMax, 2*xMax);
     
     h->Fit(f, "0", "0", fitRangeMin, fitRangeMax);
+    f->SetRange(fitRangeMin, fitRangeMax);
     return f;
 }
 

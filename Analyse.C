@@ -66,7 +66,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
     cv->Divide(3, 2);
     
     // Start with drawing the transparency
-    cv->cd(1);
+    cv->cd(4);
     DrawTransparency(modelNum, fSignalName);
     //DrawGains(modelNum, fileName);
     //return 0;
@@ -96,7 +96,7 @@ int Analyse(int modelNum, std::string gasName, std::vector<int> hvList) {
     DrawConvolutedIbf(fileName);
     
     
-    cv->cd(4);
+    cv->cd(1);
     DrawDetector(modelNum, hvList);
     
     TText* txtGas = new TText(.4,.95,Form("Gas: %s", gasName.c_str()));

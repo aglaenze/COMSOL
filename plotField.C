@@ -13,7 +13,6 @@
 #include "Include/Geometry.C"
 
 #include "Garfield/ComponentComsol.hh"
-#include "Garfield/ComponentBase.hh"
 #include "Garfield/ViewField.hh"
 #include "Garfield/MediumMagboltz.hh"
 #include "Garfield/Sensor.hh"

@@ -84,7 +84,7 @@ ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz*
 	else {
 		// Load the field map.
 		ComponentComsol* fm = new ComponentComsol();
-		fm->Initialise(meshFileName, materialsFileName, dataFileName);
+		fm->Initialise(meshFileName, materialsFileName, dataFileName, "um");
 		fm->PrintMaterials();
 		fm->EnableMirrorPeriodicityX();
 		fm->EnableMirrorPeriodicityY();
