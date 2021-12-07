@@ -1,5 +1,5 @@
 #!/bin/bash
-source $GARFIELD_HOME/install/share/Garfield/setupGarfield.sh
+source $GARFIELD_HOME/Install/share/Garfield/setupGarfield.sh
 
 if ! [ -d $COMSOL/build ]
 then
