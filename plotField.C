@@ -32,11 +32,12 @@ int main(int argc, char * argv[]) {
     // variables, to change in the file input.txt
     int modelNum = 0;
     std::string gasName = "";
-    if(!LoadVariables(modelNum, gasName)) {std::cout << "variables not loaded" << std::endl; return 0;}
+    bool transcend = false;
+    if(!LoadVariables(modelNum, gasName, transcend)) {std::cout << "variables not loaded" << std::endl; return 0;}
     bool remote = false;
     //____________________
     //time_t t0 = time(NULL);
-    if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {std::cout << "Wrong model number" << std::endl; return 0;}
+    if (modelNum < 1 || modelNum > GetMaxModelNum(remote, transcend)) {std::cout << "Wrong model number" << std::endl; return 0;}
     
     TApplication app("app", &argc, argv);
     plottingEngine.SetDefaultStyle();
@@ -60,7 +61,7 @@ int main(int argc, char * argv[]) {
     
     // Make a gas medium.
     MediumMagboltz* gas = InitiateGas(gasName);
-    ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
+    ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote, transcend);
     if (!fm || fm->GetMedium(0,0,0) == nullptr) {
         std::cout << "Component COMSOL was not initialized, please fix this" << std::endl;
         return 0;
@@ -79,7 +80,7 @@ int main(int argc, char * argv[]) {
     //vf->SetComponent(fm);
     vf->SetSensor(&sensor);
     vf->SetArea(0, 0, width, ddrift);
-    double yPlane = pitch/4;
+    double yPlane = pitch/3;
     //double yPlane = 0;
     vf->SetPlane(0, -1, 0, 0, yPlane, 0);
     //vf->SetPlaneXZ();
@@ -141,6 +142,7 @@ int main(int argc, char * argv[]) {
         if (modelNum==1) vf->SetVoltageRange(-hvList[0]*1.1, -hvList[0]*0.78);
         //else if (modelNum>=8 && modelNum<14) vf->SetVoltageRange(-hvList[1]*1.05, -hvList[1]/1.05);
         vf->Plot("v", "CONT4Z");
+        vf->Plot("v", "CONT1");
         DrawElectrodes(modelNum, zmin, zmax);
         c1->SaveAs(Form("Figures/model%d/potentialZoom", modelNum)+suffix);
         vf->SetCanvas(c2);
@@ -150,6 +152,7 @@ int main(int argc, char * argv[]) {
         
         // Field lines
         //TCanvas* c3 = new TCanvas("c3", "Field lines", 600, 600);
+        /*
         zmin = 0;
         zmax = ddrift;
         if ((modelNum > 1 && modelNum < 5) || modelNum == 14) {zmax = 50*pitch;}
@@ -157,6 +160,7 @@ int main(int argc, char * argv[]) {
         else {zmax = damp+5*pitch;}
         zmin = damp*0.9; zmax = damp*1.05;
         xmin = -(zmax-zmin)/2., xmax = (zmax-zmin)/2.;
+         */
         vf->SetArea(xmin, zmin, xmax, zmax);
         
         TCanvas* c3 = new TCanvas();
@@ -166,11 +170,20 @@ int main(int argc, char * argv[]) {
         vector<double> zf;
         int nPitch = int((xmax-xmin)/pitch);
         //cout << "nPitch = " << nPitch << endl;
-        int nLinesPerPitch = 30;
+        int nLinesPerPitch = 50;
         int nLines = nPitch*nLinesPerPitch;
+        cout << endl << endl << "window size = " << size << endl;
+        cout << "nLinesPerPitch = " << nLinesPerPitch << endl;
+        cout << "nPitch = " << nPitch << endl;
+        cout << "nLines = " << nLines << endl << endl;
+        bool electron = true;  // defines the direction of the field line
+        /*
         double xLineMin = -nPitch*pitch/2 + double(pitch/(2*nLinesPerPitch));
         double xLineMax = nPitch*pitch/2 - double(pitch/(2*nLinesPerPitch));
         vf->EqualFluxIntervals(xLineMin, yPlane, zmax*1.0, xLineMax, yPlane, zmax*1.0, xf, yf, zf, nLines);
+         */
+        if (electron) vf->EqualFluxIntervals(xmin, yPlane, zmax, xmax, yPlane, zmax, xf, yf, zf, nLines);
+        else vf->EqualFluxIntervals(xmin, yPlane, zmin, xmax, yPlane, zmin, xf, yf, zf, nLines);
         
         //vf->EqualFluxIntervals(xmin, -pitch, 0.99 * zmax, xmax, pitch, 0.99 * zmax, xf, yf, zf, 200);
         gPad->SetLeftMargin(0.15);
@@ -178,8 +191,9 @@ int main(int argc, char * argv[]) {
         gPad->SetRightMargin(0.15);
         //vf->Plot("v", "CONT4Z");    // "CONT1Z"
         //vf->Plot("v", "CONT1");
-        vf->PlotFieldLines(xf, yf, zf, true, true);    // last one should be false in you want to plot something else before (pltaxis = false)
-        DrawElectrodes(modelNum, zmin, zmax);
+        //vf->PlotFieldLines(xf, yf, zf, electron, false);    // last one should be false in you want to plot something else before (pltaxis = false)
+        vf->PlotFieldLines(xf, yf, zf, electron, true);
+        //DrawElectrodes(modelNum, zmin, zmax);
         //vf->SetNumberOfContours(2);
         //vf->PlotProfile(0, 0, 0, width/2, width/2, damp*2, "v");
         c3->SaveAs(Form("Figures/model%d/fieldlines", modelNum)+suffix);

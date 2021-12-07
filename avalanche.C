@@ -32,13 +32,13 @@ int main(int argc, char * argv[]) {
 	// variables
 	int modelNum = 0;
 	string gasName = "";
-	bool remote = false;
+	bool remote = false, transcend = false;
 	bool plotDrift2D = 0, plotDrift3D = 0;
-	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D)) {cout << "variables not loaded" << endl; return 0;}
+	if(!LoadVariables(modelNum, gasName, plotDrift2D, plotDrift3D, transcend)) {cout << "variables not loaded" << endl; return 0;}
 	//____________________
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {cout << "Wrong model number" << endl; return 0;}
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote, transcend)) {cout << "Wrong model number" << endl; return 0;}
 
 	TApplication app("app", &argc, argv);
 	plottingEngine.SetDefaultStyle();
@@ -58,7 +58,7 @@ int main(int argc, char * argv[]) {
 	
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
-	ComponentComsol* fm = InitiateField(modelNum, hvList, gas);
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote, transcend);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return 0;

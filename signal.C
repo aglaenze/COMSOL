@@ -36,13 +36,13 @@ int main(int argc, char * argv[]) {
 	//______________________
 	// variables, to change in the file input.txt
 	bool testMode = false;
-	bool remote = false;
+	bool remote = false, transcend = false;
 	int modelNum = 0;
 	string gasName = "";
 	bool computeIBF = true;
 	bool useFeSource = true;
 	int nEvents = 0;  // number of avalanches to simulate
-	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote)) {cout << "variables not loaded" << endl; return -1;}
+	if(!LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, transcend)) {cout << "variables not loaded" << endl; return -1;}
 	if (testMode) {
 		remote = false;
 		nEvents = 10;
@@ -52,9 +52,9 @@ int main(int argc, char * argv[]) {
 	
 	
 	time_t t0 = time(NULL);
-	if (modelNum < 1 || modelNum > GetMaxModelNum(remote)) {
+	if (modelNum < 1 || modelNum > GetMaxModelNum(remote, transcend)) {
 		cout << "Wrong model number" << endl;
-		cout << "Model Number is comprised between 1 and " << GetMaxModelNum(remote) << endl;
+		cout << "Model Number is comprised between 1 and " << GetMaxModelNum(remote, transcend) << endl;
 		return -1;
 	}
 	
@@ -84,7 +84,7 @@ int main(int argc, char * argv[]) {
 
 	// Make a gas medium.
 	MediumMagboltz* gas = InitiateGas(gasName);
-	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote);
+	ComponentComsol* fm = InitiateField(modelNum, hvList, gas, remote, transcend);
 	if (!fm || fm->GetMedium(0,0,0) == nullptr) {
 		cout << "Component COMSOL was not initialized, please fix this" << endl;
 		return -1;

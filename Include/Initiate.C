@@ -64,10 +64,10 @@ MediumMagboltz* InitiateGas(string gasName) {
 }
 
 
-ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz* gas, bool remote = false) {
+ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz* gas, bool remote = false, bool transcend = false) {
 	// Load the field map.
-	//string dataFolder = Form("/Volumes/Transcend/COMSOL_data/model%d/", modelNum);
     string dataFolder = Form("COMSOL_data/model%d/", modelNum);
+    if (transcend) dataFolder = Form("/Volumes/Transcend/COMSOL_data/model%d/", modelNum);
 	if (remote) dataFolder = "./";
 	string dataFileName = dataFolder + "ewfield";
 	for (int k = 0; k < (int)hvList.size(); k++) dataFileName += Form("-%d", hvList[k]);

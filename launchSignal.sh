@@ -7,11 +7,12 @@ numberOfJobs=10     # used only if remote=1
 modelNum=22
 hv='380 580 1'
 gasName='Ar-iC4H10'     # Ar-iC4H10 or Ne or Ar-CO2
-nEvents=100            # number of events to simulate
+nEvents=10            # number of events to simulate
 computeIBF=1
 useFeSource=0
 testMode=0		# to run locally, of a reduced number of events
 remote=0		# to run on lxplus on remote machines using condor
+transcend=1
 
 ## end of variables
 
@@ -48,16 +49,39 @@ fi
 touch input.txt
 
 echo '# variables' >> input.txt
+echo ' ' >> input.txt
 echo 'modelNum ='  $modelNum >> input.txt
 echo 'gasName =' $gasName'     # Ar-iC4H10 or Ne or Ar-CO2'  >> input.txt
-echo 'nEvents =' $nEvents'            # number of events to simulate'  >> input.txt
-echo 'computeIBF =' $computeIBF '         # if false, it will only compute the number of amplification electrons in the avalanche (in signal.C)'  >> input.txt
-echo 'useFeSource =' $useFeSource'        # in signal.C: in false, will only simulate one ionisation in the drift region / if true, it will simulate a photon that converts into electrons in the drift region'  >> input.txt
-echo 'testMode =' $testMode'		# in signal.C: tests the code on a reduced number of events'  >> input.txt
+echo ' ' >> input.txt
 echo 'remote =' $remote'		# to run on lxplus machines using condor'  >> input.txt
-echo '# to draw the avalanche'  >> input.txt
-echo 'plotDrift2D = 0'  >> input.txt
-echo 'plotDrift3D = 1'  >> input.txt
+echo 'transcend =' $transcend  >> input.txt
+
+echo ' ' >> input.txt
+echo '################################################' >> input.txt
+echo '##### 		for signal.C only 	########' >> input.txt
+echo '################################################' >> input.txt
+echo ' ' >> input.txt
+
+
+echo 'nEvents =' $nEvents'            # number of events to simulate'  >> input.txt
+echo 'computeIBF =' $computeIBF '         # if false, it will only'  >> input.txt
+echo '#			compute the number of amplification'  >> input.txt
+echo '#			electrons in the avalanche'  >> input.txt
+echo 'useFeSource =' $useFeSource'        # in signal.C'  >> input.txt
+echo '#			in false, will only simulate one'  >> input.txt
+echo '#			ionisation in the drift region /'  >> input.txt
+echo '#			if true, it will simulate a photon that'  >> input.txt
+echo '#			converts into electrons in the drift region'  >> input.txt
+
+echo 'testMode =' $testMode'		# tests the code on a reduced number of events'  >> input.txt
+
+echo ' ' >> input.txt
+echo '################################################' >> input.txt
+echo '##### 		for avalanche.C only 	########' >> input.txt
+echo '################################################' >> input.txt
+echo ' ' >> input.txt
+echo 'plotDrift2D = 1'  >> input.txt
+echo 'plotDrift3D = 0'  >> input.txt
 " >> $inputExecutable
 chmod a+x $inputExecutable
 }

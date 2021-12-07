@@ -151,14 +151,14 @@ int GetElectrodeNum(int modelNum) {
     return electrodeMap.size();
 }
 
-bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote, bool& plotDrift2D, bool& plotDrift3D)
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote, bool& plotDrift2D, bool& plotDrift3D, bool& transcend)
 //T LoadVariable(string elementString)
 {
     //cout << "elementString = " << elementString << endl;
     ifstream file("input.txt", ios::in);
     //T* element = nullptr;
     string a, b;
-    bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, feInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false, testModeFound = false, remoteFound = false;
+    bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, feInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false, testModeFound = false, remoteFound = false, transcendFound = false;
     if(file) {
         string line {};
         getline(file, line);    //first line does not contains info
@@ -208,20 +208,25 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
                 stream >> a >> b >> remote;
                 remoteFound = true;
             }
+            else if (line.find("transcend") != string::npos) {
+                stringstream stream(line);
+                stream >> a >> b >> transcend;
+                transcendFound = true;
+            }
         }
         //cout << "Element " << elementString << " not found in input.txt";
-        return (modelFound && gasFound && feInfoFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound && testModeFound && remoteFound);
+        return (modelFound && gasFound && feInfoFound && nEventsFound && computeInfoFound && plot2dInfoFound && plot3dInfoFound && testModeFound && remoteFound && transcendFound);
     }
     else cout << "Error: not possible to open input.txt file in reading mode" << endl;
     return false;
     //return *element;
 }
 
-bool LoadVariables(int& modelNum, string& gasName) {
+bool LoadVariables(int& modelNum, string& gasName, bool& transcend) {
     int nEvents = 0;
     bool computeIBF = false, useFeSource = false, testMode = false, remote = false;
     bool plotDrift2D = 0, plotDrift3D = 0;
-    bool result = LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
+    bool result = LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D, transcend);
     if (!result) return false;
     cout << endl;
     cout << "#################################" << endl;
@@ -233,10 +238,10 @@ bool LoadVariables(int& modelNum, string& gasName) {
     return true;
 }
 
-bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plotDrift3D) {
+bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plotDrift3D, bool& transcend) {
     int nEvents = 0;
     bool computeIBF = false, useFeSource = false, testMode = false, remote = false;
-    bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
+    bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D, transcend);
     if (!result) return false;
     cout << endl;
     cout << "#################################" << endl;
@@ -250,9 +255,9 @@ bool LoadVariables(int& modelNum, string& gasName, bool& plotDrift2D, bool& plot
     return true;
 }
 
-bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote) {
+bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIBF, bool& useFeSource, bool& testMode, bool& remote, bool& transcend) {
     bool plotDrift2D = 0, plotDrift3D = 0;
-    bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D);
+    bool result =  LoadVariables(modelNum, gasName, nEvents, computeIBF, useFeSource, testMode, remote, plotDrift2D, plotDrift3D, transcend);
     if (!result) return false;
     cout << endl;
     cout << "#################################" << endl;
@@ -268,11 +273,12 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
     return true;
 }
 
-int GetMaxModelNum(bool remote) {
+int GetMaxModelNum(bool remote, bool transcend) {
     int num = 0;
     for (int i = 1; i < 100; i++) {
         string folder = "COMSOL_data/model" + to_string(i);
         if (remote) folder = ".";
+        if (transcend) folder = "/Volumes/Transcend/COMSOL_data/model" + to_string(i);
         //string folder = "rootFiles/Ar-iC4H10/model" + to_string(i);
         const char* path = &folder[0];
         DIR* rep = NULL;

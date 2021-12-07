@@ -3,7 +3,8 @@
 maxModel=0
 
 for ((k=1;k<100;k++)); do
-dataFolder="COMSOL_data/model$k"
+#dataFolder="COMSOL_data/model$k"
+dataFolder="/Volumes/Transcend/COMSOL_data/model$k"
 if [ -d $dataFolder ]
 then
 maxModel=$k
@@ -13,10 +14,11 @@ fi
 done
 
 
-# function that will display electic field configuration in na given rep
+# function that will display electic field configuration in a given rep
 display()
 {
-repertoire="$COMSOL/COMSOL_data/model$num"
+#repertoire="$COMSOL/COMSOL_data/model$num"
+repertoire="/Volumes/Transcend/COMSOL_data/model$num"
 if [ -d $repertoire ]
 then
 echo ""
