@@ -66,7 +66,8 @@ MediumMagboltz* InitiateGas(string gasName) {
 
 ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz* gas, bool remote = false) {
 	// Load the field map.
-	string dataFolder = Form("COMSOL_data/model%d/", modelNum);
+	//string dataFolder = Form("/Volumes/Transcend/COMSOL_data/model%d/", modelNum);
+    string dataFolder = Form("COMSOL_data/model%d/", modelNum);
 	if (remote) dataFolder = "./";
 	string dataFileName = dataFolder + "ewfield";
 	for (int k = 0; k < (int)hvList.size(); k++) dataFileName += Form("-%d", hvList[k]);
@@ -82,9 +83,10 @@ ComponentComsol* InitiateField(int modelNum, vector<int> hvList, MediumMagboltz*
 	
 	if (!(meshFile && materialsFile && potentialFile)) {return nullptr;}
 	else {
+        cout << endl << "input files found, initialising..." << endl << endl;
 		// Load the field map.
 		ComponentComsol* fm = new ComponentComsol();
-		fm->Initialise(meshFileName, materialsFileName, dataFileName, "um");
+		fm->Initialise(meshFileName, materialsFileName, dataFileName, "mum");
 		fm->PrintMaterials();
 		fm->EnableMirrorPeriodicityX();
 		fm->EnableMirrorPeriodicityY();
