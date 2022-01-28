@@ -56,8 +56,11 @@ MediumMagboltz* InitiateGas(string gasName) {
         //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
     }
     else if (gasName=="alice") {
+        rPenning = 0.56;
         gas->SetComposition("Ne", 90., "CO2", 10, "N2", 5);
-        //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
+        gas->EnablePenningTransfer(rPenning, lambdaPenning, "ne");
+        gas->LoadIonMobility(path + "/Data/IonMobility_Ne+_Ne.txt");
+        gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
     }
 	else {cout << "What gas??" << endl; return 0;}
 	gas->SetTemperature(293.15);
