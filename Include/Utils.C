@@ -160,7 +160,7 @@ bool LoadVariables(int& modelNum, string& gasName, int& nEvents, bool& computeIB
     string a, b;
     bool gasFound = false, modelFound = false, nEventsFound = false, computeInfoFound = false, feInfoFound = false, plot2dInfoFound = false, plot3dInfoFound = false, testModeFound = false, remoteFound = false, transcendFound = false;
     if(file) {
-        string line {};
+        string line = {};
         getline(file, line);    //first line does not contains info
         while(getline(file, line)) {
             if (line.find("modelNum") != string::npos) {

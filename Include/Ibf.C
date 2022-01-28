@@ -205,6 +205,7 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
     hFeIbf->GetXaxis()->SetRangeUser(0, 2*fFeIbf->GetParameter(0));
     hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 2*fFeIbfTotalCharge->GetParameter(0));
     hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 2*fFeIbfIonCharge->GetParameter(0));
+    /*
     if (fFeIbf->GetParameter(0) < 0.9) {
         hFeIbf->GetXaxis()->SetRangeUser(0, 3.);
         hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 3.);
@@ -215,6 +216,19 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
         hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 1.);
         hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 1.);
     }
+     */
+    /*
+    if (fFeIbf->GetParameter(0) < 0.2) {
+        
+        hFeIbf->GetXaxis()->SetRangeUser(0, 0.3);
+        hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 0.3);
+        hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, 0.3);
+         
+        hFeIbf->GetXaxis()->SetMaxDigits(3);
+        hFeIbfTotalCharge->GetXaxis()->SetMaxDigits(3);
+        hFeIbfIonCharge->GetXaxis()->SetMaxDigits(3);
+    }*/
+    /*
     if (fFeIbf->GetParameter(0) < 0.1) {
         hFeIbf->GetXaxis()->SetRangeUser(0, 0.2);
         hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, 0.2);
@@ -223,6 +237,12 @@ void DrawConvolutedIbf(TString fConvolutedName="") {
         hFeIbfTotalCharge->GetXaxis()->SetMaxDigits(3);
         hFeIbfIonCharge->GetXaxis()->SetMaxDigits(3);
     }
+     */
+    double xMax = fFeIbf->GetParameter(0)*3;
+    hFeIbf->GetXaxis()->SetRangeUser(0, xMax);
+    hFeIbfTotalCharge->GetXaxis()->SetRangeUser(0, xMax);
+    hFeIbfIonCharge->GetXaxis()->SetRangeUser(0, xMax);
+    
     hFeIbf->SetXTitle("IBF (%)");
     hFeIbfTotalCharge->SetXTitle("IBF (%)");
     hFeIbfIonCharge->SetXTitle("IBF (%)");

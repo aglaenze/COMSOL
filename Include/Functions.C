@@ -104,9 +104,9 @@ TF1* GetFitIbf(TH1F* h, bool gauss = true) {
     
     double width = h->GetRMS();
     if (h->GetRMS() > 0.5*xMax) width = h->GetRMS()/10;
-    Double_t fitRangeMin = xMax - 0.8 * width;
+    Double_t fitRangeMin = xMax - 2 * width;
     //Int_t fitRangeMin = 0;
-    Double_t fitRangeMax = xMax + 0.8 * width;
+    Double_t fitRangeMax = xMax + 2 * width;
     
     cout << endl << "fitRangeMin = " << fitRangeMin << endl;
     cout << "fitRangeMax = " << fitRangeMax << endl << endl;

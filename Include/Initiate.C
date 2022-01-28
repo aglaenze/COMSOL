@@ -55,6 +55,10 @@ MediumMagboltz* InitiateGas(string gasName) {
         gas->SetComposition("N2", 78.1, "O2", 20.9, "Ar", 0.9, "CO2", 0.4);
         //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
     }
+    else if (gasName=="alice") {
+        gas->SetComposition("Ne", 90., "CO2", 10, "N2", 5);
+        //gas->LoadIonMobility(path + "/Data/IonMobility_CO2+_CO2.txt");
+    }
 	else {cout << "What gas??" << endl; return 0;}
 	gas->SetTemperature(293.15);
 	gas->SetPressure(AtmosphericPressure);

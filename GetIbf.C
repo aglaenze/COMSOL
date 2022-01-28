@@ -20,7 +20,7 @@ int GetIbf() {
     // variables
     std::string gasName = "Ar-iC4H10"; // Ar-iC4H10 or Ne or Ar-CO2
     //std::string gasName = "Ar-CO2"; // Ar-iC4H10 or Ne or Ar-CO2
-    const int modelNum = 23;
+    const int modelNum = 1;
     bool convoluted = true;     // to draw convoluted ibf with Fe source instead of "pure" ibf
     //____________________
     
@@ -304,8 +304,13 @@ int GetIbf() {
     //grSim2->Draw("LP same");
     
     TGraphErrors* grSimConvoluted = new TGraphErrors(num, fieldList, ibfConvolutedList, 0, ibfConvolutedErrorList);
-    grSimConvoluted->SetMarkerColor(4);
-    //grSimConvoluted->Draw("LP same");
+    //grSimConvoluted->SetMarkerColor(4);
+    grSimConvoluted->SetTitle("IBF curve in the Micromegas");
+    grSimConvoluted->GetXaxis()->SetTitle( "E_{amp} (kV/cm)" );
+    grSimConvoluted->GetYaxis()->SetTitle( "IBF (%)" );
+    grSimConvoluted->GetHistogram()->SetMinimum(0.);   // along Y axis
+    grSimConvoluted->GetHistogram()->SetMaximum(3.5);   // along Y axis
+    grSimConvoluted->Draw("AP same");
     
     //TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, fieldList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
     TGraphErrors* grSimConvoluted2 = new TGraphErrors(num, fieldList, ibfList, 0, ibfErrorList);
@@ -316,7 +321,7 @@ int GetIbf() {
     grSimConvoluted2->GetYaxis()->SetTitle( "IBF (%)" );
     grSimConvoluted2->GetHistogram()->SetMinimum(0.);   // along Y axis
     grSimConvoluted2->GetHistogram()->SetMaximum(3.5);   // along Y axis
-    grSimConvoluted2->Draw("AP same");
+    //grSimConvoluted2->Draw("AP same");
     
     TGraphErrors* grSimConvoluted3 = new TGraphErrors(num, fieldList, ibfConvolutedList3, 0, ibfConvolutedErrorList3);
     grSimConvoluted3->SetMarkerColor(6);
@@ -357,10 +362,11 @@ int GetIbf() {
     
     c5->cd(2);
     gPad->SetGrid();
+    TGraphErrors* grSimRatio1 = nullptr;
     //TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList2, 0, ibfConvolutedErrorList2);
-    TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfList, 0, ibfErrorList);
-    //TGraphErrors* grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList, 0, ibfConvolutedErrorList);
-    grSimRatio1->SetTitle("IBF = f(field ratio)");
+    if (convoluted) grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfConvolutedList, 0, ibfConvolutedErrorList);
+    else grSimRatio1 = new TGraphErrors(num, hvRatioList, ibfList, 0, ibfErrorList);
+    grSimRatio1->SetTitle("IBF = f(E_{amp}/E_{drift})");
     grSimRatio1->GetXaxis()->SetTitle( "E_{amp}/E_{drift}" );
     grSimRatio1->GetYaxis()->SetTitle( "IBF (%)" );
     //grSimRatio1->GetXaxis()->SetLimits(0, 4);  // along X axis
